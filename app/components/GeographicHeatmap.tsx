@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Regional Statistics from ONS and public data sources
 // Sources:
@@ -57,7 +58,11 @@ const LAYER_SOURCES: Record<Layer, string> = {
   labVote: "Electoral Commission, July 2024",
 };
 
+const FALLBACK = { regions: REGIONS, layerLabels: LAYER_LABELS, layerSources: LAYER_SOURCES };
+
 export default function GeographicHeatmap() {
+  const { data, isLive } = useMetrics("geographicHeatmap", FALLBACK);
+  const { regions, layerLabels, layerSources } = data;
   const [layer, setLayer] = useState<Layer>("income");
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -69,7 +74,7 @@ export default function GeographicHeatmap() {
   const svgW = cols * (cellW + gap);
   const svgH = rows * (cellH + gap);
 
-  const hoveredRegion = REGIONS.find((r) => r.id === hovered);
+  const hoveredRegion = regions.find((r) => r.id === hovered);
 
   const formatVal = (val: number, l: Layer) => {
     if (l === "income") return `£${val}k`;
@@ -96,7 +101,7 @@ export default function GeographicHeatmap() {
         ))}
       </div>
 
-      <p className="font-mono text-[10px] text-gray-500 mb-3">{LAYER_LABELS[layer]}</p>
+      <p className="font-mono text-[10px] text-gray-500 mb-3">{layerLabels[layer]}</p>
 
       <div className="flex gap-6">
         <svg
@@ -104,7 +109,7 @@ export default function GeographicHeatmap() {
           className="flex-shrink-0"
           style={{ width: Math.min(svgW, 320), height: "auto" }}
         >
-          {REGIONS.map((region) => {
+          {regions.map((region) => {
             const x = region.col * (cellW + gap);
             const y = region.row * (cellH + gap);
             const val = region[layer];
@@ -164,7 +169,7 @@ export default function GeographicHeatmap() {
               <div className="space-y-2">
                 {(["income", "unemployment", "crime", "labVote"] as Layer[]).map((l) => (
                   <div key={l} className="font-mono text-xs">
-                    <div className="text-gray-500 uppercase">{LAYER_LABELS[l]}</div>
+                    <div className="text-gray-500 uppercase">{layerLabels[l]}</div>
                     <div
                       className="text-xl font-display"
                       style={{ color: l === layer ? "#FF3B00" : "#000" }}
@@ -184,11 +189,17 @@ export default function GeographicHeatmap() {
       </div>
 
       <p className="font-mono text-[10px] text-gray-400 mt-3">
-        DATA SOURCES: {LAYER_SOURCES[layer]}.
+        DATA SOURCES: {layerSources[layer]}.
         Regional boundaries simplified for visualisation. N. Ireland voting data not shown (separate party system).
         Sources: ons.gov.uk/employmentandlabourmarket · ons.gov.uk/peoplepopulationandcommunity/crimeandjustice ·
         electoralcommission.org.uk
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

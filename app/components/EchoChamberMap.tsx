@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Policy Opinion Correlations — derived from British Social Attitudes Survey (BSA)
 // Source: NatCen Social Research — British Social Attitudes Survey, Wave 40 (2023)
@@ -35,18 +36,22 @@ function getTextColor(v: number): string {
   return "#000";
 }
 
+const FALLBACK = { topics: TOPICS, correlations: CORRELATIONS };
+
 export default function EchoChamberMap() {
+  const { data, isLive } = useMetrics("echoChamberMap", FALLBACK);
+  const { topics, correlations } = data;
   const [hovered, setHovered] = useState<[number, number] | null>(null);
 
   const cell = 46;
   const labelW = 90;
-  const svgW = labelW + TOPICS.length * cell;
-  const svgH = labelW + TOPICS.length * cell;
+  const svgW = labelW + topics.length * cell;
+  const svgH = labelW + topics.length * cell;
 
   const hovVal =
-    hovered ? CORRELATIONS[hovered[0]][hovered[1]] : null;
+    hovered ? correlations[hovered[0]][hovered[1]] : null;
   const hovLabel =
-    hovered ? `${TOPICS[hovered[0]]} × ${TOPICS[hovered[1]]}` : null;
+    hovered ? `${topics[hovered[0]]} × ${topics[hovered[1]]}` : null;
 
   return (
     <div>
@@ -68,7 +73,7 @@ export default function EchoChamberMap() {
 
       <div className="overflow-x-auto">
         <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: "100%", maxWidth: svgW }}>
-          {TOPICS.map((t, i) => (
+          {topics.map((t, i) => (
             <text
               key={`col-${i}`}
               x={labelW + i * cell + cell / 2}
@@ -84,7 +89,7 @@ export default function EchoChamberMap() {
             </text>
           ))}
 
-          {TOPICS.map((t, i) => (
+          {topics.map((t, i) => (
             <text
               key={`row-${i}`}
               x={labelW - 4}
@@ -100,7 +105,7 @@ export default function EchoChamberMap() {
             </text>
           ))}
 
-          {CORRELATIONS.map((row, ri) =>
+          {correlations.map((row, ri) =>
             row.map((val, ci) => {
               const x = labelW + ci * cell;
               const y = labelW + ri * cell;
@@ -161,6 +166,12 @@ export default function EchoChamberMap() {
         Also informed by Ipsos Issues Index and YouGov issue tracker cross-tabs.
         Source: natcen.ac.uk/series/british-social-attitudes · ipsos.com/en-uk/ipsos-issues-index
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

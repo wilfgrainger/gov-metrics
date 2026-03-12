@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK NHS & Health Statistics
 // Sources: NHS England, ONS Health Statistics, NHS Digital
@@ -51,7 +52,11 @@ const LIFE_EXPECTANCY_TREND = [
   { year: "2024", male: 79.0, female: 82.9 },
 ];
 
+const FALLBACK = { headline: HEADLINE, waitingTrend: WAITING_TREND, waitingBySpecialty: WAITING_BY_SPECIALTY, lifeExpectancyTrend: LIFE_EXPECTANCY_TREND };
+
 export default function NHSStats() {
+  const { data, isLive } = useMetrics("nhsStats", FALLBACK);
+  const { headline, waitingTrend, waitingBySpecialty, lifeExpectancyTrend } = data;
   const [view, setView] = useState<"waiting" | "specialties" | "lifeexp">("waiting");
 
   return (
@@ -59,10 +64,10 @@ export default function NHSStats() {
       {/* Headline stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mb-4">
         {[
-          { label: "WAITING LIST", value: `${HEADLINE.waitingList}M`, sub: `${HEADLINE.waitingListChange}% YoY`, accent: true },
-          { label: "A&E 4HR TARGET", value: `${HEADLINE.aePerformance}%`, sub: `target: ${HEADLINE.aeTarget}%` },
-          { label: "GP WAIT", value: `${HEADLINE.gpWait}`, sub: "avg days" },
-          { label: "NHS STAFF", value: `${HEADLINE.nhsWorkforce}M`, sub: "FTE employees" },
+          { label: "WAITING LIST", value: `${headline.waitingList}M`, sub: `${headline.waitingListChange}% YoY`, accent: true },
+          { label: "A&E 4HR TARGET", value: `${headline.aePerformance}%`, sub: `target: ${headline.aeTarget}%` },
+          { label: "GP WAIT", value: `${headline.gpWait}`, sub: "avg days" },
+          { label: "NHS STAFF", value: `${headline.nhsWorkforce}M`, sub: "FTE employees" },
         ].map((s, i) => (
           <div key={i} className={`border-2 border-black p-3 text-center ${i > 0 ? "border-l-0" : ""}`}>
             <p className="font-mono text-[10px] text-gray-500">{s.label}</p>
@@ -76,20 +81,20 @@ export default function NHSStats() {
       <div className="mb-4">
         <p className="font-mono text-xs text-gray-500 mb-2">A&amp;E 4-HOUR PERFORMANCE VS 95% TARGET</p>
         <div className="w-full h-6 bg-gray-100 border-2 border-black relative">
-          <div className="h-full bg-[#FF3B00]" style={{ width: `${HEADLINE.aePerformance}%` }} />
+          <div className="h-full bg-[#FF3B00]" style={{ width: `${headline.aePerformance}%` }} />
           <div
             className="absolute top-0 h-full w-0.5 bg-black"
-            style={{ left: `${HEADLINE.aeTarget}%` }}
+            style={{ left: `${headline.aeTarget}%` }}
           />
           <div
             className="absolute -top-5 font-mono text-[10px] font-bold"
-            style={{ left: `${HEADLINE.aeTarget}%`, transform: "translateX(-50%)" }}
+            style={{ left: `${headline.aeTarget}%`, transform: "translateX(-50%)" }}
           >
             95% TARGET
           </div>
         </div>
         <p className="font-mono text-[10px] text-gray-500 mt-1">
-          Only {HEADLINE.aePerformance}% of patients seen within 4 hours — {(HEADLINE.aeTarget - HEADLINE.aePerformance).toFixed(1)}pp below target
+          Only {headline.aePerformance}% of patients seen within 4 hours — {(headline.aeTarget - headline.aePerformance).toFixed(1)}pp below target
         </p>
       </div>
 
@@ -115,7 +120,7 @@ export default function NHSStats() {
       {view === "waiting" && (
         <div className="space-y-2">
           <p className="font-mono text-xs text-gray-500 mb-2">NHS ENGLAND WAITING LIST (MILLIONS)</p>
-          {WAITING_TREND.map((d) => (
+          {waitingTrend.map((d) => (
             <div key={d.date} className="flex items-center gap-3">
               <p className="font-mono text-xs w-10 text-right text-gray-500">{d.date}</p>
               <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -136,7 +141,7 @@ export default function NHSStats() {
       {view === "specialties" && (
         <div className="space-y-2">
           <p className="font-mono text-xs text-gray-500 mb-2">AVERAGE WAIT BY SPECIALTY (WEEKS)</p>
-          {WAITING_BY_SPECIALTY.map((d) => (
+          {waitingBySpecialty.map((d) => (
             <div key={d.specialty} className="flex items-center gap-2">
               <p className="font-mono text-xs w-24 text-right">{d.specialty}</p>
               <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -158,15 +163,15 @@ export default function NHSStats() {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="border-2 border-black p-3 text-center">
               <p className="font-mono text-[10px] text-gray-500">MALE</p>
-              <p className="font-display text-3xl">{HEADLINE.lifeExpMale}</p>
+              <p className="font-display text-3xl">{headline.lifeExpMale}</p>
             </div>
             <div className="border-2 border-black p-3 text-center">
               <p className="font-mono text-[10px] text-gray-500">FEMALE</p>
-              <p className="font-display text-3xl">{HEADLINE.lifeExpFemale}</p>
+              <p className="font-display text-3xl">{headline.lifeExpFemale}</p>
             </div>
           </div>
           <div className="space-y-2">
-            {LIFE_EXPECTANCY_TREND.map((d) => (
+            {lifeExpectancyTrend.map((d) => (
               <div key={d.year} className="border-2 border-black p-2">
                 <div className="flex justify-between items-center mb-1">
                   <p className="font-mono text-xs font-bold">{d.year}</p>
@@ -192,6 +197,12 @@ export default function NHSStats() {
         GP waiting times: NHS Digital GP Patient Survey. NHS workforce: NHS Digital.
         Sources: england.nhs.uk/statistics · ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

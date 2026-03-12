@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Crime Statistics from ONS Crime Survey for England and Wales
 // Source: https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice
@@ -42,7 +43,11 @@ const REGIONAL = [
   { region: "East of England", per1000: 60.5, color: "#999" },
 ];
 
+const FALLBACK = { crimeCategories: CRIME_CATEGORIES, headline: HEADLINE, regional: REGIONAL };
+
 export default function CrimeStatistics() {
+  const { data, isLive } = useMetrics("crimeStatistics", FALLBACK);
+  const { crimeCategories, headline, regional } = data;
   const [view, setView] = useState<"category" | "regional">("category");
 
   return (
@@ -50,10 +55,10 @@ export default function CrimeStatistics() {
       {/* Headline stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mb-4">
         {[
-          { label: "TOTAL CRIME", value: "9.3M", sub: `${HEADLINE.changePct === 0 ? "~0" : HEADLINE.changePct}% YoY`, negative: true },
-          { label: "KNIFE CRIME", value: HEADLINE.knifeCrime.toLocaleString("en-GB"), sub: `${HEADLINE.knifeCrimeChange}% YoY`, positive: false },
-          { label: "HOMICIDES", value: HEADLINE.homicides.toString(), sub: `${HEADLINE.homicideChange}% YoY`, negative: true },
-          { label: "CHARGE RATE", value: `${HEADLINE.chargeRate}%`, sub: "of reported crimes", neutral: true },
+          { label: "TOTAL CRIME", value: "9.3M", sub: `${headline.changePct === 0 ? "~0" : headline.changePct}% YoY`, negative: true },
+          { label: "KNIFE CRIME", value: headline.knifeCrime.toLocaleString("en-GB"), sub: `${headline.knifeCrimeChange}% YoY`, positive: false },
+          { label: "HOMICIDES", value: headline.homicides.toString(), sub: `${headline.homicideChange}% YoY`, negative: true },
+          { label: "CHARGE RATE", value: `${headline.chargeRate}%`, sub: "of reported crimes", neutral: true },
         ].map((s, i) => (
           <div key={i} className={`border-2 border-black p-3 text-center ${i > 0 ? "border-l-0" : ""}`}>
             <p className="font-mono text-[10px] text-gray-500">{s.label}</p>
@@ -86,7 +91,7 @@ export default function CrimeStatistics() {
       {view === "category" && (
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={CRIME_CATEGORIES} layout="vertical" margin={{ left: 10, right: 40 }}>
+            <BarChart data={crimeCategories} layout="vertical" margin={{ left: 10, right: 40 }}>
               <XAxis
                 type="number"
                 tick={{ fontFamily: "IBM Plex Mono", fontSize: 9 }}
@@ -115,7 +120,7 @@ export default function CrimeStatistics() {
                 }}
               />
               <Bar dataKey="count">
-                {CRIME_CATEGORIES.map((d, i) => (
+                {crimeCategories.map((d, i) => (
                   <Cell key={i} fill={d.change > 0 ? "#FF3B00" : "#000000"} />
                 ))}
               </Bar>
@@ -129,7 +134,7 @@ export default function CrimeStatistics() {
 
       {view === "regional" && (
         <div className="space-y-2">
-          {REGIONAL.map((r) => (
+          {regional.map((r) => (
             <div key={r.region} className="flex items-center gap-3">
               <p className="font-mono text-xs w-28 text-right">{r.region}</p>
               <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -151,6 +156,12 @@ export default function CrimeStatistics() {
         Homicides: ONS, 499 (lowest since 2003). Charge rate from CPS/Home Office data.
         Source: ons.gov.uk/peoplepopulationandcommunity/crimeandjustice
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }
