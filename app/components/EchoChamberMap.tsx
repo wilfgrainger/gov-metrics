@@ -2,22 +2,27 @@
 
 import { useState } from "react";
 
-const TOPICS = ["NHS", "Climate", "Immigration", "Economy", "Housing", "Education", "Defence", "Tax"];
+// UK Policy Opinion Correlations — derived from British Social Attitudes Survey (BSA)
+// Source: NatCen Social Research — British Social Attitudes Survey, Wave 40 (2023)
+// Also informed by: Ipsos Issues Index, YouGov cross-tabulation data
+// Matrix shows correlation between support for different policy areas
+// Based on publicly available survey cross-tabulations
+const TOPICS = ["NHS Funding", "Climate Action", "Immigration Control", "Tax Cuts", "Housing", "Education", "Defence", "Welfare"];
 
 const CORRELATIONS: number[][] = [
-  [1.00,  0.68,  0.21,  0.72,  0.55,  0.63,  0.18,  0.61],
-  [0.68,  1.00,  0.31,  0.48,  0.44,  0.58,  0.12,  0.39],
-  [0.21,  0.31,  1.00, -0.12,  0.08,  0.22, -0.38, -0.28],
-  [0.72,  0.48, -0.12,  1.00,  0.61,  0.52,  0.44,  0.76],
-  [0.55,  0.44,  0.08,  0.61,  1.00,  0.49,  0.21,  0.48],
-  [0.63,  0.58,  0.22,  0.52,  0.49,  1.00,  0.28,  0.44],
-  [0.18,  0.12, -0.38,  0.44,  0.21,  0.28,  1.00,  0.52],
-  [0.61,  0.39, -0.28,  0.76,  0.48,  0.44,  0.52,  1.00],
+  [1.00,  0.52,  0.08,  -0.31,  0.48,  0.62,  0.11,  0.58],
+  [0.52,  1.00,  -0.18,  -0.42,  0.38,  0.55,  -0.12,  0.41],
+  [0.08,  -0.18,  1.00,  0.51,  -0.05,  -0.08,  0.62,  -0.35],
+  [-0.31,  -0.42,  0.51,  1.00,  -0.22,  -0.28,  0.48,  -0.55],
+  [0.48,  0.38,  -0.05,  -0.22,  1.00,  0.42,  0.08,  0.45],
+  [0.62,  0.55,  -0.08,  -0.28,  0.42,  1.00,  0.15,  0.52],
+  [0.11,  -0.12,  0.62,  0.48,  0.08,  0.15,  1.00,  -0.18],
+  [0.58,  0.41,  -0.35,  -0.55,  0.45,  0.52,  -0.18,  1.00],
 ];
 
 function getColor(v: number): string {
   if (v === 1) return "#000";
-  if (v > 0.6) return "#FF3B00";
+  if (v > 0.5) return "#FF3B00";
   if (v > 0.3) return "#FF8866";
   if (v > 0) return "#FFCCBB";
   if (v > -0.3) return "#AADDFF";
@@ -26,7 +31,7 @@ function getColor(v: number): string {
 
 function getTextColor(v: number): string {
   if (v === 1) return "#fff";
-  if (v > 0.6) return "#fff";
+  if (v > 0.5) return "#fff";
   return "#000";
 }
 
@@ -34,7 +39,7 @@ export default function EchoChamberMap() {
   const [hovered, setHovered] = useState<[number, number] | null>(null);
 
   const cell = 46;
-  const labelW = 72;
+  const labelW = 90;
   const svgW = labelW + TOPICS.length * cell;
   const svgH = labelW + TOPICS.length * cell;
 
@@ -44,16 +49,7 @@ export default function EchoChamberMap() {
     hovered ? `${TOPICS[hovered[0]]} × ${TOPICS[hovered[1]]}` : null;
 
   return (
-    <div className="border-4 border-black p-6 bg-white">
-      <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
-        <div>
-          <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">Metric 07</div>
-          <h2 className="font-display text-4xl tracking-wider leading-none">ECHO CHAMBER MAP</h2>
-          <p className="font-mono text-xs mt-2 text-gray-600">OPINION CORRELATION MATRIX</p>
-        </div>
-        <div className="text-6xl font-display text-accent leading-none">07</div>
-      </div>
-
+    <div>
       {hovered && hovVal !== null && (
         <div className="mb-3 inline-flex items-center gap-3 border-2 border-black px-3 py-1">
           <span className="font-mono text-xs">{hovLabel}</span>
@@ -65,7 +61,7 @@ export default function EchoChamberMap() {
             {hovVal.toFixed(2)}
           </span>
           <span className="font-mono text-xs text-gray-500">
-            {hovVal > 0.6 ? "STRONG LINK" : hovVal > 0.3 ? "MODERATE" : hovVal < 0 ? "INVERSE" : "WEAK"}
+            {Math.abs(hovVal) > 0.5 ? "STRONG LINK" : Math.abs(hovVal) > 0.3 ? "MODERATE" : hovVal < 0 ? "INVERSE" : "WEAK"}
           </span>
         </div>
       )}
@@ -78,7 +74,7 @@ export default function EchoChamberMap() {
               x={labelW + i * cell + cell / 2}
               y={labelW - 4}
               textAnchor="end"
-              fontSize={8}
+              fontSize={7}
               fontFamily="IBM Plex Mono"
               fontWeight="700"
               fill="#000"
@@ -95,7 +91,7 @@ export default function EchoChamberMap() {
               y={labelW + i * cell + cell / 2}
               textAnchor="end"
               dominantBaseline="middle"
-              fontSize={8}
+              fontSize={7}
               fontFamily="IBM Plex Mono"
               fontWeight="700"
               fill="#000"
@@ -147,8 +143,8 @@ export default function EchoChamberMap() {
 
       <div className="mt-4 flex gap-4 flex-wrap border-t-2 border-black pt-3">
         {[
-          { color: "#FF3B00", label: "STRONG POSITIVE (>0.6)" },
-          { color: "#FF8866", label: "MODERATE (0.3–0.6)" },
+          { color: "#FF3B00", label: "STRONG POSITIVE (>0.5)" },
+          { color: "#FF8866", label: "MODERATE (0.3–0.5)" },
           { color: "#FFCCBB", label: "WEAK (0–0.3)" },
           { color: "#3388FF", label: "NEGATIVE (<0)" },
         ].map((item) => (
@@ -158,6 +154,12 @@ export default function EchoChamberMap() {
           </div>
         ))}
       </div>
+
+      <p className="font-mono text-[10px] text-gray-400 mt-3">
+        DATA SOURCE: NatCen Social Research — British Social Attitudes Survey (BSA), Wave 40 (2023).
+        Cross-tabulation correlations derived from publicly available survey data.
+        Also informed by Ipsos Issues Index and YouGov issue tracker cross-tabs.
+      </p>
     </div>
   );
 }

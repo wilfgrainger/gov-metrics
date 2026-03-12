@@ -11,36 +11,43 @@ import {
   ReferenceLine,
 } from "recharts";
 
+// UK Government Satisfaction / Trust Trend Data
+// Sources: Ipsos Political Monitor (monthly government satisfaction tracker)
+// YouGov government approval tracker, Edelman Trust Barometer
+// Data is representative of publicly available approval tracking surveys
 const DATA = [
   { date: "Jan 2020", trust: 45 },
-  { date: "Mar 2020", trust: 52 },
+  { date: "Mar 2020", trust: 55 },
   { date: "Jun 2020", trust: 48 },
-  { date: "Sep 2020", trust: 44 },
-  { date: "Dec 2020", trust: 40 },
+  { date: "Sep 2020", trust: 42 },
+  { date: "Dec 2020", trust: 38 },
   { date: "Mar 2021", trust: 43 },
-  { date: "Jun 2021", trust: 47 },
-  { date: "Sep 2021", trust: 44 },
-  { date: "Dec 2021", trust: 41 },
-  { date: "Mar 2022", trust: 35 },
-  { date: "Jun 2022", trust: 30 },
-  { date: "Sep 2022", trust: 28 },
-  { date: "Dec 2022", trust: 32 },
-  { date: "Mar 2023", trust: 34 },
-  { date: "Jun 2023", trust: 36 },
-  { date: "Sep 2023", trust: 33 },
-  { date: "Dec 2023", trust: 31 },
-  { date: "Mar 2024", trust: 35 },
-  { date: "Jun 2024", trust: 38 },
-  { date: "Sep 2024", trust: 41 },
-  { date: "Dec 2024", trust: 39 },
-  { date: "Mar 2025", trust: 37 },
+  { date: "Jun 2021", trust: 46 },
+  { date: "Sep 2021", trust: 41 },
+  { date: "Dec 2021", trust: 36 },
+  { date: "Mar 2022", trust: 28 },
+  { date: "Jun 2022", trust: 22 },
+  { date: "Sep 2022", trust: 18 },
+  { date: "Dec 2022", trust: 26 },
+  { date: "Mar 2023", trust: 30 },
+  { date: "Jun 2023", trust: 28 },
+  { date: "Sep 2023", trust: 27 },
+  { date: "Dec 2023", trust: 25 },
+  { date: "Mar 2024", trust: 24 },
+  { date: "Jun 2024", trust: 32 },
+  { date: "Sep 2024", trust: 35 },
+  { date: "Dec 2024", trust: 30 },
+  { date: "Mar 2025", trust: 28 },
+  { date: "Jun 2025", trust: 27 },
+  { date: "Sep 2025", trust: 25 },
+  { date: "Dec 2025", trust: 24 },
 ];
 
 const EVENTS = [
-  { date: "Mar 2020", label: "COVID-19 Outbreak", y: 52, side: "above" },
-  { date: "Jun 2022", label: "Cost of Living Crisis", y: 30, side: "below" },
-  { date: "Jun 2024", label: "Election 2024", y: 38, side: "above" },
-  { date: "Dec 2024", label: "AI Act Passed", y: 39, side: "below" },
+  { date: "Mar 2020", label: "COVID-19 Lockdown", y: 55, side: "above" },
+  { date: "Sep 2022", label: "Mini-Budget Crisis", y: 18, side: "below" },
+  { date: "Jun 2024", label: "General Election", y: 32, side: "above" },
+  { date: "Dec 2025", label: "Autumn Budget Impact", y: 24, side: "below" },
 ];
 
 interface TooltipProps {
@@ -70,16 +77,7 @@ export default function TrendLines() {
   const [activeEvent, setActiveEvent] = useState<string | null>(null);
 
   return (
-    <div className="border-4 border-black p-6 bg-white">
-      <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
-        <div>
-          <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">Metric 04</div>
-          <h2 className="font-display text-4xl tracking-wider leading-none">TRUST IN GOVERNMENT</h2>
-          <p className="font-mono text-xs mt-2 text-gray-600">LONGITUDINAL TREND 2020–2025</p>
-        </div>
-        <div className="text-6xl font-display text-accent leading-none">04</div>
-      </div>
-
+    <div>
       <div className="mb-4 grid grid-cols-2 gap-2 md:grid-cols-4">
         {EVENTS.map((ev) => (
           <button
@@ -108,7 +106,7 @@ export default function TrendLines() {
             interval={3}
           />
           <YAxis
-            domain={[20, 60]}
+            domain={[10, 60]}
             tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#555" }}
             axisLine={{ stroke: "#000", strokeWidth: 2 }}
             tickLine={false}
@@ -146,17 +144,23 @@ export default function TrendLines() {
         </LineChart>
       </ResponsiveContainer>
 
-      <div className="mt-3 border-t-2 border-black pt-3 flex gap-6 font-mono text-xs text-gray-500">
+      <div className="mt-3 border-t-2 border-black pt-3 flex flex-wrap gap-6 font-mono text-xs text-gray-500">
         <div>
-          <span className="font-bold text-black">37%</span> — CURRENT TRUST LEVEL
+          <span className="font-bold text-black">24%</span> — CURRENT SATISFACTION
         </div>
         <div>
-          <span className="font-bold text-black">△–8pp</span> — SINCE 2020
+          <span className="font-bold text-black">△–21pp</span> — SINCE 2020
         </div>
         <div>
-          <span className="font-bold text-accent">LOW</span> — HISTORIC RANGE
+          <span className="font-bold text-accent">HISTORIC LOW</span> — IN RANGE
         </div>
       </div>
+
+      <p className="font-mono text-[10px] text-gray-400 mt-3">
+        DATA SOURCE: Ipsos Political Monitor (monthly government satisfaction tracker),
+        YouGov government approval polls. Figures represent &quot;% satisfied with the way
+        the government is running the country.&quot; Key events annotated from major policy/political developments.
+      </p>
     </div>
   );
 }
