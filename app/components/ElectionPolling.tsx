@@ -2,27 +2,26 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
-// Latest UK polling averages (aggregated from multiple public pollsters)
-// Sources: YouGov, Ipsos, Savanta, Redfield & Wilton, JL Partners, Deltapoll
-// Data represents weighted polling averages as of early 2026
-// Publicly available from Electoral Calculus, Wikipedia UK polling tracker
+// UK polling averages as of March 2026
+// Sources: PollCheck, POLITICO Poll of Polls, Electoral Calculus, YouGov, Statista
+// Changes shown vs 2024 General Election result
 const POLLING_DATA = [
-  { party: "LAB", name: "Labour", pct: 30, color: "#E4003B", change: -4 },
-  { party: "CON", name: "Conservative", pct: 24, color: "#0087DC", change: +3 },
-  { party: "REF", name: "Reform UK", pct: 21, color: "#12B6CF", change: +7 },
-  { party: "LD", name: "Liberal Democrats", pct: 12, color: "#FAA61A", change: +1 },
-  { party: "GRN", name: "Green", pct: 8, color: "#6AB023", change: +1 },
-  { party: "SNP", name: "SNP", pct: 3, color: "#FFF95D", change: -1 },
-  { party: "OTH", name: "Others", pct: 2, color: "#999999", change: 0 },
+  { party: "REF", name: "Reform UK", pct: 26, color: "#12B6CF", change: +12 },
+  { party: "LAB", name: "Labour", pct: 20, color: "#E4003B", change: -14 },
+  { party: "CON", name: "Conservative", pct: 18, color: "#0087DC", change: -6 },
+  { party: "LD", name: "Liberal Democrats", pct: 12, color: "#FAA61A", change: 0 },
+  { party: "GRN", name: "Green", pct: 12, color: "#6AB023", change: +5 },
+  { party: "SNP", name: "SNP", pct: 3, color: "#FFF95D", change: 0 },
+  { party: "OTH", name: "Others", pct: 9, color: "#999999", change: 0 },
 ];
 
 // Recent individual polls for context
 const RECENT_POLLS = [
-  { pollster: "YouGov", date: "Feb 2026", lab: 29, con: 24, ref: 22, ld: 12 },
-  { pollster: "Savanta", date: "Feb 2026", lab: 31, con: 23, ref: 20, ld: 13 },
-  { pollster: "Ipsos", date: "Jan 2026", lab: 30, con: 25, ref: 21, ld: 11 },
-  { pollster: "Deltapoll", date: "Jan 2026", lab: 31, con: 24, ref: 20, ld: 12 },
-  { pollster: "R&W", date: "Jan 2026", lab: 29, con: 25, ref: 22, ld: 11 },
+  { pollster: "YouGov", date: "Mar 2026", lab: 19, con: 17, ref: 28, ld: 12 },
+  { pollster: "Savanta", date: "Mar 2026", lab: 21, con: 18, ref: 26, ld: 12 },
+  { pollster: "More in Common", date: "Mar 2026", lab: 22, con: 16, ref: 30, ld: 11 },
+  { pollster: "Deltapoll", date: "Feb 2026", lab: 20, con: 19, ref: 25, ld: 13 },
+  { pollster: "Opinium", date: "Feb 2026", lab: 18, con: 18, ref: 27, ld: 12 },
 ];
 
 export default function ElectionPolling() {
@@ -85,9 +84,9 @@ export default function ElectionPolling() {
               <tr className="border-b-2 border-black">
                 <th className="p-2 text-left">POLLSTER</th>
                 <th className="p-2">DATE</th>
+                <th className="p-2" style={{ color: "#12B6CF" }}>REF</th>
                 <th className="p-2" style={{ color: "#E4003B" }}>LAB</th>
                 <th className="p-2" style={{ color: "#0087DC" }}>CON</th>
-                <th className="p-2" style={{ color: "#12B6CF" }}>REF</th>
                 <th className="p-2" style={{ color: "#FAA61A" }}>LD</th>
               </tr>
             </thead>
@@ -96,9 +95,9 @@ export default function ElectionPolling() {
                 <tr key={i} className={i < RECENT_POLLS.length - 1 ? "border-b border-gray-200" : ""}>
                   <td className="p-2 font-bold">{p.pollster}</td>
                   <td className="p-2 text-gray-500">{p.date}</td>
+                  <td className="p-2 text-center">{p.ref}%</td>
                   <td className="p-2 text-center">{p.lab}%</td>
                   <td className="p-2 text-center">{p.con}%</td>
-                  <td className="p-2 text-center">{p.ref}%</td>
                   <td className="p-2 text-center">{p.ld}%</td>
                 </tr>
               ))}
@@ -108,8 +107,8 @@ export default function ElectionPolling() {
       </div>
 
       <p className="font-mono text-[10px] text-gray-400 mt-3">
-        DATA SOURCES: YouGov, Ipsos, Savanta, Redfield & Wilton Strategies, JL Partners, Deltapoll.
-        Polling averages aggregated from publicly available data via Wikipedia UK polling tracker and Electoral Calculus.
+        DATA SOURCES: PollCheck, POLITICO Poll of Polls, Electoral Calculus, YouGov, Statista.
+        Polling averages aggregated from publicly available data as of March 2026.
         Changes shown vs 2024 General Election result.
       </p>
     </div>
