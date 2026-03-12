@@ -24,6 +24,25 @@ interface CacheEntry {
 
 const cache = new Map<string, CacheEntry>();
 
+// ── Shallow merge: API data fills in over fallback ───────────────────────────
+// Keys present in apiData override fallback; keys only in fallback are kept.
+// This prevents crashes when the API returns a subset of the expected shape.
+
+function shallowMerge<T>(fallback: T, apiData: unknown): T {
+  if (
+    fallback == null ||
+    apiData == null ||
+    typeof fallback !== "object" ||
+    typeof apiData !== "object" ||
+    Array.isArray(fallback) ||
+    Array.isArray(apiData)
+  ) {
+    // For primitives or arrays, prefer apiData if truthy
+    return (apiData ?? fallback) as T;
+  }
+  return { ...fallback, ...(apiData as Record<string, unknown>) } as T;
+}
+
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
@@ -38,6 +57,23 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
 
   useEffect(() => {
     let active = true;
+
+    const applyData = (
+      raw: unknown,
+      source: "api" | "worker",
+      timestamp: string | undefined,
+    ) => {
+      const merged = shallowMerge(fallbackRef.current, raw);
+      cache.set(section, { data: merged, timestamp: Date.now(), source });
+      if (active) {
+        setResult({
+          data: merged,
+          isLive: true,
+          lastUpdated: new Date(timestamp ?? Date.now()),
+          source,
+        });
+      }
+    };
 
     const fetchData = async () => {
       // ── Check in-memory cache ──────────────────────────────────────────
@@ -63,18 +99,8 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
         );
         if (res.ok) {
           const json = await res.json();
-          if (json.data && active) {
-            cache.set(section, {
-              data: json.data,
-              timestamp: Date.now(),
-              source: "api",
-            });
-            setResult({
-              data: json.data as T,
-              isLive: true,
-              lastUpdated: new Date(json.timestamp ?? Date.now()),
-              source: "api",
-            });
+          if (json.data) {
+            applyData(json.data, "api", json.timestamp);
             return;
           }
         }
@@ -91,18 +117,8 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
           );
           if (res.ok) {
             const json = await res.json();
-            if (json.data && active) {
-              cache.set(section, {
-                data: json.data,
-                timestamp: Date.now(),
-                source: "worker",
-              });
-              setResult({
-                data: json.data as T,
-                isLive: true,
-                lastUpdated: new Date(json.timestamp ?? Date.now()),
-                source: "worker",
-              });
+            if (json.data) {
+              applyData(json.data, "worker", json.timestamp);
               return;
             }
           }
