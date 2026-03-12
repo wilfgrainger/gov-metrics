@@ -35,19 +35,21 @@ const DATA = [
   { date: "Dec 2023", trust: 25 },
   { date: "Mar 2024", trust: 24 },
   { date: "Jun 2024", trust: 32 },
-  { date: "Sep 2024", trust: 35 },
-  { date: "Dec 2024", trust: 30 },
-  { date: "Mar 2025", trust: 28 },
-  { date: "Jun 2025", trust: 27 },
-  { date: "Sep 2025", trust: 25 },
-  { date: "Dec 2025", trust: 24 },
+  { date: "Sep 2024", trust: 30 },
+  { date: "Dec 2024", trust: 24 },
+  { date: "Mar 2025", trust: 20 },
+  { date: "Jun 2025", trust: 18 },
+  { date: "Sep 2025", trust: 16 },
+  { date: "Dec 2025", trust: 14 },
+  { date: "Mar 2026", trust: 13 },
 ];
 
 const EVENTS = [
   { date: "Mar 2020", label: "COVID-19 Lockdown", y: 55, side: "above" },
   { date: "Sep 2022", label: "Mini-Budget Crisis", y: 18, side: "below" },
   { date: "Jun 2024", label: "General Election", y: 32, side: "above" },
-  { date: "Dec 2025", label: "Autumn Budget Impact", y: 24, side: "below" },
+  { date: "Mar 2025", label: "Cost of Living Pressure", y: 20, side: "below" },
+  { date: "Dec 2025", label: "Autumn Budget Impact", y: 14, side: "below" },
 ];
 
 interface TooltipProps {
@@ -146,10 +148,10 @@ export default function TrendLines() {
 
       <div className="mt-3 border-t-2 border-black pt-3 flex flex-wrap gap-6 font-mono text-xs text-gray-500">
         <div>
-          <span className="font-bold text-black">24%</span> — CURRENT SATISFACTION
+          <span className="font-bold text-black">13%</span> — CURRENT SATISFACTION
         </div>
         <div>
-          <span className="font-bold text-black">△–21pp</span> — SINCE 2020
+          <span className="font-bold text-black">△–32pp</span> — SINCE 2020
         </div>
         <div>
           <span className="font-bold text-accent">HISTORIC LOW</span> — IN RANGE
@@ -160,6 +162,7 @@ export default function TrendLines() {
         DATA SOURCE: Ipsos Political Monitor (monthly government satisfaction tracker),
         YouGov government approval polls. Figures represent &quot;% satisfied with the way
         the government is running the country.&quot; Key events annotated from major policy/political developments.
+        Data extended to Q1 2026.
       </p>
     </div>
   );

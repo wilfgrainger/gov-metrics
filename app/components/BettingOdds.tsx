@@ -6,24 +6,23 @@ import { useState } from "react";
 // These represent implied probabilities from publicly available odds
 // Next GE must be held by July 2029 (5 year max parliamentary term)
 const NEXT_PM_ODDS = [
-  { name: "Keir Starmer", party: "Labour", probability: 42, color: "#E4003B", role: "Current PM" },
-  { name: "Kemi Badenoch", party: "Conservative", probability: 22, color: "#0087DC", role: "Leader of Opposition" },
-  { name: "Nigel Farage", party: "Reform UK", probability: 18, color: "#12B6CF", role: "Reform UK Leader" },
-  { name: "Ed Davey", party: "Liberal Democrats", probability: 5, color: "#FAA61A", role: "Lib Dem Leader" },
-  { name: "Other", party: "Various", probability: 13, color: "#999999", role: "" },
+  { name: "Nigel Farage", party: "Reform UK", probability: 30, color: "#12B6CF", role: "Reform UK Leader" },
+  { name: "Keir Starmer", party: "Labour", probability: 25, color: "#E4003B", role: "Current PM" },
+  { name: "Angela Rayner", party: "Labour", probability: 12, color: "#E4003B", role: "Deputy PM" },
+  { name: "Kemi Badenoch", party: "Conservative", probability: 10, color: "#0087DC", role: "Leader of Opposition" },
+  { name: "Other", party: "Various", probability: 23, color: "#999999", role: "" },
 ];
 
 const MOST_SEATS = [
-  { party: "Labour", probability: 45, color: "#E4003B" },
-  { party: "Conservative", probability: 28, color: "#0087DC" },
-  { party: "Reform UK", probability: 18, color: "#12B6CF" },
-  { party: "No Overall Majority", probability: 9, color: "#666666" },
+  { party: "Reform UK", probability: 33, color: "#12B6CF" },
+  { party: "Labour", probability: 30, color: "#E4003B" },
+  { party: "Conservative", probability: 10, color: "#0087DC" },
+  { party: "Hung Parliament", probability: 27, color: "#666666" },
 ];
 
 const YEAR_ODDS = [
-  { year: "2027", probability: 15 },
-  { year: "2028", probability: 35 },
-  { year: "2029", probability: 50 },
+  { year: "2028", probability: 25 },
+  { year: "2029", probability: 75 },
 ];
 
 export default function BettingOdds() {
@@ -116,15 +115,15 @@ export default function BettingOdds() {
             ))}
           </div>
           <div className="mt-4 border-2 border-black p-3 bg-gray-50">
-            <p className="font-mono text-xs"><span className="font-bold">MARKET CONSENSUS:</span> Most likely election year is <span className="font-bold text-[#FF3B00]">2029</span> (maximum term)</p>
+            <p className="font-mono text-xs"><span className="font-bold">MARKET CONSENSUS:</span> Most likely election year is <span className="font-bold text-[#FF3B00]">2029</span> (maximum term), but an earlier election in 2028 is possible.</p>
           </div>
         </div>
       )}
 
       <p className="font-mono text-[10px] text-gray-400 mt-4">
         DATA SOURCE: Implied probabilities derived from publicly available betting odds
-        via Betfair Exchange, Oddschecker, and Smarkets. Probabilities are indicative
-        and derived from market prices. Last updated: Q1 2026.
+        via Betfair Exchange, Oddschecker, and Smarkets. Hung parliament considered the
+        single most likely individual outcome. Last updated: Q1 2026.
       </p>
     </div>
   );
