@@ -10,6 +10,7 @@ import {
   Tooltip,
   ReferenceLine,
 } from "recharts";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Government Satisfaction / Trust Trend Data
 // Sources: Ipsos Political Monitor (monthly government satisfaction tracker)
@@ -73,13 +74,17 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   return null;
 };
 
+const FALLBACK = { data: DATA, events: EVENTS };
+
 export default function TrendLines() {
+  const { data, isLive } = useMetrics("trendLines", FALLBACK);
+  const { data: trendData, events } = data;
   const [activeEvent, setActiveEvent] = useState<string | null>(null);
 
   return (
     <div>
       <div className="mb-4 grid grid-cols-2 gap-2 md:grid-cols-4">
-        {EVENTS.map((ev) => (
+        {events.map((ev) => (
           <button
             key={ev.date}
             onClick={() => setActiveEvent(activeEvent === ev.date ? null : ev.date)}
@@ -97,7 +102,7 @@ export default function TrendLines() {
       </div>
 
       <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={DATA} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
+        <LineChart data={trendData} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
           <XAxis
             dataKey="date"
             tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
@@ -113,7 +118,7 @@ export default function TrendLines() {
             tickFormatter={(v) => `${v}%`}
           />
           <Tooltip content={<CustomTooltip />} />
-          {EVENTS.map((ev) => (
+          {events.map((ev) => (
             <ReferenceLine
               key={ev.date}
               x={ev.date}
@@ -162,6 +167,12 @@ export default function TrendLines() {
         the government is running the country.&quot; Key events annotated from major policy/political developments.
         Source: ipsos.com/en-uk/political-monitor · yougov.co.uk/topics/politics
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }
