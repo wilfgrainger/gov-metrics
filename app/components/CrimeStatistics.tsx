@@ -5,26 +5,26 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 // UK Crime Statistics from ONS Crime Survey for England and Wales
 // Source: https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice
 // Police recorded crime data from Home Office / ONS
-// Year ending September 2025 estimates
+// Year ending March 2025 estimates
 const CRIME_CATEGORIES = [
-  { category: "Fraud", count: 3_610_000, change: -8, per1000: 53.1 },
-  { category: "Theft", count: 3_240_000, change: -3, per1000: 47.7 },
-  { category: "Violence", count: 2_100_000, change: +2, per1000: 30.9 },
-  { category: "Criminal Damage", count: 990_000, change: -5, per1000: 14.6 },
-  { category: "Burglary", count: 290_000, change: -12, per1000: 4.3 },
-  { category: "Vehicle Crime", count: 560_000, change: +4, per1000: 8.2 },
-  { category: "Robbery", count: 160_000, change: -1, per1000: 2.4 },
-  { category: "Drug Offences", count: 140_000, change: -6, per1000: 2.1 },
+  { category: "Fraud", count: 4_200_000, change: +31, per1000: 61.8 },
+  { category: "Theft", count: 2_000_000, change: -5, per1000: 29.4 },
+  { category: "Violence", count: 1_500_000, change: +3, per1000: 22.1 },
+  { category: "Criminal Damage", count: 700_000, change: -8, per1000: 10.3 },
+  { category: "Shoplifting", count: 530_643, change: +20, per1000: 7.8 },
+  { category: "Vehicle Crime", count: 390_000, change: -2, per1000: 5.7 },
+  { category: "Robbery", count: 78_804, change: -3, per1000: 1.2 },
+  { category: "Drug Offences", count: 120_000, change: -10, per1000: 1.8 },
 ];
 
 // Headline stats
 const HEADLINE = {
-  totalCrime: 11_090_000,
-  changePct: -3,
-  knifeCrime: 48_341,
-  knifeCrimeChange: +2,
-  homicides: 602,
-  homicideChange: -5,
+  totalCrime: 9_400_000,
+  changePct: +7,
+  knifeCrime: 53_047,
+  knifeCrimeChange: -1,
+  homicides: 535,
+  homicideChange: -6,
   chargeRate: 5.7, // % of crimes resulting in charge
 };
 
@@ -49,8 +49,8 @@ export default function CrimeStatistics() {
       {/* Headline stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mb-4">
         {[
-          { label: "TOTAL CRIME", value: "11.1M", sub: `${HEADLINE.changePct}% YoY`, negative: true },
-          { label: "KNIFE CRIME", value: HEADLINE.knifeCrime.toLocaleString("en-GB"), sub: `+${HEADLINE.knifeCrimeChange}% YoY`, positive: false },
+          { label: "TOTAL CRIME", value: "9.4M", sub: `+${HEADLINE.changePct}% YoY`, negative: false },
+          { label: "KNIFE CRIME", value: HEADLINE.knifeCrime.toLocaleString("en-GB"), sub: `${HEADLINE.knifeCrimeChange}% YoY`, positive: true },
           { label: "HOMICIDES", value: HEADLINE.homicides.toString(), sub: `${HEADLINE.homicideChange}% YoY`, negative: true },
           { label: "CHARGE RATE", value: `${HEADLINE.chargeRate}%`, sub: "of reported crimes", neutral: true },
         ].map((s, i) => (
@@ -145,9 +145,7 @@ export default function CrimeStatistics() {
       )}
 
       <p className="font-mono text-[10px] text-gray-400 mt-4">
-        DATA SOURCES: ONS Crime Survey for England & Wales (CSEW), Home Office Police Recorded Crime statistics.
-        Year ending September 2025. Knife crime: NHS Hospital Episode Statistics & Home Office.
-        Charge rate from CPS/Home Office data.
+        DATA SOURCES: ONS Crime Survey for England & Wales (CSEW), year ending March 2025. Home Office Police Recorded Crime statistics. Knife crime & homicide data: Home Office. Shoplifting: Police recorded crime. Charge rate from CPS/Home Office data.
       </p>
     </div>
   );
