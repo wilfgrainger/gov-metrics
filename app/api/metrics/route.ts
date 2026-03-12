@@ -186,6 +186,28 @@ const liveFetchers: Record<string, FetcherFn> = {
   nationalDebt: fetchNationalDebtData,
 };
 
+// ── JSON file reader (populated by fetch_intel.py via GitHub Actions) ────────
+
+import { readFile } from "fs/promises";
+import { join } from "path";
+
+let jsonFileCache: { data: Record<string, unknown>; ts: number } | null = null;
+
+async function readDataFile(): Promise<Record<string, unknown> | null> {
+  if (jsonFileCache && Date.now() - jsonFileCache.ts < 60_000) {
+    return jsonFileCache.data;
+  }
+  try {
+    const filePath = join(process.cwd(), "public", "daily_threat_data.json");
+    const raw = await readFile(filePath, "utf-8");
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    jsonFileCache = { data: parsed, ts: Date.now() };
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 // ── GET /api/metrics?section=xxx ─────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
@@ -198,17 +220,33 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Strategy A: Read from daily_threat_data.json (populated by fetch_intel.py)
+  const fileData = await readDataFile();
+  if (fileData && fileData[section]) {
+    return NextResponse.json(
+      {
+        section,
+        data: fileData[section],
+        source: "file",
+        timestamp: (fileData.meta as Record<string, string>)?.generatedAt ?? new Date().toISOString(),
+      },
+      {
+        headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" },
+      }
+    );
+  }
+
+  // Strategy B: Fetch from live APIs
   const fetcher = liveFetchers[section];
 
   if (!fetcher) {
-    // No live fetcher for this section — return null so client uses fallback
     return NextResponse.json(
       {
         section,
         data: null,
         source: "none",
         timestamp: new Date().toISOString(),
-        message: `No live data source configured for '${section}'. Using embedded data.`,
+        message: `No data available for '${section}'. Using embedded data.`,
       },
       {
         headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" },

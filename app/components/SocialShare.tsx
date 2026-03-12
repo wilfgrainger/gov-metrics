@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const FALLBACK_URL = "https://wilfgrainger.github.io/gov-metrics";
 
 interface SocialShareProps {
   title?: string;
@@ -9,23 +11,23 @@ interface SocialShareProps {
 
 export default function SocialShare({ title = "PULSE — UK Public Data Intelligence", compact = false }: SocialShareProps) {
   const [copied, setCopied] = useState(false);
+  const [pageUrl, setPageUrl] = useState(FALLBACK_URL);
 
-  const getUrl = () => {
-    if (typeof window !== "undefined") return window.location.href;
-    return "https://wilfgrainger.github.io/gov-metrics";
-  };
+  useEffect(() => {
+    setPageUrl(window.location.href);
+  }, []);
 
   const shareText = `${title} — Real-time UK public data metrics and analysis from public sources.`;
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(getUrl());
+      await navigator.clipboard.writeText(pageUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback for older browsers
       const textArea = document.createElement("textarea");
-      textArea.value = getUrl();
+      textArea.value = pageUrl;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");
@@ -39,22 +41,22 @@ export default function SocialShare({ title = "PULSE — UK Public Data Intellig
     {
       name: "X",
       label: "𝕏",
-      href: `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(getUrl())}`,
+      href: `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`,
     },
     {
       name: "Facebook",
       label: "FB",
-      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getUrl())}`,
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`,
     },
     {
       name: "LinkedIn",
       label: "IN",
-      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(getUrl())}`,
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`,
     },
     {
       name: "WhatsApp",
       label: "WA",
-      href: `https://wa.me/?text=${encodeURIComponent(shareText + " " + getUrl())}`,
+      href: `https://wa.me/?text=${encodeURIComponent(shareText + " " + pageUrl)}`,
     },
   ];
 
