@@ -16,15 +16,19 @@ export default function NationalDebtCounter() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    let active = true;
     const update = () => {
       const elapsed = (Date.now() - BASE_DATE) / 1000;
-      setDebt(BASE_DEBT + elapsed * DEBT_PER_SECOND);
+      if (active) setDebt(BASE_DEBT + elapsed * DEBT_PER_SECOND);
     };
     update();
     const interval = setInterval(update, 50);
-    return () => clearInterval(interval);
-  }, []);
+    if (!mounted) {
+      // Use a microtask to avoid synchronous setState in effect body
+      Promise.resolve().then(() => { if (active) setMounted(true); });
+    }
+    return () => { active = false; clearInterval(interval); };
+  }, [mounted]);
 
   const debtPerCapita = debt / UK_POPULATION;
   const debtToGDP = ((debt / UK_GDP) * 100).toFixed(1);
