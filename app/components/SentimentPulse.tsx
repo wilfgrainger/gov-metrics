@@ -108,7 +108,7 @@ export default function SentimentPulse() {
               borderRadius: 0,
               background: "#fff",
             }}
-            formatter={(val, name) => [`${val ?? ''}%`, String(name ?? '').toUpperCase()]}
+            formatter={(val, name) => [`${val}%`, String(name).toUpperCase()]}
           />
           <Area
             type="monotone"
