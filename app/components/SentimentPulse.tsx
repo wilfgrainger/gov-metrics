@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Key Economic Indicators — monthly time series
 // Sources: ONS, Bank of England, Office for Budget Responsibility (OBR)
@@ -32,15 +33,20 @@ const METRIC_CONFIG: Record<Metric, { label: string; unit: string; color: string
   unemployment: { label: "UNEMPLOYMENT RATE", unit: "%", color: "#666666", current: "5.2%", target: "ONS LFS (Oct-Dec 2025)" },
 };
 
+const FALLBACK = { economicData: ECONOMIC_DATA, metricConfig: METRIC_CONFIG };
+
 export default function SentimentPulse() {
+  const { data, isLive } = useMetrics("sentimentPulse", FALLBACK);
+  const { economicData, metricConfig } = data;
+
   const [metric, setMetric] = useState<Metric>("inflation");
-  const config = METRIC_CONFIG[metric];
+  const config = metricConfig[metric];
 
   return (
     <div>
       {/* Metric selector */}
       <div className="grid grid-cols-3 gap-3 mb-4">
-        {(Object.entries(METRIC_CONFIG) as [Metric, typeof config][]).map(([key, cfg]) => (
+        {(Object.entries(metricConfig) as [Metric, typeof config][]).map(([key, cfg]) => (
           <button
             key={key}
             onClick={() => setMetric(key)}
@@ -59,7 +65,7 @@ export default function SentimentPulse() {
 
       {/* Chart */}
       <ResponsiveContainer width="100%" height={200}>
-        <AreaChart data={ECONOMIC_DATA} margin={{ top: 5, right: 0, bottom: 0, left: 0 }}>
+        <AreaChart data={economicData} margin={{ top: 5, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="metricGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={config.color} stopOpacity={0.3} />
@@ -105,6 +111,12 @@ export default function SentimentPulse() {
         Sources: ons.gov.uk/economy/inflationandpriceindices · bankofengland.co.uk/monetary-policy ·
         ons.gov.uk/employmentandlabourmarket. Data verified: March 2026.
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

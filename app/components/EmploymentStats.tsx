@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Employment Statistics — ONS Labour Market Overview
 // Source: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes
@@ -45,7 +46,12 @@ const EMPLOYMENT_TREND = [
   { date: "2025", rate: 74.9, public: 5.94, private: 27.5 },
 ];
 
+const FALLBACK = { headline: HEADLINE, publicVsPrivate: PUBLIC_VS_PRIVATE, publicBreakdown: PUBLIC_BREAKDOWN, employmentTrend: EMPLOYMENT_TREND };
+
 export default function EmploymentStats() {
+  const { data, isLive } = useMetrics("employmentStats", FALLBACK);
+  const { headline, publicVsPrivate, publicBreakdown, employmentTrend } = data;
+
   const [view, setView] = useState<"overview" | "sectors" | "trend">("overview");
 
   return (
@@ -53,10 +59,10 @@ export default function EmploymentStats() {
       {/* Headline stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mb-4">
         {[
-          { label: "EMPLOYMENT RATE", value: `${HEADLINE.employmentRate}%`, sub: `${HEADLINE.totalEmployed}M employed` },
-          { label: "UNEMPLOYMENT", value: `${HEADLINE.unemploymentRate}%`, sub: `${HEADLINE.totalUnemployed}M people`, accent: true },
-          { label: "INACTIVE", value: `${HEADLINE.inactivityRate}%`, sub: `${HEADLINE.totalInactive}M people` },
-          { label: "VACANCIES", value: `${HEADLINE.vacancies}K`, sub: `${HEADLINE.vacancyChange}% YoY` },
+          { label: "EMPLOYMENT RATE", value: `${headline.employmentRate}%`, sub: `${headline.totalEmployed}M employed` },
+          { label: "UNEMPLOYMENT", value: `${headline.unemploymentRate}%`, sub: `${headline.totalUnemployed}M people`, accent: true },
+          { label: "INACTIVE", value: `${headline.inactivityRate}%`, sub: `${headline.totalInactive}M people` },
+          { label: "VACANCIES", value: `${headline.vacancies}K`, sub: `${headline.vacancyChange}% YoY` },
         ].map((s, i) => (
           <div key={i} className={`border-2 border-black p-3 text-center ${i > 0 ? "border-l-0" : ""}`}>
             <p className="font-mono text-[10px] text-gray-500">{s.label}</p>
@@ -72,20 +78,20 @@ export default function EmploymentStats() {
         <div className="flex h-10 border-2 border-black overflow-hidden">
           <div
             className="h-full flex items-center justify-center font-mono text-xs text-white font-bold"
-            style={{ width: `${PUBLIC_VS_PRIVATE[0].pct}%`, background: "#000" }}
+            style={{ width: `${publicVsPrivate[0].pct}%`, background: "#000" }}
           >
-            PRIVATE {PUBLIC_VS_PRIVATE[0].count}M ({PUBLIC_VS_PRIVATE[0].pct}%)
+            PRIVATE {publicVsPrivate[0].count}M ({publicVsPrivate[0].pct}%)
           </div>
           <div
             className="h-full flex items-center justify-center font-mono text-xs text-white font-bold"
-            style={{ width: `${PUBLIC_VS_PRIVATE[1].pct}%`, background: "#FF3B00" }}
+            style={{ width: `${publicVsPrivate[1].pct}%`, background: "#FF3B00" }}
           >
-            PUBLIC {PUBLIC_VS_PRIVATE[1].count}M
+            PUBLIC {publicVsPrivate[1].count}M
           </div>
         </div>
         <div className="flex justify-between font-mono text-[10px] text-gray-500 mt-1">
-          <span>Private: {PUBLIC_VS_PRIVATE[0].change > 0 ? "+" : ""}{PUBLIC_VS_PRIVATE[0].change}% YoY</span>
-          <span>Public: {PUBLIC_VS_PRIVATE[1].change > 0 ? "+" : ""}{PUBLIC_VS_PRIVATE[1].change}% YoY</span>
+          <span>Private: {publicVsPrivate[0].change > 0 ? "+" : ""}{publicVsPrivate[0].change}% YoY</span>
+          <span>Public: {publicVsPrivate[1].change > 0 ? "+" : ""}{publicVsPrivate[1].change}% YoY</span>
         </div>
       </div>
 
@@ -110,7 +116,7 @@ export default function EmploymentStats() {
 
       {view === "overview" && (
         <div className="space-y-3">
-          {PUBLIC_VS_PRIVATE.map((d) => (
+          {publicVsPrivate.map((d) => (
             <div key={d.sector} className="border-2 border-black p-3">
               <div className="flex justify-between items-center mb-2">
                 <div>
@@ -138,7 +144,7 @@ export default function EmploymentStats() {
       {view === "sectors" && (
         <div className="space-y-2">
           <p className="font-mono text-xs text-gray-500 mb-2">PUBLIC SECTOR EMPLOYMENT BY CATEGORY (5.94M TOTAL)</p>
-          {PUBLIC_BREAKDOWN.map((d) => (
+          {publicBreakdown.map((d) => (
             <div key={d.category} className="flex items-center gap-2">
               <p className="font-mono text-xs w-28 text-right">{d.category}</p>
               <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -157,7 +163,7 @@ export default function EmploymentStats() {
       {view === "trend" && (
         <div className="space-y-2">
           <p className="font-mono text-xs text-gray-500 mb-2">EMPLOYMENT RATE & SECTOR SPLIT (2019–2025)</p>
-          {EMPLOYMENT_TREND.map((d) => (
+          {employmentTrend.map((d) => (
             <div key={d.date} className="border-2 border-black p-2">
               <div className="flex justify-between items-center mb-1">
                 <p className="font-mono text-xs font-bold">{d.date}</p>
@@ -182,6 +188,12 @@ export default function EmploymentStats() {
         Vacancy data from ONS VACS01. Economic inactivity: ONS Labour Force Survey.
         Sources: ons.gov.uk/employmentandlabourmarket · ons.gov.uk/employmentandlabourmarket/peopleinwork/publicsectorpersonnel
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

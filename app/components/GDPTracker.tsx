@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK GDP Data from ONS National Accounts
 // Source: https://www.ons.gov.uk/economy/grossdomesticproductgdp
@@ -37,10 +38,15 @@ const SECTOR_BREAKDOWN = [
   { sector: "Other", pct: 3.2, value: "£73B" },
 ];
 
+const FALLBACK = { gdpHistory: GDP_HISTORY, g7Comparison: G7_COMPARISON, sectorBreakdown: SECTOR_BREAKDOWN };
+
 export default function GDPTracker() {
+  const { data, isLive } = useMetrics("gdpTracker", FALLBACK);
+  const { gdpHistory, g7Comparison, sectorBreakdown } = data;
+
   const [view, setView] = useState<"overview" | "g7" | "sectors">("overview");
-  const latest = GDP_HISTORY[GDP_HISTORY.length - 2]; // 2024 actual
-  const forecast = GDP_HISTORY[GDP_HISTORY.length - 1];
+  const latest = gdpHistory[gdpHistory.length - 2]; // 2024 actual
+  const forecast = gdpHistory[gdpHistory.length - 1];
 
   return (
     <div>
@@ -81,7 +87,7 @@ export default function GDPTracker() {
 
       {view === "overview" && (
         <div className="space-y-2">
-          {GDP_HISTORY.map((d) => (
+          {gdpHistory.map((d) => (
             <div key={d.year} className="flex items-center gap-3">
               <p className="font-mono text-xs w-14 text-right text-gray-500">{d.year}</p>
               <div className="flex-1 h-6 bg-gray-100 border border-black relative">
@@ -108,7 +114,7 @@ export default function GDPTracker() {
         <div>
           <p className="font-mono text-xs text-gray-500 mb-3">GDP PER CAPITA (USD, PPP) — IMF 2024 ESTIMATES</p>
           <div className="space-y-2">
-            {G7_COMPARISON.sort((a, b) => b.perCapita - a.perCapita).map((d) => (
+            {g7Comparison.sort((a, b) => b.perCapita - a.perCapita).map((d) => (
               <div key={d.country} className="flex items-center gap-3">
                 <p className="font-mono text-xs w-24 text-right">{d.country === "United Kingdom" ? <strong>{d.country}</strong> : d.country}</p>
                 <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -133,7 +139,7 @@ export default function GDPTracker() {
         <div>
           <p className="font-mono text-xs text-gray-500 mb-3">UK GDP BY SECTOR (% OF TOTAL)</p>
           <div className="space-y-3">
-            {SECTOR_BREAKDOWN.map((d) => (
+            {sectorBreakdown.map((d) => (
               <div key={d.sector} className="border-2 border-black p-3">
                 <div className="flex justify-between items-center mb-2">
                   <p className="font-mono text-sm font-bold">{d.sector}</p>
@@ -160,6 +166,12 @@ export default function GDPTracker() {
         Sector breakdown: ONS GDP output approach. 2025 forecast: OBR Economic and Fiscal Outlook (Oct 2024).
         Sources: ons.gov.uk/economy/grossdomesticproductgdp · imf.org/en/Publications/WEO
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

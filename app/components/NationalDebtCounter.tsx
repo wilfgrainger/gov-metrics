@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK national debt data from ONS Public Sector Finances
 // Source: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance
@@ -12,15 +13,27 @@ const DEBT_PER_SECOND = 4_820; // ~£152bn per year / 365.25 / 24 / 3600
 const UK_POPULATION = 67_960_000; // ONS mid-2024 estimate
 const UK_GDP = 2_950_000_000_000; // ~£2.95 trillion (ONS, 2024/25 nominal GDP estimate)
 
+const HISTORICAL_MILESTONES = [
+  { year: "2008", amount: "£0.53T", event: "Financial Crisis" },
+  { year: "2015", amount: "£1.60T", event: "Austerity Era" },
+  { year: "2020", amount: "£2.02T", event: "COVID-19 Pandemic" },
+  { year: "2024", amount: "£2.70T", event: "Post-COVID Recovery" },
+];
+
+const FALLBACK = { baseDebt: BASE_DEBT, baseDate: BASE_DATE, debtPerSecond: DEBT_PER_SECOND, population: UK_POPULATION, gdp: UK_GDP, milestones: HISTORICAL_MILESTONES };
+
 export default function NationalDebtCounter() {
-  const [debt, setDebt] = useState(BASE_DEBT);
+  const { data, isLive } = useMetrics("nationalDebt", FALLBACK);
+  const { baseDebt, baseDate, debtPerSecond, population, gdp, milestones } = data;
+
+  const [debt, setDebt] = useState(baseDebt);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     let active = true;
     const update = () => {
-      const elapsed = (Date.now() - BASE_DATE) / 1000;
-      if (active) setDebt(BASE_DEBT + elapsed * DEBT_PER_SECOND);
+      const elapsed = (Date.now() - baseDate) / 1000;
+      if (active) setDebt(baseDebt + elapsed * debtPerSecond);
     };
     update();
     const interval = setInterval(update, 50);
@@ -29,10 +42,10 @@ export default function NationalDebtCounter() {
       Promise.resolve().then(() => { if (active) setMounted(true); });
     }
     return () => { active = false; clearInterval(interval); };
-  }, [mounted]);
+  }, [mounted, baseDebt, baseDate, debtPerSecond]);
 
-  const debtPerCapita = debt / UK_POPULATION;
-  const debtToGDP = ((debt / UK_GDP) * 100).toFixed(1);
+  const debtPerCapita = debt / population;
+  const debtToGDP = ((debt / gdp) * 100).toFixed(1);
 
   const formatDebt = (n: number) => {
     if (!mounted) return "£0";
@@ -72,7 +85,7 @@ export default function NationalDebtCounter() {
         <div className="border-2 border-black border-l-0 p-3 text-center">
           <p className="font-mono text-[10px] text-gray-500">GROWTH / SEC</p>
           <p className="font-mono text-lg font-bold text-[#FF3B00]">
-            +£{DEBT_PER_SECOND.toLocaleString("en-GB")}
+            +£{debtPerSecond.toLocaleString("en-GB")}
           </p>
         </div>
       </div>
@@ -81,12 +94,7 @@ export default function NationalDebtCounter() {
       <div className="mt-4 border-2 border-black p-3">
         <p className="font-mono text-xs font-bold mb-2">HISTORICAL MILESTONES</p>
         <div className="space-y-1">
-          {[
-            { year: "2008", amount: "£0.53T", event: "Financial Crisis" },
-            { year: "2015", amount: "£1.60T", event: "Austerity Era" },
-            { year: "2020", amount: "£2.02T", event: "COVID-19 Pandemic" },
-            { year: "2024", amount: "£2.70T", event: "Post-COVID Recovery" },
-          ].map((m) => (
+          {milestones.map((m) => (
             <div key={m.year} className="flex justify-between font-mono text-xs">
               <span className="text-gray-500">{m.year}</span>
               <span className="font-bold">{m.amount}</span>
@@ -102,6 +110,12 @@ export default function NationalDebtCounter() {
         Debt-to-GDP: ~95.5% (ONS, Dec 2025). Population: ONS mid-2024 estimate (67.96m).
         Source: ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }
