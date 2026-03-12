@@ -3,26 +3,26 @@ import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 // Latest UK polling averages (aggregated from multiple public pollsters)
-// Sources: YouGov, Ipsos, Savanta, Redfield & Wilton, JL Partners, Deltapoll
-// Data represents weighted polling averages as of early 2026
-// Publicly available from Electoral Calculus, Wikipedia UK polling tracker
+// Sources: YouGov, Ipsos, Savanta, Redfield & Wilton, More in Common, Deltapoll
+// Data represents weighted polling averages as of March 2026
+// Publicly available from PollCheck (pollcheck.co.uk), Electoral Calculus, Wikipedia UK polling tracker
 const POLLING_DATA = [
-  { party: "LAB", name: "Labour", pct: 30, color: "#E4003B", change: -4 },
-  { party: "CON", name: "Conservative", pct: 24, color: "#0087DC", change: +3 },
-  { party: "REF", name: "Reform UK", pct: 21, color: "#12B6CF", change: +7 },
+  { party: "REF", name: "Reform UK", pct: 28, color: "#12B6CF", change: +14 },
+  { party: "LAB", name: "Labour", pct: 21, color: "#E4003B", change: -13 },
+  { party: "CON", name: "Conservative", pct: 18, color: "#0087DC", change: -6 },
+  { party: "GRN", name: "Green", pct: 12, color: "#6AB023", change: +5 },
   { party: "LD", name: "Liberal Democrats", pct: 12, color: "#FAA61A", change: +1 },
-  { party: "GRN", name: "Green", pct: 8, color: "#6AB023", change: +1 },
   { party: "SNP", name: "SNP", pct: 3, color: "#FFF95D", change: -1 },
-  { party: "OTH", name: "Others", pct: 2, color: "#999999", change: 0 },
+  { party: "OTH", name: "Others", pct: 6, color: "#999999", change: 0 },
 ];
 
 // Recent individual polls for context
 const RECENT_POLLS = [
-  { pollster: "YouGov", date: "Feb 2026", lab: 29, con: 24, ref: 22, ld: 12 },
-  { pollster: "Savanta", date: "Feb 2026", lab: 31, con: 23, ref: 20, ld: 13 },
-  { pollster: "Ipsos", date: "Jan 2026", lab: 30, con: 25, ref: 21, ld: 11 },
-  { pollster: "Deltapoll", date: "Jan 2026", lab: 31, con: 24, ref: 20, ld: 12 },
-  { pollster: "R&W", date: "Jan 2026", lab: 29, con: 25, ref: 22, ld: 11 },
+  { pollster: "More in Common", date: "Mar 2026", lab: 22, con: 19, ref: 30, ld: 13 },
+  { pollster: "YouGov", date: "Mar 2026", lab: 20, con: 18, ref: 28, ld: 12 },
+  { pollster: "Savanta", date: "Feb 2026", lab: 21, con: 19, ref: 27, ld: 12 },
+  { pollster: "Ipsos", date: "Feb 2026", lab: 22, con: 17, ref: 27, ld: 13 },
+  { pollster: "R&W", date: "Feb 2026", lab: 19, con: 18, ref: 29, ld: 12 },
 ];
 
 export default function ElectionPolling() {
@@ -108,9 +108,10 @@ export default function ElectionPolling() {
       </div>
 
       <p className="font-mono text-[10px] text-gray-400 mt-3">
-        DATA SOURCES: YouGov, Ipsos, Savanta, Redfield & Wilton Strategies, JL Partners, Deltapoll.
-        Polling averages aggregated from publicly available data via Wikipedia UK polling tracker and Electoral Calculus.
-        Changes shown vs 2024 General Election result.
+        DATA SOURCES: YouGov, Ipsos, Savanta, Redfield &amp; Wilton Strategies, More in Common, Deltapoll.
+        Polling averages aggregated from publicly available data via PollCheck (pollcheck.co.uk),
+        Wikipedia UK polling tracker, and Electoral Calculus. Changes shown vs 2024 General Election result (4 Jul 2024).
+        Data verified: March 2026. Sources: pollcheck.co.uk/gb-polls · statista.com/statistics/985764
       </p>
     </div>
   );

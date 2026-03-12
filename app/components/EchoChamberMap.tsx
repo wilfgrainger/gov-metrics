@@ -159,6 +159,7 @@ export default function EchoChamberMap() {
         DATA SOURCE: NatCen Social Research — British Social Attitudes Survey (BSA), Wave 40 (2023).
         Cross-tabulation correlations derived from publicly available survey data.
         Also informed by Ipsos Issues Index and YouGov issue tracker cross-tabs.
+        Source: natcen.ac.uk/series/british-social-attitudes · ipsos.com/en-uk/ipsos-issues-index
       </p>
     </div>
   );

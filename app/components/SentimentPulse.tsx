@@ -5,9 +5,9 @@ import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "rec
 
 // UK Key Economic Indicators — monthly time series
 // Sources: ONS, Bank of England, Office for Budget Responsibility (OBR)
-// CPI Inflation: ONS Consumer Price Index
-// Bank Rate: Bank of England base rate decisions
-// Unemployment: ONS Labour Force Survey
+// CPI Inflation: ONS Consumer Price Index bulletin
+// Bank Rate: Bank of England Monetary Policy Committee decisions
+// Unemployment: ONS Labour Force Survey (official statistics in development)
 const ECONOMIC_DATA = [
   { date: "Jan 24", inflation: 4.0, bankRate: 5.25, unemployment: 3.9 },
   { date: "Mar 24", inflation: 3.2, bankRate: 5.25, unemployment: 4.0 },
@@ -16,20 +16,20 @@ const ECONOMIC_DATA = [
   { date: "Sep 24", inflation: 1.7, bankRate: 5.00, unemployment: 4.3 },
   { date: "Nov 24", inflation: 2.6, bankRate: 4.75, unemployment: 4.3 },
   { date: "Jan 25", inflation: 3.0, bankRate: 4.50, unemployment: 4.4 },
-  { date: "Mar 25", inflation: 2.8, bankRate: 4.50, unemployment: 4.4 },
-  { date: "May 25", inflation: 2.6, bankRate: 4.25, unemployment: 4.3 },
-  { date: "Jul 25", inflation: 2.4, bankRate: 4.25, unemployment: 4.2 },
-  { date: "Sep 25", inflation: 2.3, bankRate: 4.00, unemployment: 4.2 },
-  { date: "Nov 25", inflation: 2.5, bankRate: 4.00, unemployment: 4.3 },
-  { date: "Jan 26", inflation: 2.8, bankRate: 3.75, unemployment: 4.4 },
+  { date: "Mar 25", inflation: 2.8, bankRate: 4.50, unemployment: 4.5 },
+  { date: "May 25", inflation: 2.6, bankRate: 4.25, unemployment: 4.6 },
+  { date: "Jul 25", inflation: 2.4, bankRate: 4.25, unemployment: 4.8 },
+  { date: "Sep 25", inflation: 2.3, bankRate: 4.00, unemployment: 5.0 },
+  { date: "Nov 25", inflation: 3.4, bankRate: 4.00, unemployment: 5.1 },
+  { date: "Jan 26", inflation: 3.0, bankRate: 3.75, unemployment: 5.2 },
 ];
 
 type Metric = "inflation" | "bankRate" | "unemployment";
 
 const METRIC_CONFIG: Record<Metric, { label: string; unit: string; color: string; current: string; target: string }> = {
-  inflation: { label: "CPI INFLATION", unit: "%", color: "#FF3B00", current: "2.8%", target: "2.0% target" },
+  inflation: { label: "CPI INFLATION", unit: "%", color: "#FF3B00", current: "3.0%", target: "2.0% target" },
   bankRate: { label: "BANK OF ENGLAND RATE", unit: "%", color: "#000000", current: "3.75%", target: "Monetary policy" },
-  unemployment: { label: "UNEMPLOYMENT RATE", unit: "%", color: "#666666", current: "4.4%", target: "Labour Force Survey" },
+  unemployment: { label: "UNEMPLOYMENT RATE", unit: "%", color: "#666666", current: "5.2%", target: "ONS LFS (Oct-Dec 2025)" },
 };
 
 export default function SentimentPulse() {
@@ -100,9 +100,10 @@ export default function SentimentPulse() {
       </ResponsiveContainer>
 
       <p className="font-mono text-[10px] text-gray-400 mt-3">
-        DATA SOURCES: ONS Consumer Price Index (CPI), Bank of England base rate decisions,
-        ONS Labour Force Survey. Monthly data Jan 2024–Jan 2026.
-        All figures from publicly available statistical releases.
+        DATA SOURCES: ONS Consumer Price Index (CPI) Jan 2026: 3.0%. Bank of England base rate: 3.75% (held 5 Feb 2026).
+        ONS Labour Force Survey: unemployment 5.2% (Oct–Dec 2025, highest since early 2021).
+        Sources: ons.gov.uk/economy/inflationandpriceindices · bankofengland.co.uk/monetary-policy ·
+        ons.gov.uk/employmentandlabourmarket. Data verified: March 2026.
       </p>
     </div>
   );

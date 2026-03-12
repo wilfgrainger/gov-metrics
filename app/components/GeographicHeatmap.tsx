@@ -186,6 +186,8 @@ export default function GeographicHeatmap() {
       <p className="font-mono text-[10px] text-gray-400 mt-3">
         DATA SOURCES: {LAYER_SOURCES[layer]}.
         Regional boundaries simplified for visualisation. N. Ireland voting data not shown (separate party system).
+        Sources: ons.gov.uk/employmentandlabourmarket · ons.gov.uk/peoplepopulationandcommunity/crimeandjustice ·
+        electoralcommission.org.uk
       </p>
     </div>
   );
