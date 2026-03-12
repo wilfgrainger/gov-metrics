@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 interface SectionItem {
   id: string;
@@ -16,7 +16,7 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
   const [activeSection, setActiveSection] = useState<string>("");
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const allSections = sections.flatMap((g) => g.sections);
+  const allSections = useMemo(() => sections.flatMap((g) => g.sections), [sections]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
