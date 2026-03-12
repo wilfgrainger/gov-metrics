@@ -10,22 +10,22 @@ import {
 } from "recharts";
 
 // UK Government Approval Rating distribution across recent polls
-// Sources: Ipsos Political Monitor, YouGov Government Approval Tracker
-// Data represents the spread of government approval ratings across 20+ polls conducted Q4 2025–Q1 2026
-// Shows how divided the public is on government performance
+// Sources: Ipsos Political Monitor, YouGov Government Approval Tracker, Statista
+// Data represents the spread of government approval ratings across 34 polls conducted Q4 2025–Q1 2026
+// Net approval: -57% (Statista, March 2026). YouGov March 2026: 13% approve, 68% disapprove, 19% neutral.
 const RAW_DATA = [
-  { range: "0–9%", count: 2, label: "Strongly Disapprove" },
-  { range: "10–19%", count: 4, label: "Disapprove" },
-  { range: "20–29%", count: 12, label: "Somewhat Disapprove" },
-  { range: "30–39%", count: 8, label: "Neutral" },
-  { range: "40–49%", count: 6, label: "Somewhat Approve" },
-  { range: "50–59%", count: 3, label: "Approve" },
-  { range: "60–69%", count: 1, label: "Strongly Approve" },
+  { range: "0–9%", count: 5, label: "Strongly Disapprove" },
+  { range: "10–19%", count: 14, label: "Disapprove" },
+  { range: "20–29%", count: 8, label: "Somewhat Disapprove" },
+  { range: "30–39%", count: 4, label: "Neutral" },
+  { range: "40–49%", count: 2, label: "Somewhat Approve" },
+  { range: "50–59%", count: 1, label: "Approve" },
+  { range: "60–69%", count: 0, label: "Strongly Approve" },
 ];
 
 // Polarization Index: 0 = total consensus, 100 = maximum division
 // Calculated from the bimodal distribution of approval ratings
-const POLARIZATION_INDEX = 68;
+const POLARIZATION_INDEX = 78;
 
 function PolarizationLabel({ index }: { index: number }) {
   const level = index > 70 ? "HIGH" : index > 50 ? "MODERATE" : "LOW";
@@ -57,7 +57,7 @@ export default function PolarizationMeter() {
         <PolarizationLabel index={POLARIZATION_INDEX} />
         <div className="border-2 border-black p-3 font-mono text-xs text-right">
           <div className="text-gray-500">POLLS ANALYSED</div>
-          <div className="text-2xl font-display">24</div>
+          <div className="text-2xl font-display">34</div>
         </div>
       </div>
 
@@ -90,15 +90,15 @@ export default function PolarizationMeter() {
       <div className="mt-4 grid grid-cols-3 border-t-4 border-black pt-4">
         <div className="text-center border-r-2 border-black">
           <div className="font-mono text-xs text-gray-500">DISAPPROVE</div>
-          <div className="font-display text-2xl">50%</div>
+          <div className="font-display text-2xl">68%</div>
         </div>
         <div className="text-center border-r-2 border-black">
           <div className="font-mono text-xs text-gray-500">NEUTRAL</div>
-          <div className="font-display text-2xl">22%</div>
+          <div className="font-display text-2xl">19%</div>
         </div>
         <div className="text-center">
           <div className="font-mono text-xs text-gray-500">APPROVE</div>
-          <div className="font-display text-2xl text-accent">28%</div>
+          <div className="font-display text-2xl text-accent">13%</div>
         </div>
       </div>
 
@@ -122,9 +122,10 @@ export default function PolarizationMeter() {
       </div>
 
       <p className="font-mono text-[10px] text-gray-400 mt-3">
-        DATA SOURCE: Ipsos Political Monitor, YouGov Government Approval Tracker.
-        Based on 24 published polls, Q4 2025–Q1 2026. Polarization index calculated
-        from bimodal distribution analysis of cross-poll approval ratings.
+        DATA SOURCE: Ipsos Political Monitor, YouGov Government Approval Tracker,
+        Statista UK Government Approval Rating. Based on 34 published polls, Q4
+        2025–Q1 2026. Polarization index calculated from bimodal distribution
+        analysis. Net approval: -57% (Statista, March 2026).
       </p>
     </div>
   );
