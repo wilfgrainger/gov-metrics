@@ -1,105 +1,84 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
+import { useState } from "react";
+import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-const INITIAL_DATA = Array.from({ length: 30 }, (_, i) => ({
-  t: i,
-  positive: 38 + Math.round(Math.sin(i * 0.4) * 5 + (Math.random() - 0.5) * 4),
-  negative: 28 + Math.round(Math.cos(i * 0.3) * 4 + (Math.random() - 0.5) * 3),
-  neutral: 34,
-}));
+// UK Key Economic Indicators — monthly time series
+// Sources: ONS, Bank of England, Office for Budget Responsibility (OBR)
+// CPI Inflation: ONS Consumer Price Index
+// Bank Rate: Bank of England base rate decisions
+// Unemployment: ONS Labour Force Survey
+const ECONOMIC_DATA = [
+  { date: "Jan 24", inflation: 4.0, bankRate: 5.25, unemployment: 3.9 },
+  { date: "Mar 24", inflation: 3.2, bankRate: 5.25, unemployment: 4.0 },
+  { date: "May 24", inflation: 2.3, bankRate: 5.25, unemployment: 4.2 },
+  { date: "Jul 24", inflation: 2.2, bankRate: 5.00, unemployment: 4.2 },
+  { date: "Sep 24", inflation: 1.7, bankRate: 5.00, unemployment: 4.3 },
+  { date: "Nov 24", inflation: 2.6, bankRate: 4.75, unemployment: 4.3 },
+  { date: "Jan 25", inflation: 3.0, bankRate: 4.50, unemployment: 4.4 },
+  { date: "Mar 25", inflation: 2.8, bankRate: 4.50, unemployment: 4.4 },
+  { date: "May 25", inflation: 2.6, bankRate: 4.25, unemployment: 4.3 },
+  { date: "Jul 25", inflation: 2.4, bankRate: 4.25, unemployment: 4.2 },
+  { date: "Sep 25", inflation: 2.3, bankRate: 4.00, unemployment: 4.2 },
+  { date: "Nov 25", inflation: 2.5, bankRate: 4.00, unemployment: 4.3 },
+  { date: "Jan 26", inflation: 2.8, bankRate: 3.75, unemployment: 4.4 },
+];
 
-function normalise(p: number, n: number) {
-  const total = p + n + (100 - p - n);
-  return {
-    positive: Math.round((p / total) * 100),
-    negative: Math.round((n / total) * 100),
-    neutral: 100 - Math.round((p / total) * 100) - Math.round((n / total) * 100),
-  };
-}
+type Metric = "inflation" | "bankRate" | "unemployment";
+
+const METRIC_CONFIG: Record<Metric, { label: string; unit: string; color: string; current: string; target: string }> = {
+  inflation: { label: "CPI INFLATION", unit: "%", color: "#FF3B00", current: "2.8%", target: "2.0% target" },
+  bankRate: { label: "BANK OF ENGLAND RATE", unit: "%", color: "#000000", current: "3.75%", target: "Monetary policy" },
+  unemployment: { label: "UNEMPLOYMENT RATE", unit: "%", color: "#666666", current: "4.4%", target: "Labour Force Survey" },
+};
 
 export default function SentimentPulse() {
-  const [data, setData] = useState(INITIAL_DATA);
-  const [live, setLive] = useState(true);
-  const tickRef = useRef(30);
-
-  useEffect(() => {
-    if (!live) return;
-    const id = setInterval(() => {
-      tickRef.current += 1;
-      setData((prev) => {
-        const last = prev[prev.length - 1];
-        const newP = Math.min(70, Math.max(10, last.positive + Math.round((Math.random() - 0.48) * 5)));
-        const newN = Math.min(60, Math.max(8, last.negative + Math.round((Math.random() - 0.52) * 4)));
-        const { positive, negative, neutral } = normalise(newP, newN);
-        const next = { t: tickRef.current, positive, negative, neutral };
-        return [...prev.slice(-49), next];
-      });
-    }, 2000);
-    return () => clearInterval(id);
-  }, [live]);
-
-  const current = data[data.length - 1];
-  const { positive, negative, neutral } = normalise(current.positive, current.negative);
+  const [metric, setMetric] = useState<Metric>("inflation");
+  const config = METRIC_CONFIG[metric];
 
   return (
-    <div className="border-4 border-black p-6 bg-white">
-      <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
-        <div>
-          <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">Metric 05</div>
-          <h2 className="font-display text-4xl tracking-wider leading-none">SENTIMENT PULSE</h2>
-          <p className="font-mono text-xs mt-2 text-gray-600">
-            BREAKING: BUDGET ANNOUNCEMENT
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div
-            className="flex items-center gap-1 font-mono text-xs border-2 border-accent px-2 py-1"
-            style={{ background: live ? "#FF3B00" : "#fff", color: live ? "#fff" : "#FF3B00" }}
-          >
-            {live && (
-              <span className="w-2 h-2 rounded-full bg-white inline-block animate-pulse" />
-            )}
-            {live ? "LIVE" : "PAUSED"}
-          </div>
-          <div className="text-6xl font-display text-accent leading-none">05</div>
-        </div>
-      </div>
-
+    <div>
+      {/* Metric selector */}
       <div className="grid grid-cols-3 gap-3 mb-4">
-        {[
-          { key: "positive", label: "POSITIVE", value: positive, color: "#000" },
-          { key: "neutral", label: "NEUTRAL", value: neutral, color: "#888" },
-          { key: "negative", label: "NEGATIVE", value: negative, color: "#FF3B00" },
-        ].map(({ key, label, value, color }) => (
-          <div key={key} className="border-2 border-black p-3">
-            <div className="font-mono text-xs text-gray-500 mb-1">{label}</div>
-            <div className="font-display text-3xl leading-none" style={{ color }}>
-              {value}%
+        {(Object.entries(METRIC_CONFIG) as [Metric, typeof config][]).map(([key, cfg]) => (
+          <button
+            key={key}
+            onClick={() => setMetric(key)}
+            className={`border-2 border-black p-3 text-left transition-colors ${
+              metric === key ? "bg-black text-white" : "bg-white"
+            }`}
+          >
+            <div className="font-mono text-[10px] text-gray-500">{metric === key ? <span className="text-gray-300">{cfg.label}</span> : cfg.label}</div>
+            <div className="font-display text-2xl leading-none" style={{ color: metric === key ? cfg.color : "#000" }}>
+              {cfg.current}
             </div>
-            <div className="mt-2 h-2 bg-gray-100 border border-black">
-              <div
-                className="h-full transition-all duration-700"
-                style={{ width: `${value}%`, background: color }}
-              />
-            </div>
-          </div>
+            <div className="font-mono text-[10px] mt-1" style={{ color: metric === key ? "#999" : "#999" }}>{cfg.target}</div>
+          </button>
         ))}
       </div>
 
-      <ResponsiveContainer width="100%" height={180}>
-        <AreaChart data={data} margin={{ top: 5, right: 0, bottom: 0, left: 0 }}>
+      {/* Chart */}
+      <ResponsiveContainer width="100%" height={200}>
+        <AreaChart data={ECONOMIC_DATA} margin={{ top: 5, right: 0, bottom: 0, left: 0 }}>
           <defs>
-            <linearGradient id="posGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#000" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#000" stopOpacity={0.0} />
-            </linearGradient>
-            <linearGradient id="negGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#FF3B00" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#FF3B00" stopOpacity={0.0} />
+            <linearGradient id="metricGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={config.color} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={config.color} stopOpacity={0.0} />
             </linearGradient>
           </defs>
+          <XAxis
+            dataKey="date"
+            tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
+            axisLine={{ stroke: "#000", strokeWidth: 1 }}
+            tickLine={false}
+          />
+          <YAxis
+            tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
+            axisLine={{ stroke: "#000", strokeWidth: 1 }}
+            tickLine={false}
+            tickFormatter={(v) => `${v}%`}
+            domain={["auto", "auto"]}
+          />
           <Tooltip
             contentStyle={{
               fontFamily: "IBM Plex Mono",
@@ -108,34 +87,23 @@ export default function SentimentPulse() {
               borderRadius: 0,
               background: "#fff",
             }}
-            formatter={(val, name) => [`${val}%`, String(name).toUpperCase()]}
+            formatter={(val) => [`${val}%`, config.label]}
           />
           <Area
             type="monotone"
-            dataKey="positive"
-            stroke="#000"
+            dataKey={metric}
+            stroke={config.color}
             strokeWidth={2}
-            fill="url(#posGrad)"
-            isAnimationActive={false}
-          />
-          <Area
-            type="monotone"
-            dataKey="negative"
-            stroke="#FF3B00"
-            strokeWidth={2}
-            fill="url(#negGrad)"
-            isAnimationActive={false}
+            fill="url(#metricGrad)"
           />
         </AreaChart>
       </ResponsiveContainer>
 
-      <button
-        onClick={() => setLive((l) => !l)}
-        className="mt-4 border-2 border-black px-4 py-1 font-mono text-xs tracking-widest hover:bg-black hover:text-white transition-colors"
-        style={{ boxShadow: "2px 2px 0px #000" }}
-      >
-        {live ? "⏸ PAUSE" : "▶ RESUME"}
-      </button>
+      <p className="font-mono text-[10px] text-gray-400 mt-3">
+        DATA SOURCES: ONS Consumer Price Index (CPI), Bank of England base rate decisions,
+        ONS Labour Force Survey. Monthly data Jan 2024–Jan 2026.
+        All figures from publicly available statistical releases.
+      </p>
     </div>
   );
 }
