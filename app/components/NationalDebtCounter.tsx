@@ -3,13 +3,14 @@ import { useState, useEffect } from "react";
 
 // UK national debt data from ONS Public Sector Finances
 // Source: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance
-// As of Q4 2025: ~£2.816 trillion (approx 100.2% of GDP)
-// Annual deficit ~£120 billion → ~£3,805 per second
-const BASE_DEBT = 2_816_000_000_000; // £2.816 trillion
-const BASE_DATE = new Date("2025-12-31T00:00:00Z").getTime();
-const DEBT_PER_SECOND = 3_805; // ~£120bn per year / 365.25 / 24 / 3600
+// ONS Public Sector Finances, December 2025 bulletin:
+// PSND ex BoE: ~£2.814 trillion at end of March 2025, ~95.5% of GDP at end of December 2025
+// FY 2024/25 net borrowing: £152 billion → ~£4,820 per second
+const BASE_DEBT = 2_814_000_000_000; // £2.814 trillion (ONS, end of March 2025)
+const BASE_DATE = new Date("2025-03-31T00:00:00Z").getTime();
+const DEBT_PER_SECOND = 4_820; // ~£152bn per year / 365.25 / 24 / 3600
 const UK_POPULATION = 67_960_000; // ONS mid-2024 estimate
-const UK_GDP = 2_810_000_000_000; // ~£2.81 trillion (2024/25 estimate)
+const UK_GDP = 2_950_000_000_000; // ~£2.95 trillion (ONS, 2024/25 nominal GDP estimate)
 
 export default function NationalDebtCounter() {
   const [debt, setDebt] = useState(BASE_DEBT);
@@ -96,9 +97,10 @@ export default function NationalDebtCounter() {
       </div>
 
       <p className="font-mono text-[10px] text-gray-400 mt-3">
-        DATA SOURCE: ONS Public Sector Finances, UK Debt Management Office.
-        Base figure: Q4 2025. Growth rate calculated from annual net borrowing forecast.
-        Population: ONS mid-2024 estimate (67.96m).
+        DATA SOURCE: ONS Public Sector Finances (December 2025 bulletin), UK Debt Management Office.
+        Base figure: £2.814T at end of March 2025 (ONS). Growth rate: £152bn FY2024/25 net borrowing.
+        Debt-to-GDP: ~95.5% (ONS, Dec 2025). Population: ONS mid-2024 estimate (67.96m).
+        Source: ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance
       </p>
     </div>
   );

@@ -125,6 +125,7 @@ export default function PolarizationMeter() {
         DATA SOURCE: Ipsos Political Monitor, YouGov Government Approval Tracker.
         Based on 24 published polls, Q4 2025–Q1 2026. Polarization index calculated
         from bimodal distribution analysis of cross-poll approval ratings.
+        Source: ipsos.com/en-uk/political-monitor · yougov.co.uk/topics/politics
       </p>
     </div>
   );

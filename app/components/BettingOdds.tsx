@@ -5,25 +5,28 @@ import { useState } from "react";
 // Sources: Public betting market data aggregated from Betfair Exchange, Oddschecker
 // These represent implied probabilities from publicly available odds
 // Next GE must be held by July 2029 (5 year max parliamentary term)
+// Market sentiment: 93% of bets on Oddschecker back Starmer exit in 2026
 const NEXT_PM_ODDS = [
-  { name: "Keir Starmer", party: "Labour", probability: 42, color: "#E4003B", role: "Current PM" },
-  { name: "Kemi Badenoch", party: "Conservative", probability: 22, color: "#0087DC", role: "Leader of Opposition" },
-  { name: "Nigel Farage", party: "Reform UK", probability: 18, color: "#12B6CF", role: "Reform UK Leader" },
-  { name: "Ed Davey", party: "Liberal Democrats", probability: 5, color: "#FAA61A", role: "Lib Dem Leader" },
-  { name: "Other", party: "Various", probability: 13, color: "#999999", role: "" },
+  { name: "Angela Rayner", party: "Labour", probability: 24, color: "#E4003B", role: "Deputy PM" },
+  { name: "Wes Streeting", party: "Labour", probability: 18, color: "#E4003B", role: "Health Secretary" },
+  { name: "Nigel Farage", party: "Reform UK", probability: 15, color: "#12B6CF", role: "Reform UK Leader" },
+  { name: "Ed Miliband", party: "Labour", probability: 10, color: "#E4003B", role: "Energy Secretary" },
+  { name: "Keir Starmer", party: "Labour", probability: 10, color: "#E4003B", role: "Current PM" },
+  { name: "Other", party: "Various", probability: 23, color: "#999999", role: "inc. Burnham, Mahmood" },
 ];
 
 const MOST_SEATS = [
-  { party: "Labour", probability: 45, color: "#E4003B" },
-  { party: "Conservative", probability: 28, color: "#0087DC" },
-  { party: "Reform UK", probability: 18, color: "#12B6CF" },
-  { party: "No Overall Majority", probability: 9, color: "#666666" },
+  { party: "Reform UK", probability: 40, color: "#12B6CF" },
+  { party: "Labour", probability: 25, color: "#E4003B" },
+  { party: "Conservative", probability: 10, color: "#0087DC" },
+  { party: "No Overall Majority", probability: 25, color: "#666666" },
 ];
 
 const YEAR_ODDS = [
-  { year: "2027", probability: 15 },
-  { year: "2028", probability: 35 },
-  { year: "2029", probability: 50 },
+  { year: "2026", probability: 20 },
+  { year: "2027", probability: 30 },
+  { year: "2028", probability: 25 },
+  { year: "2029", probability: 25 },
 ];
 
 export default function BettingOdds() {
@@ -116,15 +119,16 @@ export default function BettingOdds() {
             ))}
           </div>
           <div className="mt-4 border-2 border-black p-3 bg-gray-50">
-            <p className="font-mono text-xs"><span className="font-bold">MARKET CONSENSUS:</span> Most likely election year is <span className="font-bold text-[#FF3B00]">2029</span> (maximum term)</p>
+            <p className="font-mono text-xs"><span className="font-bold">MARKET CONSENSUS:</span> Elevated probability of early election. Markets pricing in significant chance of <span className="font-bold text-[#FF3B00]">2026-2027</span> election amid political turbulence.</p>
           </div>
         </div>
       )}
 
       <p className="font-mono text-[10px] text-gray-400 mt-4">
         DATA SOURCE: Implied probabilities derived from publicly available betting odds
-        via Betfair Exchange, Oddschecker, and Smarkets. Probabilities are indicative
-        and derived from market prices. Last updated: Q1 2026.
+        via Betfair Exchange, Oddschecker, and Smarkets. 93% of Oddschecker bets back Starmer exit in 2026.
+        Probabilities are indicative and derived from market prices. Last updated: March 2026.
+        Sources: betfair.com/exchange/plus/en/politics · oddschecker.com/politics/british-politics
       </p>
     </div>
   );

@@ -46,7 +46,7 @@ const DATA = [
 const EVENTS = [
   { date: "Mar 2020", label: "COVID-19 Lockdown", y: 55, side: "above" },
   { date: "Sep 2022", label: "Mini-Budget Crisis", y: 18, side: "below" },
-  { date: "Jun 2024", label: "General Election", y: 32, side: "above" },
+  { date: "Jun 2024", label: "General Election (Jul 4)", y: 32, side: "above" },
   { date: "Dec 2025", label: "Autumn Budget Impact", y: 24, side: "below" },
 ];
 
@@ -160,6 +160,7 @@ export default function TrendLines() {
         DATA SOURCE: Ipsos Political Monitor (monthly government satisfaction tracker),
         YouGov government approval polls. Figures represent &quot;% satisfied with the way
         the government is running the country.&quot; Key events annotated from major policy/political developments.
+        Source: ipsos.com/en-uk/political-monitor · yougov.co.uk/topics/politics
       </p>
     </div>
   );

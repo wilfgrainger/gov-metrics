@@ -4,27 +4,28 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 
 // UK Crime Statistics from ONS Crime Survey for England and Wales
 // Source: https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice
+// ONS Crime in England and Wales, year ending September 2025 bulletin
+// Total CSEW headline crime: ~9.3 million incidents (no significant change YoY)
 // Police recorded crime data from Home Office / ONS
-// Year ending September 2025 estimates
 const CRIME_CATEGORIES = [
-  { category: "Fraud", count: 3_610_000, change: -8, per1000: 53.1 },
-  { category: "Theft", count: 3_240_000, change: -3, per1000: 47.7 },
-  { category: "Violence", count: 2_100_000, change: +2, per1000: 30.9 },
-  { category: "Criminal Damage", count: 990_000, change: -5, per1000: 14.6 },
-  { category: "Burglary", count: 290_000, change: -12, per1000: 4.3 },
-  { category: "Vehicle Crime", count: 560_000, change: +4, per1000: 8.2 },
-  { category: "Robbery", count: 160_000, change: -1, per1000: 2.4 },
-  { category: "Drug Offences", count: 140_000, change: -6, per1000: 2.1 },
+  { category: "Fraud", count: 4_200_000, change: +31, per1000: 61.8 },
+  { category: "Theft", count: 1_850_000, change: -2, per1000: 27.2 },
+  { category: "Violence", count: 1_380_000, change: +1, per1000: 20.3 },
+  { category: "Criminal Damage", count: 590_000, change: -5, per1000: 8.7 },
+  { category: "Vehicle Crime", count: 520_000, change: -16, per1000: 7.7 },
+  { category: "Burglary", count: 270_000, change: -8, per1000: 4.0 },
+  { category: "Computer Misuse", count: 692_000, change: -32, per1000: 10.2 },
+  { category: "Robbery", count: 150_000, change: -3, per1000: 2.2 },
 ];
 
 // Headline stats
 const HEADLINE = {
-  totalCrime: 11_090_000,
-  changePct: -3,
-  knifeCrime: 48_341,
-  knifeCrimeChange: +2,
-  homicides: 602,
-  homicideChange: -5,
+  totalCrime: 9_300_000,
+  changePct: 0,
+  knifeCrime: 51_527,
+  knifeCrimeChange: -5,
+  homicides: 499,
+  homicideChange: -7,
   chargeRate: 5.7, // % of crimes resulting in charge
 };
 
@@ -49,8 +50,8 @@ export default function CrimeStatistics() {
       {/* Headline stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mb-4">
         {[
-          { label: "TOTAL CRIME", value: "11.1M", sub: `${HEADLINE.changePct}% YoY`, negative: true },
-          { label: "KNIFE CRIME", value: HEADLINE.knifeCrime.toLocaleString("en-GB"), sub: `+${HEADLINE.knifeCrimeChange}% YoY`, positive: false },
+          { label: "TOTAL CRIME", value: "9.3M", sub: `${HEADLINE.changePct === 0 ? "~0" : HEADLINE.changePct}% YoY`, negative: true },
+          { label: "KNIFE CRIME", value: HEADLINE.knifeCrime.toLocaleString("en-GB"), sub: `${HEADLINE.knifeCrimeChange}% YoY`, positive: false },
           { label: "HOMICIDES", value: HEADLINE.homicides.toString(), sub: `${HEADLINE.homicideChange}% YoY`, negative: true },
           { label: "CHARGE RATE", value: `${HEADLINE.chargeRate}%`, sub: "of reported crimes", neutral: true },
         ].map((s, i) => (
@@ -145,9 +146,10 @@ export default function CrimeStatistics() {
       )}
 
       <p className="font-mono text-[10px] text-gray-400 mt-4">
-        DATA SOURCES: ONS Crime Survey for England & Wales (CSEW), Home Office Police Recorded Crime statistics.
-        Year ending September 2025. Knife crime: NHS Hospital Episode Statistics & Home Office.
-        Charge rate from CPS/Home Office data.
+        DATA SOURCES: ONS Crime Survey for England &amp; Wales (CSEW), Home Office Police Recorded Crime statistics.
+        Year ending September 2025 / March 2025. Knife crime: Home Office, year ending June 2025 (51,527 offences, -5% YoY).
+        Homicides: ONS, 499 (lowest since 2003). Charge rate from CPS/Home Office data.
+        Source: ons.gov.uk/peoplepopulationandcommunity/crimeandjustice
       </p>
     </div>
   );

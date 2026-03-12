@@ -8,6 +8,8 @@ import TrendLines from "./components/TrendLines";
 import SentimentPulse from "./components/SentimentPulse";
 import GeographicHeatmap from "./components/GeographicHeatmap";
 import EchoChamberMap from "./components/EchoChamberMap";
+import SocialShare from "./components/SocialShare";
+import SectionNav from "./components/SectionNav";
 
 const ISSUE_DATE = new Date().toLocaleDateString("en-GB", {
   weekday: "long",
@@ -15,6 +17,19 @@ const ISSUE_DATE = new Date().toLocaleDateString("en-GB", {
   month: "long",
   day: "numeric",
 });
+
+const SECTIONS = [
+  { id: "political-compass", label: "01 POLITICAL COMPASS" },
+  { id: "national-debt", label: "02 NATIONAL DEBT" },
+  { id: "election-polls", label: "03 ELECTION POLLS" },
+  { id: "betting-odds", label: "04 BETTING ODDS" },
+  { id: "crime-stats", label: "05 CRIME STATS" },
+  { id: "govt-approval", label: "06 GOVT APPROVAL" },
+  { id: "gov-trust-trend", label: "07 GOV TRUST TREND" },
+  { id: "economy", label: "08 ECONOMY" },
+  { id: "uk-regions", label: "09 UK REGIONS" },
+  { id: "policy-links", label: "10 POLICY LINKS" },
+];
 
 export default function Home() {
   return (
@@ -84,32 +99,7 @@ export default function Home() {
       </header>
 
       {/* ── NAVIGATION STRIP ── */}
-      <nav className="border-b-2 border-black bg-gray-50 px-6 py-3 overflow-x-auto">
-        <div className="max-w-7xl mx-auto flex gap-0 font-mono text-xs tracking-widest whitespace-nowrap">
-          {[
-            "01 POLITICAL COMPASS",
-            "02 NATIONAL DEBT",
-            "03 ELECTION POLLS",
-            "04 BETTING ODDS",
-            "05 CRIME STATS",
-            "06 GOVT APPROVAL",
-            "07 GOV TRUST TREND",
-            "08 ECONOMY",
-            "09 UK REGIONS",
-            "10 POLICY LINKS",
-          ].map((item, i) => (
-            <div key={i} className="flex items-center">
-              <span
-                className="px-3 py-1 hover:bg-black hover:text-white cursor-pointer transition-colors"
-                style={{ color: i === 0 ? "#FF3B00" : "#000" }}
-              >
-                {item}
-              </span>
-              {i < 9 && <span className="text-gray-300">·</span>}
-            </div>
-          ))}
-        </div>
-      </nav>
+      <SectionNav sections={SECTIONS} />
 
       {/* ── MAIN CONTENT ── */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
@@ -126,7 +116,7 @@ export default function Home() {
         </div>
 
         {/* ── ROW 1: Political Compass (full-width) ── */}
-        <div className="mb-6 border-4 border-black p-6 bg-white relative">
+        <section id="political-compass" className="mb-6 border-4 border-black p-6 bg-white relative scroll-mt-20">
           <div
             className="absolute -top-4 -right-2 font-display opacity-5 pointer-events-none select-none leading-none"
             style={{ fontSize: "clamp(80px, 15vw, 140px)", fontFamily: "'Bebas Neue', Impact, 'Arial Narrow', sans-serif" }}
@@ -141,11 +131,11 @@ export default function Home() {
             </div>
           </div>
           <PoliticalCompass />
-        </div>
+        </section>
 
         {/* ── ROW 2: Debt Counter + Polling (2-col) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="border-4 border-black p-6 bg-white relative">
+          <section id="national-debt" className="border-4 border-black p-6 bg-white relative scroll-mt-20">
             <div
               className="absolute -top-4 -right-2 font-display opacity-5 pointer-events-none select-none leading-none"
               style={{ fontSize: "120px", fontFamily: "'Bebas Neue', Impact, 'Arial Narrow', sans-serif" }}
@@ -160,8 +150,8 @@ export default function Home() {
               </div>
             </div>
             <NationalDebtCounter />
-          </div>
-          <div className="border-4 border-black p-6 bg-white relative">
+          </section>
+          <section id="election-polls" className="border-4 border-black p-6 bg-white relative scroll-mt-20">
             <div
               className="absolute -top-4 -right-2 font-display opacity-5 pointer-events-none select-none leading-none"
               style={{ fontSize: "120px", fontFamily: "'Bebas Neue', Impact, 'Arial Narrow', sans-serif" }}
@@ -176,7 +166,7 @@ export default function Home() {
               </div>
             </div>
             <ElectionPolling />
-          </div>
+          </section>
         </div>
 
         {/* ── SECTION DIVIDER ── */}
@@ -187,7 +177,7 @@ export default function Home() {
 
         {/* ── ROW 3: Betting Odds + Crime (2-col) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="border-4 border-black p-6 bg-white relative">
+          <section id="betting-odds" className="border-4 border-black p-6 bg-white relative scroll-mt-20">
             <div
               className="absolute -top-4 -right-2 font-display opacity-5 pointer-events-none select-none leading-none"
               style={{ fontSize: "120px", fontFamily: "'Bebas Neue', Impact, 'Arial Narrow', sans-serif" }}
@@ -202,8 +192,8 @@ export default function Home() {
               </div>
             </div>
             <BettingOdds />
-          </div>
-          <div className="border-4 border-black p-6 bg-white relative">
+          </section>
+          <section id="crime-stats" className="border-4 border-black p-6 bg-white relative scroll-mt-20">
             <div
               className="absolute -top-4 -right-2 font-display opacity-5 pointer-events-none select-none leading-none"
               style={{ fontSize: "120px", fontFamily: "'Bebas Neue', Impact, 'Arial Narrow', sans-serif" }}
@@ -218,11 +208,11 @@ export default function Home() {
               </div>
             </div>
             <CrimeStatistics />
-          </div>
+          </section>
         </div>
 
         {/* ── ROW 4: Polarization (full-width) ── */}
-        <div className="mb-6 border-4 border-black p-6 bg-white relative">
+        <section id="govt-approval" className="mb-6 border-4 border-black p-6 bg-white relative scroll-mt-20">
           <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
             <div>
               <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">Public Opinion</div>
@@ -232,7 +222,7 @@ export default function Home() {
             <div className="text-6xl font-display text-accent leading-none">06</div>
           </div>
           <PolarizationMeter />
-        </div>
+        </section>
 
         {/* ── SECTION DIVIDER ── */}
         <div className="my-10 flex items-center gap-0">
@@ -241,7 +231,7 @@ export default function Home() {
         </div>
 
         {/* ── ROW 5: Trust Trend (full-width) ── */}
-        <div className="mb-6 border-4 border-black p-6 bg-white relative">
+        <section id="gov-trust-trend" className="mb-6 border-4 border-black p-6 bg-white relative scroll-mt-20">
           <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
             <div>
               <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">Longitudinal Data</div>
@@ -251,11 +241,11 @@ export default function Home() {
             <div className="text-6xl font-display text-accent leading-none">07</div>
           </div>
           <TrendLines />
-        </div>
+        </section>
 
         {/* ── ROW 6: Economic + Regional + Correlations (3-col) ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
-          <div className="border-4 border-black p-6 bg-white">
+          <section id="economy" className="border-4 border-black p-6 bg-white scroll-mt-20">
             <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
               <div>
                 <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">Economic Data</div>
@@ -265,8 +255,8 @@ export default function Home() {
               <div className="text-5xl font-display text-accent leading-none">08</div>
             </div>
             <SentimentPulse />
-          </div>
-          <div className="border-4 border-black p-6 bg-white">
+          </section>
+          <section id="uk-regions" className="border-4 border-black p-6 bg-white scroll-mt-20">
             <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
               <div>
                 <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">Regional Data</div>
@@ -276,8 +266,8 @@ export default function Home() {
               <div className="text-5xl font-display text-accent leading-none">09</div>
             </div>
             <GeographicHeatmap />
-          </div>
-          <div className="border-4 border-black p-6 bg-white">
+          </section>
+          <section id="policy-links" className="border-4 border-black p-6 bg-white scroll-mt-20">
             <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
               <div>
                 <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">Survey Data</div>
@@ -287,7 +277,12 @@ export default function Home() {
               <div className="text-5xl font-display text-accent leading-none">10</div>
             </div>
             <EchoChamberMap />
-          </div>
+          </section>
+        </div>
+
+        {/* ── SOCIAL SHARE ── */}
+        <div className="mb-6">
+          <SocialShare />
         </div>
 
         {/* ── PULL QUOTE ── */}
@@ -356,13 +351,16 @@ export default function Home() {
               UK Public Data Intelligence Platform. All data sourced from
               publicly available datasets, government statistics, and public APIs.
             </div>
+            <div className="mt-3">
+              <SocialShare compact />
+            </div>
           </div>
           <div className="font-mono text-xs text-gray-400">
             <div className="mb-1 font-bold text-black">DATA SOURCES</div>
             <div>ONS · Electoral Commission</div>
             <div>Ipsos · YouGov · Savanta</div>
             <div>Bank of England · Home Office</div>
-            <div>British Social Attitudes Survey</div>
+            <div>NatCen (BSA) · PollCheck</div>
             <div>Betfair · Oddschecker · Smarkets</div>
           </div>
           <div className="font-mono text-xs text-gray-400">
@@ -373,7 +371,7 @@ export default function Home() {
         </div>
         <div className="max-w-7xl mx-auto mt-6 pt-4 border-t-2 border-black flex justify-between items-center">
           <div className="font-mono text-xs text-gray-400">
-            © 2024 PULSE METRICS. ALL PUBLIC DATA.
+            © 2025 PULSE METRICS. ALL PUBLIC DATA.
           </div>
           <div
             className="font-display text-xs tracking-widest px-3 py-1"

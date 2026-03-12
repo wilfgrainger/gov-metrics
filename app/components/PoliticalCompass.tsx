@@ -173,7 +173,8 @@ export default function PoliticalCompass() {
       </button>
 
       <p className="font-mono text-[10px] text-gray-400 mt-4">
-        Based on the Political Compass methodology. This is a simplified assessment — for a comprehensive test visit politicalcompass.org
+        Based on the Political Compass methodology. This is a simplified assessment — for a comprehensive test visit politicalcompass.org.
+        Source: politicalcompass.org
       </p>
     </div>
   );
