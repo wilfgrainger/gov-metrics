@@ -5,7 +5,7 @@ const isProd = process.env.NODE_ENV === "production";
 const nextConfig: NextConfig = {
   output: "export",
   basePath: isProd ? "/gov-metrics" : "",
-  assetPrefix: isProd ? "/gov-metrics/" : undefined,
+  assetPrefix: isProd ? "/gov-metrics" : "",
 };
 
 export default nextConfig;
