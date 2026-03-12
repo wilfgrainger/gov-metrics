@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Tax Revenue Data from HMRC and ONS
 // Source: HMRC Tax Receipts monthly bulletin
@@ -32,7 +33,12 @@ const TAX_BURDEN_HISTORY = [
 
 const TOTAL_RECEIPTS = 843;
 
+const FALLBACK = { taxCategories: TAX_CATEGORIES, taxBurdenHistory: TAX_BURDEN_HISTORY, totalReceipts: TOTAL_RECEIPTS };
+
 export default function TaxRevenue() {
+  const { data, isLive } = useMetrics("taxRevenue", FALLBACK);
+  const { taxCategories, taxBurdenHistory, totalReceipts } = data;
+
   const [view, setView] = useState<"breakdown" | "burden">("breakdown");
 
   return (
@@ -41,7 +47,7 @@ export default function TaxRevenue() {
       <div className="grid grid-cols-3 gap-0 mb-4">
         <div className="border-2 border-black p-3 text-center">
           <p className="font-mono text-[10px] text-gray-500">TOTAL RECEIPTS</p>
-          <p className="font-mono text-xl font-bold">£{TOTAL_RECEIPTS}B</p>
+          <p className="font-mono text-xl font-bold">£{totalReceipts}B</p>
           <p className="font-mono text-[10px] text-gray-400">FY 2024/25</p>
         </div>
         <div className="border-2 border-black border-l-0 p-3 text-center">
@@ -76,7 +82,7 @@ export default function TaxRevenue() {
 
       {view === "breakdown" && (
         <div className="space-y-2">
-          {TAX_CATEGORIES.map((d) => (
+          {taxCategories.map((d) => (
             <div key={d.name} className="flex items-center gap-2">
               <p className="font-mono text-xs w-28 text-right">{d.name}</p>
               <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -99,7 +105,7 @@ export default function TaxRevenue() {
         <div>
           <p className="font-mono text-xs text-gray-500 mb-3">UK TAX BURDEN AS % OF GDP</p>
           <div className="space-y-2">
-            {TAX_BURDEN_HISTORY.map((d) => (
+            {taxBurdenHistory.map((d) => (
               <div key={d.year} className="flex items-center gap-3">
                 <p className="font-mono text-xs w-14 text-right text-gray-500">{d.year}</p>
                 <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -131,6 +137,12 @@ export default function TaxRevenue() {
         Total receipts FY 2024/25 estimated £843bn. Tax-to-GDP ratio: OBR, highest since 1948 records.
         Sources: gov.uk/government/statistics/hmrc-tax-and-nics-receipts · obr.uk
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Migration Statistics — ONS International Migration
 // Source: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/internationalmigration
@@ -40,9 +41,13 @@ const TOP_NATIONALITIES = [
   { country: "Bangladesh", count: 32, color: "#666" },
 ];
 
+const FALLBACK = { migrationHistory: MIGRATION_HISTORY, visaTypes: VISA_TYPES, topNationalities: TOP_NATIONALITIES };
+
 export default function MigrationStats() {
+  const { data, isLive } = useMetrics("migrationStats", FALLBACK);
+  const { migrationHistory, visaTypes, topNationalities } = data;
   const [view, setView] = useState<"overview" | "visas" | "origins">("overview");
-  const latest = MIGRATION_HISTORY[MIGRATION_HISTORY.length - 1];
+  const latest = migrationHistory[migrationHistory.length - 1];
 
   return (
     <div>
@@ -86,7 +91,7 @@ export default function MigrationStats() {
 
       {view === "overview" && (
         <div className="space-y-2">
-          {MIGRATION_HISTORY.map((d) => (
+          {migrationHistory.map((d) => (
             <div key={d.year} className="flex items-center gap-3">
               <p className="font-mono text-xs w-10 text-right text-gray-500">{d.year}</p>
               <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -113,7 +118,7 @@ export default function MigrationStats() {
         <div>
           <p className="font-mono text-xs text-gray-500 mb-3">VISA GRANTS BY CATEGORY — YE JUN 2024</p>
           <div className="space-y-2">
-            {VISA_TYPES.map((d) => (
+            {visaTypes.map((d) => (
               <div key={d.type} className="flex items-center gap-2">
                 <p className="font-mono text-xs w-24 text-right">{d.type}</p>
                 <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -133,7 +138,7 @@ export default function MigrationStats() {
         <div>
           <p className="font-mono text-xs text-gray-500 mb-3">TOP NATIONALITIES — NET MIGRATION (THOUSANDS)</p>
           <div className="space-y-2">
-            {TOP_NATIONALITIES.map((d) => (
+            {topNationalities.map((d) => (
               <div key={d.country} className="flex items-center gap-3">
                 <p className="font-mono text-xs w-20 text-right">{d.country}</p>
                 <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -156,6 +161,12 @@ export default function MigrationStats() {
         Sources: ons.gov.uk/peoplepopulationandcommunity/populationandmigration/internationalmigration ·
         gov.uk/government/statistics/immigration-system-statistics-quarterly-release
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

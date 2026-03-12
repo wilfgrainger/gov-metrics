@@ -1,0 +1,9 @@
+{
+  "meta": {
+    "generatedAt": null,
+    "generator": "fetch_intel.py",
+    "version": "2.0",
+    "note": "This file is populated by fetch_intel.py which fetches ONLY from external APIs. Run: python fetch_intel.py",
+    "sources": {}
+  }
+}

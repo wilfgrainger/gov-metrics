@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Government Approval Rating distribution across recent polls
 // Sources: Ipsos Political Monitor, YouGov Government Approval Tracker
@@ -48,13 +49,17 @@ function PolarizationLabel({ index }: { index: number }) {
   );
 }
 
+const FALLBACK = { rawData: RAW_DATA, polarizationIndex: POLARIZATION_INDEX };
+
 export default function PolarizationMeter() {
-  const maxCount = Math.max(...RAW_DATA.map((d) => d.count));
+  const { data, isLive } = useMetrics("polarizationMeter", FALLBACK);
+  const { rawData, polarizationIndex } = data;
+  const maxCount = Math.max(...rawData.map((d) => d.count));
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <PolarizationLabel index={POLARIZATION_INDEX} />
+        <PolarizationLabel index={polarizationIndex} />
         <div className="border-2 border-black p-3 font-mono text-xs text-right">
           <div className="text-gray-500">POLLS ANALYSED</div>
           <div className="text-2xl font-display">24</div>
@@ -68,7 +73,7 @@ export default function PolarizationMeter() {
       </div>
 
       <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={RAW_DATA} barCategoryGap={2}>
+        <BarChart data={rawData} barCategoryGap={2}>
           <XAxis
             dataKey="range"
             tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
@@ -77,7 +82,7 @@ export default function PolarizationMeter() {
           />
           <YAxis hide />
           <Bar dataKey="count" maxBarSize={60}>
-            {RAW_DATA.map((entry, i) => (
+            {rawData.map((entry, i) => (
               <Cell
                 key={i}
                 fill={entry.count === maxCount ? "#FF3B00" : entry.count > 8 ? "#333" : "#aaa"}
@@ -107,16 +112,16 @@ export default function PolarizationMeter() {
         <div className="w-full h-3 border-2 border-black bg-gray-100 relative">
           <div
             className="h-full bg-accent absolute left-0 top-0"
-            style={{ width: `${POLARIZATION_INDEX}%` }}
+            style={{ width: `${polarizationIndex}%` }}
           />
           <div
             className="absolute top-0 h-full w-0.5 bg-black"
-            style={{ left: `${POLARIZATION_INDEX}%` }}
+            style={{ left: `${polarizationIndex}%` }}
           />
         </div>
         <div className="flex justify-between font-mono text-xs mt-1">
           <span>CONSENSUS</span>
-          <span className="text-accent font-bold">{POLARIZATION_INDEX}/100</span>
+          <span className="text-accent font-bold">{polarizationIndex}/100</span>
           <span>MAX DIVISION</span>
         </div>
       </div>
@@ -127,6 +132,12 @@ export default function PolarizationMeter() {
         from bimodal distribution analysis of cross-poll approval ratings.
         Source: ipsos.com/en-uk/political-monitor · yougov.co.uk/topics/politics
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

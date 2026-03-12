@@ -1,0 +1,34 @@
+name: Fetch UK Data Intelligence
+
+on:
+  schedule:
+    # Run every 4 hours
+    - cron: "0 */4 * * *"
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch latest data
+        run: python fetch_intel.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/daily_threat_data.json
+          timestamp=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git diff --cached --quiet || git commit -m "data: update intelligence ${timestamp}"
+          git push

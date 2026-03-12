@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // Latest UK polling averages (aggregated from multiple public pollsters)
 // Sources: YouGov, Ipsos, Savanta, Redfield & Wilton, More in Common, Deltapoll
@@ -25,7 +26,11 @@ const RECENT_POLLS = [
   { pollster: "R&W", date: "Feb 2026", lab: 19, con: 18, ref: 29, ld: 12 },
 ];
 
+const FALLBACK = { pollingData: POLLING_DATA, recentPolls: RECENT_POLLS };
+
 export default function ElectionPolling() {
+  const { data, isLive } = useMetrics("electionPolling", FALLBACK);
+  const { pollingData, recentPolls } = data;
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
 
   return (
@@ -33,7 +38,7 @@ export default function ElectionPolling() {
       {/* Main chart */}
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={POLLING_DATA} layout="vertical" margin={{ left: 5, right: 30 }}>
+          <BarChart data={pollingData} layout="vertical" margin={{ left: 5, right: 30 }}>
             <XAxis type="number" domain={[0, 40]} tick={{ fontFamily: "IBM Plex Mono", fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
             <YAxis type="category" dataKey="party" tick={{ fontFamily: "IBM Plex Mono", fontSize: 11, fontWeight: 700 }} width={35} />
             <Tooltip
@@ -51,8 +56,8 @@ export default function ElectionPolling() {
                 );
               }}
             />
-            <Bar dataKey="pct" onMouseEnter={(_, i) => setSelectedParty(POLLING_DATA[i].party)} onMouseLeave={() => setSelectedParty(null)}>
-              {POLLING_DATA.map((d) => (
+            <Bar dataKey="pct" onMouseEnter={(_, i) => setSelectedParty(pollingData[i].party)} onMouseLeave={() => setSelectedParty(null)}>
+              {pollingData.map((d) => (
                 <Cell key={d.party} fill={selectedParty && selectedParty !== d.party ? "#e5e5e5" : d.color} />
               ))}
             </Bar>
@@ -62,7 +67,7 @@ export default function ElectionPolling() {
 
       {/* Party cards */}
       <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mt-4">
-        {POLLING_DATA.slice(0, 5).map((d) => (
+        {pollingData.slice(0, 5).map((d) => (
           <div key={d.party} className="border-2 border-black p-2 text-center">
             <div className="w-3 h-3 mx-auto mb-1" style={{ backgroundColor: d.color }} />
             <p className="font-mono text-xs font-bold">{d.party}</p>
@@ -92,8 +97,8 @@ export default function ElectionPolling() {
               </tr>
             </thead>
             <tbody>
-              {RECENT_POLLS.map((p, i) => (
-                <tr key={i} className={i < RECENT_POLLS.length - 1 ? "border-b border-gray-200" : ""}>
+              {recentPolls.map((p, i) => (
+                <tr key={i} className={i < recentPolls.length - 1 ? "border-b border-gray-200" : ""}>
                   <td className="p-2 font-bold">{p.pollster}</td>
                   <td className="p-2 text-gray-500">{p.date}</td>
                   <td className="p-2 text-center">{p.lab}%</td>
@@ -113,6 +118,12 @@ export default function ElectionPolling() {
         Wikipedia UK polling tracker, and Electoral Calculus. Changes shown vs 2024 General Election result (4 Jul 2024).
         Data verified: March 2026. Sources: pollcheck.co.uk/gb-polls · statista.com/statistics/985764
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

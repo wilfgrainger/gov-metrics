@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // UK Prime Minister Approval Rating
 // Sources: YouGov PM approval tracker (public, updated weekly)
@@ -27,9 +28,13 @@ const COMPARISON = [
   { pm: "Tony Blair", months: 20, net: +11, party: "Labour", color: "#E4003B" },
 ];
 
+const FALLBACK = { history: PM_APPROVAL_HISTORY, comparison: COMPARISON };
+
 export default function PMApproval() {
+  const { data, isLive } = useMetrics("pmApproval", FALLBACK);
+  const { history, comparison } = data;
   const [view, setView] = useState<"current" | "history">("current");
-  const current = PM_APPROVAL_HISTORY[PM_APPROVAL_HISTORY.length - 1];
+  const current = history[history.length - 1];
 
   return (
     <div>
@@ -98,7 +103,7 @@ export default function PMApproval() {
 
       {view === "current" && (
         <div className="space-y-2">
-          {PM_APPROVAL_HISTORY.map((d) => (
+          {history.map((d) => (
             <div key={d.date} className="flex items-center gap-3">
               <p className="font-mono text-xs w-20 text-right text-gray-500">{d.date}</p>
               <div className="flex-1 h-5 bg-gray-100 border border-black relative">
@@ -123,7 +128,7 @@ export default function PMApproval() {
         <div>
           <p className="font-mono text-xs text-gray-500 mb-3">NET APPROVAL AT 20 MONTHS IN OFFICE</p>
           <div className="space-y-3">
-            {COMPARISON.map((d) => (
+            {comparison.map((d) => (
               <div key={d.pm} className="border-2 border-black p-3">
                 <div className="flex justify-between items-center mb-2">
                   <div>
@@ -155,6 +160,12 @@ export default function PMApproval() {
         Sources: yougov.co.uk/topics/politics/trackers/keir-starmer-approval-rating ·
         ipsos.com/en-uk/political-monitor. Data verified: March 2026.
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

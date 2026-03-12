@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useMetrics } from "@/app/lib/useMetrics";
 
 // Next UK General Election betting odds / implied probabilities
 // Sources: Public betting market data aggregated from Betfair Exchange, Oddschecker
@@ -29,7 +30,11 @@ const YEAR_ODDS = [
   { year: "2029", probability: 25 },
 ];
 
+const FALLBACK = { nextPmOdds: NEXT_PM_ODDS, mostSeats: MOST_SEATS, yearOdds: YEAR_ODDS };
+
 export default function BettingOdds() {
+  const { data, isLive } = useMetrics("bettingOdds", FALLBACK);
+  const { nextPmOdds, mostSeats, yearOdds } = data;
   const [view, setView] = useState<"pm" | "seats" | "year">("pm");
 
   return (
@@ -55,7 +60,7 @@ export default function BettingOdds() {
 
       {view === "pm" && (
         <div className="space-y-3">
-          {NEXT_PM_ODDS.map((d) => (
+          {nextPmOdds.map((d) => (
             <div key={d.name} className="border-2 border-black p-3">
               <div className="flex justify-between items-center mb-2">
                 <div>
@@ -80,7 +85,7 @@ export default function BettingOdds() {
 
       {view === "seats" && (
         <div className="space-y-3">
-          {MOST_SEATS.map((d) => (
+          {mostSeats.map((d) => (
             <div key={d.party} className="border-2 border-black p-3">
               <div className="flex justify-between items-center mb-2">
                 <p className="font-mono text-sm font-bold">{d.party}</p>
@@ -103,7 +108,7 @@ export default function BettingOdds() {
             Next UK General Election must be held by July 2029. When do the markets think it will happen?
           </p>
           <div className="space-y-3">
-            {YEAR_ODDS.map((d) => (
+            {yearOdds.map((d) => (
               <div key={d.year} className="border-2 border-black p-3">
                 <div className="flex justify-between items-center mb-2">
                   <p className="font-mono text-lg font-bold">{d.year}</p>
@@ -130,6 +135,12 @@ export default function BettingOdds() {
         Probabilities are indicative and derived from market prices. Last updated: March 2026.
         Sources: betfair.com/exchange/plus/en/politics · oddschecker.com/politics/british-politics
       </p>
+      {isLive && (
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          LIVE
+        </div>
+      )}
     </div>
   );
 }

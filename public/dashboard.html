@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PULSE — UK Data Intelligence Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000;
+      --fg: #fff;
+      --accent: #FF3B00;
+      --muted: #666;
+      --surface: #111;
+      --border: #333;
+      --green: #22c55e;
+      --red: #ef4444;
+      --font: 'IBM Plex Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    header {
+      border-bottom: 3px solid var(--accent);
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    header h1 span { color: var(--accent); }
+
+    .meta {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .meta .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .meta .live::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── Grid ─────────────────────────────────────────────────── */
+    main {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+    }
+
+    .card {
+      background: var(--bg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-header h2 {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .card-header .badge {
+      font-size: 0.6rem;
+      padding: 0.15rem 0.4rem;
+      background: var(--accent);
+      color: var(--fg);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+
+    .big-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin: 0.5rem 0;
+    }
+
+    .big-number.negative { color: var(--red); }
+    .big-number.positive { color: var(--green); }
+    .big-number.accent   { color: var(--accent); }
+
+    .chart-wrap {
+      flex: 1;
+      min-height: 180px;
+      position: relative;
+    }
+
+    .chart-wrap canvas { width: 100% !important; }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .kpi {
+      background: var(--surface);
+      padding: 0.6rem 0.75rem;
+    }
+
+    .kpi-label {
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .kpi-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .kpi-change {
+      font-size: 0.6rem;
+      margin-top: 0.15rem;
+    }
+
+    .kpi-change.up   { color: var(--red); }
+    .kpi-change.down { color: var(--green); }
+
+    .source-tag {
+      font-size: 0.55rem;
+      color: var(--muted);
+      margin-top: auto;
+      padding-top: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Polling table ────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.7rem;
+    }
+
+    th {
+      text-align: left;
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--surface);
+    }
+
+    td:first-child { font-weight: 600; }
+
+    .bar-bg {
+      background: var(--surface);
+      height: 4px;
+      width: 100%;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    footer {
+      padding: 1rem 2rem;
+      font-size: 0.6rem;
+      color: var(--muted);
+      text-align: center;
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.08em;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 500px) {
+      main { grid-template-columns: 1fr; }
+      header { padding: 1rem; }
+      .card { padding: 1rem; }
+      .big-number { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1><span>PULSE</span> DATA INTELLIGENCE</h1>
+  <div class="meta">
+    <div class="live">LIVE DATA</div>
+    <div id="timestamp">Loading…</div>
+  </div>
+</header>
+
+<main id="grid">
+  <!-- Cards are generated dynamically -->
+  <div class="card" style="display:flex;align-items:center;justify-content:center;min-height:300px;">
+    <p style="color:var(--muted);font-size:0.8rem;letter-spacing:0.1em;">LOADING DATA…</p>
+  </div>
+</main>
+
+<footer>
+  Data sourced from ONS, Bank of England, YouGov, Ipsos, Electoral Commission &amp; Home Office &mdash;
+  <a href="./">Back to PULSE</a>
+</footer>
+
+<script>
+// ── Chart.js defaults ────────────────────────────────────────────────────────
+
+Chart.defaults.color = '#999';
+Chart.defaults.borderColor = '#222';
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size = 10;
+Chart.defaults.plugins.legend.display = false;
+Chart.defaults.animation.duration = 600;
+
+const ACCENT = '#FF3B00';
+const GREEN = '#22c55e';
+const RED = '#ef4444';
+
+// ── Fetch data ───────────────────────────────────────────────────────────────
+
+async function loadData() {
+  try {
+    const res = await fetch('daily_threat_data.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error('Failed to load data:', err);
+    return null;
+  }
+}
+
+// ── Card factory ─────────────────────────────────────────────────────────────
+
+function card(id, title, badge, content, source) {
+  return `
+    <div class="card">
+      <div class="card-header">
+        <h2>${title}</h2>
+        ${badge ? `<span class="badge">${badge}</span>` : ''}
+      </div>
+      ${content}
+      <div class="source-tag">Source: ${source}</div>
+    </div>`;
+}
+
+function chartCard(id, title, badge, chartId, height, extras, source) {
+  return card(id, title, badge,
+    `${extras || ''}<div class="chart-wrap" style="min-height:${height}px"><canvas id="${chartId}"></canvas></div>`,
+    source);
+}
+
+// ── Render functions ─────────────────────────────────────────────────────────
+
+function renderInflation(data) {
+  if (!data?.sentimentPulse?.economicData) return '';
+  const series = data.sentimentPulse.economicData;
+  const latest = series[series.length - 1];
+
+  const html = chartCard('inflation', 'CPI Inflation', 'ONS', 'inflationChart', 200,
+    `<div class="big-number accent">${latest.inflation}%</div>
+     <div style="font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem">Target: 2.0% · Bank Rate: ${latest.bankRate}%</div>`,
+    'ONS Consumer Price Index');
+
+  setTimeout(() => {
+    const ctx = document.getElementById('inflationChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: series.map(d => d.date),
+        datasets: [{
+          data: series.map(d => d.inflation),
+          borderColor: ACCENT,
+          backgroundColor: ACCENT + '15',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { display: true, ticks: { maxTicksLimit: 6 } },
+          y: { display: true, ticks: { callback: v => v + '%' } }
+        },
+        plugins: {
+          tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } }
+        }
+      }
+    });
+  }, 0);
+
+  return html;
+}
+
+function renderBankRate(data) {
+  if (!data?.sentimentPulse?.economicData) return '';
+  const series = data.sentimentPulse.economicData;
+  const latest = series[series.length - 1];
+
+  const html = chartCard('bankrate', 'Bank Rate', 'BoE', 'bankRateChart', 200,
+    `<div class="big-number">${latest.bankRate}%</div>
+     <div style="font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem">Bank of England Official Rate</div>`,
+    'Bank of England');
+
+  setTimeout(() => {
+    const ctx = document.getElementById('bankRateChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: series.map(d => d.date),
+        datasets: [{
+          data: series.map(d => d.bankRate),
+          borderColor: '#fff',
+          backgroundColor: '#fff1',
+          fill: true,
+          tension: 0,
+          pointRadius: 0,
+          borderWidth: 2,
+          stepped: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { display: true, ticks: { maxTicksLimit: 6 } },
+          y: { display: true, ticks: { callback: v => v + '%' } }
+        }
+      }
+    });
+  }, 0);
+
+  return html;
+}
+
+function renderUnemployment(data) {
+  if (!data?.sentimentPulse?.economicData) return '';
+  const series = data.sentimentPulse.economicData.filter(d => d.unemployment != null);
+  const latest = series[series.length - 1];
+
+  const html = chartCard('unemp', 'Unemployment Rate', 'ONS', 'unempChart', 200,
+    `<div class="big-number negative">${latest.unemployment}%</div>
+     <div style="font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem">ILO definition · Age 16+</div>`,
+    'ONS Labour Force Survey');
+
+  setTimeout(() => {
+    const ctx = document.getElementById('unempChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: series.map(d => d.date),
+        datasets: [{
+          data: series.map(d => d.unemployment),
+          borderColor: RED,
+          backgroundColor: RED + '15',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { display: true, ticks: { maxTicksLimit: 6 } },
+          y: { display: true, ticks: { callback: v => v + '%' } }
+        }
+      }
+    });
+  }, 0);
+
+  return html;
+}
+
+function renderGDP(data) {
+  if (!data?.gdpTracker?.quarterlyGrowth) return '';
+  const series = data.gdpTracker.quarterlyGrowth;
+  const latest = series[series.length - 1];
+
+  const html = chartCard('gdp', 'GDP Growth (QoQ)', 'ONS', 'gdpChart', 200,
+    `<div class="big-number ${latest.growth >= 0 ? 'positive' : 'negative'}">${latest.growth > 0 ? '+' : ''}${latest.growth}%</div>
+     <div style="font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem">Quarter-on-quarter, seasonally adjusted</div>`,
+    'ONS Gross Domestic Product');
+
+  setTimeout(() => {
+    const ctx = document.getElementById('gdpChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: series.map(d => d.date),
+        datasets: [{
+          data: series.map(d => d.growth),
+          backgroundColor: series.map(d => d.growth >= 0 ? GREEN + 'cc' : RED + 'cc'),
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { display: true, ticks: { maxTicksLimit: 8 } },
+          y: { display: true, ticks: { callback: v => v + '%' } }
+        }
+      }
+    });
+  }, 0);
+
+  return html;
+}
+
+function renderDebt(data) {
+  if (!data?.nationalDebt) return '';
+  const d = data.nationalDebt;
+  const now = Date.now();
+  const elapsed = (now - d.baseDate) / 1000;
+  const currentDebt = d.baseDebt + elapsed * d.debtPerSecond;
+  const debtPerPerson = currentDebt / d.population;
+  const debtToGdp = ((currentDebt / d.gdp) * 100).toFixed(1);
+
+  return card('debt', 'National Debt', 'LIVE', `
+    <div class="big-number accent" id="debtCounter">£${(currentDebt / 1e12).toFixed(6)}T</div>
+    <div style="font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem">+£${d.debtPerSecond.toLocaleString()}/sec · ${debtToGdp}% of GDP</div>
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Per Person</div>
+        <div class="kpi-value">£${Math.round(debtPerPerson).toLocaleString()}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Population</div>
+        <div class="kpi-value">${(d.population / 1e6).toFixed(1)}M</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">GDP</div>
+        <div class="kpi-value">£${(d.gdp / 1e12).toFixed(2)}T</div>
+      </div>
+    </div>
+    <div style="margin-top:0.75rem;">
+      ${d.milestones.map(m => `
+        <div style="display:flex;justify-content:space-between;font-size:0.65rem;padding:0.2rem 0;border-bottom:1px solid var(--surface)">
+          <span style="color:var(--muted)">${m.year}</span>
+          <span style="font-weight:600">${m.amount}</span>
+          <span style="color:var(--muted)">${m.event}</span>
+        </div>`).join('')}
+    </div>`,
+    'ONS Public Sector Finances');
+}
+
+function renderPolling(data) {
+  if (!data?.electionPolling?.pollingData) return '';
+  const parties = data.electionPolling.pollingData;
+  const polls = data.electionPolling.recentPolls || [];
+
+  const html = chartCard('polling', 'Election Polling', 'MAR 2026', 'pollingChart', 200,
+    `<div style="font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem">Voting intention · National average</div>`,
+    'YouGov, Ipsos, Savanta, R&W');
+
+  setTimeout(() => {
+    const ctx = document.getElementById('pollingChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: parties.map(p => p.party),
+        datasets: [{
+          data: parties.map(p => p.pct),
+          backgroundColor: parties.map(p => p.color),
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+          x: { display: true, ticks: { callback: v => v + '%' } },
+          y: { display: true }
+        },
+        plugins: {
+          tooltip: { callbacks: { label: ctx => ctx.parsed.x + '%' } }
+        }
+      }
+    });
+  }, 0);
+
+  return html;
+}
+
+function renderPMApproval(data) {
+  if (!data?.pmApproval?.history) return '';
+  const history = data.pmApproval.history;
+  const latest = history[history.length - 1];
+
+  const html = chartCard('pm', 'PM Approval', 'YouGov', 'pmChart', 200,
+    `<div class="big-number negative">Net ${latest.net}</div>
+     <div style="font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem">Approve ${latest.approve}% · Disapprove ${latest.disapprove}%</div>`,
+    'YouGov PM Approval Tracker');
+
+  setTimeout(() => {
+    const ctx = document.getElementById('pmChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: history.map(d => d.date),
+        datasets: [
+          {
+            label: 'Approve',
+            data: history.map(d => d.approve),
+            borderColor: GREEN,
+            backgroundColor: GREEN + '15',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+            borderWidth: 2,
+          },
+          {
+            label: 'Disapprove',
+            data: history.map(d => d.disapprove),
+            borderColor: RED,
+            backgroundColor: RED + '15',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+            borderWidth: 2,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12 } } },
+        scales: {
+          x: { display: true },
+          y: { display: true, min: 0, max: 75, ticks: { callback: v => v + '%' } }
+        }
+      }
+    });
+  }, 0);
+
+  return html;
+}
+
+function renderMigration(data) {
+  if (!data?.migrationStats?.migrationHistory) return '';
+  const history = data.migrationStats.migrationHistory;
+  const latest = history[history.length - 1];
+
+  const html = chartCard('migration', 'Net Migration', 'ONS', 'migrationChart', 200,
+    `<div class="big-number accent">${latest.net}K</div>
+     <div style="font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem">${latest.year} · Immigration ${latest.immigration}K · Emigration ${latest.emigration}K</div>`,
+    'ONS International Migration');
+
+  setTimeout(() => {
+    const ctx = document.getElementById('migrationChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: history.map(d => d.year),
+        datasets: [
+          {
+            label: 'Immigration',
+            data: history.map(d => d.immigration),
+            backgroundColor: ACCENT + 'cc',
+          },
+          {
+            label: 'Emigration',
+            data: history.map(d => -d.emigration),
+            backgroundColor: '#666',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12 } } },
+        scales: {
+          x: { display: true, stacked: true },
+          y: { display: true, stacked: true, ticks: { callback: v => (v >= 0 ? '+' : '') + v + 'K' } }
+        }
+      }
+    });
+  }, 0);
+
+  return html;
+}
+
+function renderCrime(data) {
+  if (!data?.crimeStatistics) return '';
+  const h = data.crimeStatistics.headline;
+  const categories = data.crimeStatistics.crimeCategories || [];
+
+  return card('crime', 'Crime Statistics', 'E&W', `
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Total Crime</div>
+        <div class="kpi-value">${h.totalCrime}</div>
+        <div class="kpi-change">${h.totalChange} YoY</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Knife Crime</div>
+        <div class="kpi-value">${h.knifeCrime}</div>
+        <div class="kpi-change down">${h.knifeChange}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Homicides</div>
+        <div class="kpi-value">${h.homicides}</div>
+        <div class="kpi-change down">${h.homicideChange}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Charge Rate</div>
+        <div class="kpi-value">${h.chargeRate}</div>
+      </div>
+    </div>
+    <div style="margin-top:0.75rem;">
+      ${categories.slice(0, 6).map(c => `
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.65rem;padding:0.3rem 0;border-bottom:1px solid var(--surface)">
+          <span style="width:120px">${c.name}</span>
+          <div class="bar-bg" style="flex:1;margin:0 0.5rem">
+            <div class="bar-fill" style="width:${(c.count/4200000*100).toFixed(1)}%;background:${c.change > 0 ? 'var(--accent)' : '#666'}"></div>
+          </div>
+          <span style="width:50px;text-align:right;font-weight:600">${(c.count/1e6).toFixed(2)}M</span>
+          <span style="width:40px;text-align:right;color:${c.change > 0 ? 'var(--red)' : 'var(--green)'}">${c.change > 0 ? '+' : ''}${c.change}%</span>
+        </div>`).join('')}
+    </div>`,
+    'ONS Crime Survey · Home Office');
+}
+
+// ── Debt counter animation ───────────────────────────────────────────────────
+
+let debtData = null;
+
+function tickDebt() {
+  if (!debtData) return;
+  const el = document.getElementById('debtCounter');
+  if (!el) return;
+  const elapsed = (Date.now() - debtData.baseDate) / 1000;
+  const current = debtData.baseDebt + elapsed * debtData.debtPerSecond;
+  el.textContent = '£' + (current / 1e12).toFixed(6) + 'T';
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
+
+async function main() {
+  const data = await loadData();
+  if (!data) {
+    document.getElementById('grid').innerHTML =
+      '<div class="card" style="text-align:center;padding:3rem"><p style="color:var(--accent)">Failed to load data.</p><p style="color:var(--muted);font-size:0.7rem;margin-top:0.5rem">Ensure daily_threat_data.json exists.</p></div>';
+    return;
+  }
+
+  // Update timestamp
+  if (data.meta?.generatedAt) {
+    const d = new Date(data.meta.generatedAt);
+    document.getElementById('timestamp').textContent =
+      'Updated ' + d.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
+  // Render all cards
+  const cards = [
+    renderInflation(data),
+    renderBankRate(data),
+    renderUnemployment(data),
+    renderGDP(data),
+    renderDebt(data),
+    renderPolling(data),
+    renderPMApproval(data),
+    renderMigration(data),
+    renderCrime(data),
+  ].filter(Boolean);
+
+  document.getElementById('grid').innerHTML = cards.join('');
+
+  // Start debt counter
+  if (data.nationalDebt) {
+    debtData = data.nationalDebt;
+    setInterval(tickDebt, 50);
+  }
+}
+
+main();
+</script>
+</body>
+</html>
