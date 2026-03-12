@@ -63,12 +63,6 @@ const SECTIONS = [
   },
 ];
 
-let sectionCounter = 0;
-function nextNum() {
-  sectionCounter += 1;
-  return String(sectionCounter).padStart(2, "0");
-}
-
 function SectionHeader({ tag, title, subtitle, num }: { tag: string; title: string; subtitle: string; num: string }) {
   return (
     <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
@@ -97,8 +91,6 @@ function CategoryDivider({ label }: { label: string }) {
 }
 
 export default function Home() {
-  sectionCounter = 0;
-
   return (
     <div className="min-h-screen bg-white text-black">
       {/* ── TOP BAR ── */}
@@ -189,31 +181,31 @@ export default function Home() {
 
         {/* PM Approval Rating (full-width) */}
         <section id="pm-approval" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="Public Opinion" title="PM APPROVAL RATING" subtitle="KEIR STARMER · NET APPROVAL FROM YOUGOV TRACKER" num={nextNum()} />
+          <SectionHeader tag="Public Opinion" title="PM APPROVAL RATING" subtitle="KEIR STARMER · NET APPROVAL FROM YOUGOV TRACKER" num="01" />
           <PMApproval />
         </section>
 
         {/* Election Polling + Betting Odds (2-col) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <section id="election-polls" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-            <SectionHeader tag="Polling Data" title="ELECTION POLLING" subtitle="UK VOTING INTENTION AVERAGES" num={nextNum()} />
+            <SectionHeader tag="Polling Data" title="ELECTION POLLING" subtitle="UK VOTING INTENTION AVERAGES" num="02" />
             <ElectionPolling />
           </section>
           <section id="betting-odds" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-            <SectionHeader tag="Market Data" title="BETTING ODDS" subtitle="NEXT UK GENERAL ELECTION · IMPLIED PROBABILITIES" num={nextNum()} />
+            <SectionHeader tag="Market Data" title="BETTING ODDS" subtitle="NEXT UK GENERAL ELECTION · IMPLIED PROBABILITIES" num="03" />
             <BettingOdds />
           </section>
         </div>
 
         {/* Government Approval (full-width) */}
         <section id="govt-approval" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="Public Opinion" title="GOVERNMENT APPROVAL" subtitle="DISTRIBUTION OF GOVERNMENT SATISFACTION ACROSS POLLS" num={nextNum()} />
+          <SectionHeader tag="Public Opinion" title="GOVERNMENT APPROVAL" subtitle="DISTRIBUTION OF GOVERNMENT SATISFACTION ACROSS POLLS" num="04" />
           <PolarizationMeter />
         </section>
 
         {/* Trust Trend (full-width) */}
         <section id="gov-trust-trend" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="Longitudinal Data" title="TRUST IN GOVERNMENT" subtitle="SATISFACTION WITH GOVERNMENT 2020–2025 · KEY EVENTS ANNOTATED" num={nextNum()} />
+          <SectionHeader tag="Longitudinal Data" title="TRUST IN GOVERNMENT" subtitle="SATISFACTION WITH GOVERNMENT 2020–2025 · KEY EVENTS ANNOTATED" num="05" />
           <TrendLines />
         </section>
 
@@ -224,18 +216,18 @@ export default function Home() {
 
         {/* National Debt (full-width) */}
         <section id="national-debt" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="Live Counter" title="NATIONAL DEBT" subtitle="UK PUBLIC SECTOR NET DEBT · LIVE ESTIMATE" num={nextNum()} />
+          <SectionHeader tag="Live Counter" title="NATIONAL DEBT" subtitle="UK PUBLIC SECTOR NET DEBT · LIVE ESTIMATE" num="06" />
           <NationalDebtCounter />
         </section>
 
         {/* GDP + Economy indicators (2-col) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <section id="gdp" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="National Accounts" title="GDP" subtitle="GROSS DOMESTIC PRODUCT · TOTAL & PER CAPITA" num={nextNum()} />
+            <SectionHeader tag="National Accounts" title="GDP" subtitle="GROSS DOMESTIC PRODUCT · TOTAL & PER CAPITA" num="07" />
             <GDPTracker />
           </section>
           <section id="economy" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="Economic Data" title="KEY INDICATORS" subtitle="INFLATION · BANK RATE · UNEMPLOYMENT" num={nextNum()} />
+            <SectionHeader tag="Economic Data" title="KEY INDICATORS" subtitle="INFLATION · BANK RATE · UNEMPLOYMENT" num="08" />
             <SentimentPulse />
           </section>
         </div>
@@ -243,11 +235,11 @@ export default function Home() {
         {/* Tax + Employment (2-col) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <section id="tax" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="HMRC Data" title="TAX REVENUE" subtitle="UK TAX RECEIPTS & TAX BURDEN" num={nextNum()} />
+            <SectionHeader tag="HMRC Data" title="TAX REVENUE" subtitle="UK TAX RECEIPTS & TAX BURDEN" num="09" />
             <TaxRevenue />
           </section>
           <section id="employment" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="Labour Market" title="EMPLOYMENT" subtitle="PRIVATE VS PUBLIC SECTOR · LABOUR MARKET OVERVIEW" num={nextNum()} />
+            <SectionHeader tag="Labour Market" title="EMPLOYMENT" subtitle="PRIVATE VS PUBLIC SECTOR · LABOUR MARKET OVERVIEW" num="10" />
             <EmploymentStats />
           </section>
         </div>
@@ -260,18 +252,18 @@ export default function Home() {
         {/* Crime + NHS (2-col) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <section id="crime-stats" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-            <SectionHeader tag="Government Stats" title="CRIME STATISTICS" subtitle="ONS RECORDED CRIME · ENGLAND & WALES" num={nextNum()} />
+            <SectionHeader tag="Government Stats" title="CRIME STATISTICS" subtitle="ONS RECORDED CRIME · ENGLAND & WALES" num="11" />
             <CrimeStatistics />
           </section>
           <section id="nhs" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-            <SectionHeader tag="Health Data" title="NHS & HEALTH" subtitle="WAITING LISTS · A&E · LIFE EXPECTANCY" num={nextNum()} />
+            <SectionHeader tag="Health Data" title="NHS & HEALTH" subtitle="WAITING LISTS · A&E · LIFE EXPECTANCY" num="12" />
             <NHSStats />
           </section>
         </div>
 
         {/* Migration (full-width) */}
         <section id="migration" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="ONS Data" title="MIGRATION" subtitle="UK INTERNATIONAL MIGRATION · NET MIGRATION · VISA TYPES" num={nextNum()} />
+          <SectionHeader tag="ONS Data" title="MIGRATION" subtitle="UK INTERNATIONAL MIGRATION · NET MIGRATION · VISA TYPES" num="13" />
           <MigrationStats />
         </section>
 
@@ -283,18 +275,18 @@ export default function Home() {
         {/* Regional + Policy Links (2-col) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <section id="uk-regions" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="Regional Data" title="UK REGIONS" subtitle="MULTI-LAYER REGIONAL MAP" num={nextNum()} />
+            <SectionHeader tag="Regional Data" title="UK REGIONS" subtitle="MULTI-LAYER REGIONAL MAP" num="14" />
             <GeographicHeatmap />
           </section>
           <section id="policy-links" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="Survey Data" title="POLICY LINKS" subtitle="OPINION CORRELATION MATRIX" num={nextNum()} />
+            <SectionHeader tag="Survey Data" title="POLICY LINKS" subtitle="OPINION CORRELATION MATRIX" num="15" />
             <EchoChamberMap />
           </section>
         </div>
 
         {/* Political Compass (full-width) */}
         <section id="political-compass" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="Interactive Quiz" title="POLITICAL COMPASS" subtitle="WHERE DO YOU SIT ON THE POLITICAL SPECTRUM? ANSWER 10 QUESTIONS." num={nextNum()} />
+          <SectionHeader tag="Interactive Quiz" title="POLITICAL COMPASS" subtitle="WHERE DO YOU SIT ON THE POLITICAL SPECTRUM? ANSWER 10 QUESTIONS." num="16" />
           <PoliticalCompass />
         </section>
 
