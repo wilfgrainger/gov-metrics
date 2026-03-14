@@ -1,9 +1,576 @@
 {
   "meta": {
-    "generatedAt": null,
+    "generatedAt": "2026-03-14T08:29:26.661342+00:00",
     "generator": "fetch_intel.py",
-    "version": "2.0",
-    "note": "This file is populated by fetch_intel.py which fetches ONLY from external APIs. Run: python fetch_intel.py",
-    "sources": {}
+    "version": "3.0",
+    "note": "ONS data fetched via CSV generator (www.ons.gov.uk/generator). The legacy api.ons.gov.uk was retired Nov 2024.",
+    "sources": {
+      "sentimentPulse": {
+        "status": "ok",
+        "source": "ONS CPI (D7G7) + BoE Bank Rate + ONS Unemployment (MGSX)",
+        "fetchedAt": "2026-03-14T08:29:26.661342+00:00"
+      },
+      "gdpTracker": {
+        "status": "ok",
+        "source": "ONS GDP Growth (IHYQ) + Level (ABMI)",
+        "fetchedAt": "2026-03-14T08:29:26.661342+00:00"
+      },
+      "employmentStats": {
+        "status": "ok",
+        "source": "ONS Employment (LF24) + Unemployment (MGSX)",
+        "fetchedAt": "2026-03-14T08:29:26.661342+00:00"
+      },
+      "nationalDebt": {
+        "status": "error",
+        "source": "ONS Net Debt (HF6X) + Net Borrowing (J5II)",
+        "fetchedAt": "2026-03-14T08:29:26.661342+00:00"
+      },
+      "taxRevenue": {
+        "status": "error",
+        "source": "ONS Tax Receipts (MF6U)",
+        "fetchedAt": "2026-03-14T08:29:26.661342+00:00"
+      },
+      "migrationStats": {
+        "status": "error",
+        "source": "ONS Migration Estimates (CIMU/CIML/CIMM)",
+        "fetchedAt": "2026-03-14T08:29:26.661342+00:00"
+      },
+      "electionPolling": {
+        "status": "ok",
+        "source": "Wikipedia UK Opinion Polling",
+        "fetchedAt": "2026-03-14T08:29:26.661342+00:00"
+      },
+      "nhsStats": {
+        "status": "error",
+        "source": "NHS England RTT Waiting Times",
+        "fetchedAt": "2026-03-14T08:29:26.661342+00:00"
+      }
+    }
+  },
+  "sentimentPulse": {
+    "economicData": [
+      {
+        "date": "Feb 24",
+        "inflation": 3.4,
+        "bankRate": null,
+        "unemployment": 4.3
+      },
+      {
+        "date": "Mar 24",
+        "inflation": 3.2,
+        "bankRate": null,
+        "unemployment": 4.4
+      },
+      {
+        "date": "Apr 24",
+        "inflation": 2.3,
+        "bankRate": null,
+        "unemployment": 4.4
+      },
+      {
+        "date": "May 24",
+        "inflation": 2.0,
+        "bankRate": null,
+        "unemployment": 4.2
+      },
+      {
+        "date": "Jun 24",
+        "inflation": 2.0,
+        "bankRate": null,
+        "unemployment": 4.2
+      },
+      {
+        "date": "Jul 24",
+        "inflation": 2.2,
+        "bankRate": null,
+        "unemployment": 4.1
+      },
+      {
+        "date": "Aug 24",
+        "inflation": 2.2,
+        "bankRate": null,
+        "unemployment": 4.3
+      },
+      {
+        "date": "Sep 24",
+        "inflation": 1.7,
+        "bankRate": null,
+        "unemployment": 4.3
+      },
+      {
+        "date": "Oct 24",
+        "inflation": 2.3,
+        "bankRate": null,
+        "unemployment": 4.4
+      },
+      {
+        "date": "Nov 24",
+        "inflation": 2.6,
+        "bankRate": null,
+        "unemployment": 4.4
+      },
+      {
+        "date": "Dec 24",
+        "inflation": 2.5,
+        "bankRate": null,
+        "unemployment": 4.4
+      },
+      {
+        "date": "Jan 25",
+        "inflation": 3.0,
+        "bankRate": null,
+        "unemployment": 4.4
+      },
+      {
+        "date": "Feb 25",
+        "inflation": 2.8,
+        "bankRate": null,
+        "unemployment": 4.5
+      },
+      {
+        "date": "Mar 25",
+        "inflation": 2.6,
+        "bankRate": null,
+        "unemployment": 4.6
+      },
+      {
+        "date": "Apr 25",
+        "inflation": 3.5,
+        "bankRate": null,
+        "unemployment": 4.7
+      },
+      {
+        "date": "May 25",
+        "inflation": 3.4,
+        "bankRate": null,
+        "unemployment": 4.7
+      },
+      {
+        "date": "Jun 25",
+        "inflation": 3.6,
+        "bankRate": null,
+        "unemployment": 4.7
+      },
+      {
+        "date": "Jul 25",
+        "inflation": 3.8,
+        "bankRate": null,
+        "unemployment": 4.8
+      },
+      {
+        "date": "Aug 25",
+        "inflation": 3.8,
+        "bankRate": null,
+        "unemployment": 5.0
+      },
+      {
+        "date": "Sep 25",
+        "inflation": 3.8,
+        "bankRate": null,
+        "unemployment": 5.1
+      },
+      {
+        "date": "Oct 25",
+        "inflation": 3.6,
+        "bankRate": null,
+        "unemployment": 5.1
+      },
+      {
+        "date": "Nov 25",
+        "inflation": 3.2,
+        "bankRate": null,
+        "unemployment": 5.2
+      },
+      {
+        "date": "Dec 25",
+        "inflation": 3.4,
+        "bankRate": null,
+        "unemployment": null
+      },
+      {
+        "date": "Jan 26",
+        "inflation": 3.0,
+        "bankRate": null,
+        "unemployment": null
+      }
+    ]
+  },
+  "gdpTracker": {
+    "gdpHistory": [
+      {
+        "year": "2016 Q1",
+        "growth": 0.5,
+        "total": 0.625
+      },
+      {
+        "year": "2016 Q2",
+        "growth": 0.7,
+        "total": 0.63
+      },
+      {
+        "year": "2016 Q3",
+        "growth": 0.4,
+        "total": 0.632
+      },
+      {
+        "year": "2016 Q4",
+        "growth": 0.6,
+        "total": 0.636
+      },
+      {
+        "year": "2017 Q1",
+        "growth": 1.0,
+        "total": 0.642
+      },
+      {
+        "year": "2017 Q2",
+        "growth": 0.9,
+        "total": 0.648
+      },
+      {
+        "year": "2017 Q3",
+        "growth": 0.7,
+        "total": 0.652
+      },
+      {
+        "year": "2017 Q4",
+        "growth": 0.8,
+        "total": 0.657
+      },
+      {
+        "year": "2018 Q1",
+        "growth": 0.1,
+        "total": 0.658
+      },
+      {
+        "year": "2018 Q2",
+        "growth": 0.2,
+        "total": 0.659
+      },
+      {
+        "year": "2018 Q3",
+        "growth": 0.3,
+        "total": 0.661
+      },
+      {
+        "year": "2018 Q4",
+        "growth": 0.1,
+        "total": 0.662
+      },
+      {
+        "year": "2019 Q1",
+        "growth": 0.5,
+        "total": 0.665
+      },
+      {
+        "year": "2019 Q2",
+        "growth": 0.2,
+        "total": 0.667
+      },
+      {
+        "year": "2019 Q3",
+        "growth": 0.6,
+        "total": 0.671
+      },
+      {
+        "year": "2019 Q4",
+        "growth": 0.0,
+        "total": 0.671
+      },
+      {
+        "year": "2020 Q1",
+        "growth": -2.7,
+        "total": 0.652
+      },
+      {
+        "year": "2020 Q2",
+        "growth": -19.9,
+        "total": 0.522
+      },
+      {
+        "year": "2020 Q3",
+        "growth": 17.0,
+        "total": 0.611
+      },
+      {
+        "year": "2020 Q4",
+        "growth": 1.4,
+        "total": 0.619
+      },
+      {
+        "year": "2021 Q1",
+        "growth": -1.1,
+        "total": 0.613
+      },
+      {
+        "year": "2021 Q2",
+        "growth": 7.0,
+        "total": 0.655
+      },
+      {
+        "year": "2021 Q3",
+        "growth": 1.7,
+        "total": 0.666
+      },
+      {
+        "year": "2021 Q4",
+        "growth": 1.4,
+        "total": 0.676
+      },
+      {
+        "year": "2022 Q1",
+        "growth": 1.0,
+        "total": 0.683
+      },
+      {
+        "year": "2022 Q2",
+        "growth": 0.6,
+        "total": 0.686
+      },
+      {
+        "year": "2022 Q3",
+        "growth": 0.1,
+        "total": 0.687
+      },
+      {
+        "year": "2022 Q4",
+        "growth": 0.3,
+        "total": 0.689
+      },
+      {
+        "year": "2023 Q1",
+        "growth": 0.1,
+        "total": 0.689
+      },
+      {
+        "year": "2023 Q2",
+        "growth": 0.0,
+        "total": 0.689
+      },
+      {
+        "year": "2023 Q3",
+        "growth": -0.2,
+        "total": 0.688
+      },
+      {
+        "year": "2023 Q4",
+        "growth": -0.3,
+        "total": 0.686
+      },
+      {
+        "year": "2024 Q1",
+        "growth": 0.8,
+        "total": 0.691
+      },
+      {
+        "year": "2024 Q2",
+        "growth": 0.6,
+        "total": 0.695
+      },
+      {
+        "year": "2024 Q3",
+        "growth": 0.2,
+        "total": 0.697
+      },
+      {
+        "year": "2024 Q4",
+        "growth": 0.3,
+        "total": 0.699
+      },
+      {
+        "year": "2025 Q1",
+        "growth": 0.7,
+        "total": 0.703
+      },
+      {
+        "year": "2025 Q2",
+        "growth": 0.2,
+        "total": 0.705
+      },
+      {
+        "year": "2025 Q3",
+        "growth": 0.1,
+        "total": 0.705
+      },
+      {
+        "year": "2025 Q4",
+        "growth": 0.1,
+        "total": 0.706
+      }
+    ]
+  },
+  "employmentStats": {
+    "employmentRate": [
+      {
+        "date": "2023 DEC",
+        "value": 74.7
+      },
+      {
+        "date": "2024 JAN",
+        "value": 74.6
+      },
+      {
+        "date": "2024 FEB",
+        "value": 74.5
+      },
+      {
+        "date": "2024 MAR",
+        "value": 74.4
+      },
+      {
+        "date": "2024 APR",
+        "value": 74.4
+      },
+      {
+        "date": "2024 MAY",
+        "value": 74.6
+      },
+      {
+        "date": "2024 JUN",
+        "value": 74.7
+      },
+      {
+        "date": "2024 JUL",
+        "value": 75.0
+      },
+      {
+        "date": "2024 AUG",
+        "value": 74.9
+      },
+      {
+        "date": "2024 SEP",
+        "value": 74.9
+      },
+      {
+        "date": "2024 OCT",
+        "value": 74.9
+      },
+      {
+        "date": "2024 NOV",
+        "value": 75.0
+      },
+      {
+        "date": "2024 DEC",
+        "value": 75.0
+      },
+      {
+        "date": "2025 JAN",
+        "value": 75.1
+      },
+      {
+        "date": "2025 FEB",
+        "value": 75.0
+      },
+      {
+        "date": "2025 MAR",
+        "value": 75.1
+      },
+      {
+        "date": "2025 APR",
+        "value": 75.2
+      },
+      {
+        "date": "2025 MAY",
+        "value": 75.3
+      },
+      {
+        "date": "2025 JUN",
+        "value": 75.2
+      },
+      {
+        "date": "2025 JUL",
+        "value": 75.1
+      },
+      {
+        "date": "2025 AUG",
+        "value": 75.0
+      },
+      {
+        "date": "2025 SEP",
+        "value": 74.9
+      },
+      {
+        "date": "2025 OCT",
+        "value": 75.1
+      },
+      {
+        "date": "2025 NOV",
+        "value": 75.0
+      }
+    ]
+  },
+  "electionPolling": {
+    "pollingData": [
+      {
+        "party": "REF",
+        "name": "Reform UK",
+        "pct": 27,
+        "color": "#12B6CF",
+        "change": 13
+      },
+      {
+        "party": "LAB",
+        "name": "Labour",
+        "pct": 18,
+        "color": "#E4003B",
+        "change": -16
+      },
+      {
+        "party": "CON",
+        "name": "Conservative",
+        "pct": 18,
+        "color": "#0087DC",
+        "change": -6
+      },
+      {
+        "party": "LD",
+        "name": "Liberal Democrats",
+        "pct": 12,
+        "color": "#FAA61A",
+        "change": 0
+      }
+    ],
+    "recentPolls": [
+      {
+        "pollster": "10–12 Mar",
+        "date": "Techne[2]",
+        "lab": 17.0,
+        "con": 18.0,
+        "ref": 27.0,
+        "ld": 14.0
+      },
+      {
+        "pollster": "11 Mar",
+        "date": "Find Out Now[3]",
+        "lab": 15.0,
+        "con": 17.0,
+        "ref": 26.0,
+        "ld": 11.0
+      },
+      {
+        "pollster": "9–10 Mar",
+        "date": "YouGov[4]",
+        "lab": 17.0,
+        "con": 19.0,
+        "ref": 23.0,
+        "ld": 14.0
+      },
+      {
+        "pollster": "6–10 Mar",
+        "date": "Focaldata[5]",
+        "lab": 20.0,
+        "con": 18.0,
+        "ref": 27.0,
+        "ld": 14.0
+      },
+      {
+        "pollster": "6–9 Mar",
+        "date": "More in Common[6]",
+        "lab": 22.0,
+        "con": 19.0,
+        "ref": 30.0,
+        "ld": 13.0
+      }
+    ]
   }
 }
