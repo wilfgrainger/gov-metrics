@@ -45,7 +45,7 @@ async function fetchONSCSV(
   const result: { date: string; value: number }[] = [];
   for (const line of lines) {
     const stripped = line.trim().replace(/^"/, "");
-    if (!stripped || !stripped[0]?.match(/\d/)) continue;
+    if (!stripped || !/^\d/.test(stripped)) continue;
 
     const parts = line.split(",").map((s) => s.trim().replace(/"/g, ""));
     if (parts.length < 2) continue;
@@ -98,7 +98,7 @@ async function fetchSentimentPulse() {
 
   // Build merged data points from CPI series (as the base timeline)
   const data = cpiSeries.map((cpiPoint) => {
-    const closestBankRate = findClosestValue(bankRateSeries, cpiPoint.date);
+    const closestBankRate = getLastValue(bankRateSeries);
     const matchingUnemployment = unemploymentSeries.find((u) =>
       u.date.includes(cpiPoint.date.split(" ")[0])
     );
@@ -152,9 +152,8 @@ function formatONSDate(raw: string): string {
   return raw.trim();
 }
 
-function findClosestValue(series: { date: string; value: number }[], _targetDate: string): number | null {
+function getLastValue(series: { date: string; value: number }[]): number | null {
   if (series.length === 0) return null;
-  // Simple: return the last value (most recent)
   return series[series.length - 1].value;
 }
 

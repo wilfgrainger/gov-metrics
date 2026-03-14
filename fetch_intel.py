@@ -144,7 +144,7 @@ def fetch_ons_csv(topic_path: str, limit: int = 36) -> list[dict]:
     for line in lines:
         # Skip metadata/header rows — data rows start with a year (4 digits)
         stripped = line.strip().strip('"')
-        if not stripped or not stripped[0].isdigit():
+        if not stripped or not stripped[:1].isdigit():
             continue
         # Parse CSV row: "2025 JAN","3.5" or 2025 JAN,3.5
         reader = csv.reader(io.StringIO(line))
@@ -222,9 +222,11 @@ WIKI_POLLING_URL = (
 
 
 def _extract_number(text: str) -> float | None:
-    """Extract a number from text like '28%' or '28'."""
-    m = re.search(r"(\d+(?:\.\d+)?)", text)
-    return float(m.group(1)) if m else None
+    """Extract a number from text like '28%', '28', or '1,234'."""
+    m = re.search(r"(\d+(?:[,\d]*)?(?:\.\d+)?)", text)
+    if not m:
+        return None
+    return float(m.group(1).replace(",", ""))
 
 
 def _strip_html(text: str) -> str:
@@ -292,7 +294,7 @@ def fetch_wikipedia_polling() -> dict | None:
             valid = True
             for party, idx in col_map.items():
                 val = _extract_number(cell_texts[idx]) if idx < len(cell_texts) else None
-                if val is None or val > 70:  # sanity check
+                if val is None or val > 70:  # no single UK party polls above ~70%
                     valid = False
                     break
                 poll[party] = val
@@ -611,7 +613,7 @@ def build_tax_revenue() -> dict | None:
         total = sum(values)
         tax_burden_history.append({
             "year": year,
-            "pct": round(total / 12, 1),  # monthly average
+            "pct": round(total / len(values), 1),  # monthly average
         })
 
     # Latest month total receipts (annualised)
