@@ -14,25 +14,54 @@ export const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 // ── Public UK Data Source Endpoints ──────────────────────────────────────────
 
-// ONS Time Series API (no auth required)
-// Docs: https://api.ons.gov.uk
-export const ONS_API_BASE = "https://api.ons.gov.uk";
+// ONS CSV Generator (no auth required) — replaces the retired api.ons.gov.uk
+// The legacy ONS API at api.ons.gov.uk was retired in November 2024.
+// Docs: https://developer.ons.gov.uk/
+export const ONS_CSV_BASE = "https://www.ons.gov.uk/generator?format=csv&uri=";
 
 // Bank of England Statistical Interactive Database (no auth required)
 export const BOE_API_BASE =
   "https://www.bankofengland.co.uk/boeapps/database";
 
-// ── ONS Time Series IDs ─────────────────────────────────────────────────────
+// ── ONS Time Series Definitions ─────────────────────────────────────────────
+// Each series includes the topicPath for the CSV generator URL.
 
 export const ONS_SERIES = {
-  CPI_ANNUAL_RATE: { seriesId: "D7G7", datasetId: "MM23" }, // CPI annual rate
-  CPIH_ANNUAL_RATE: { seriesId: "L55O", datasetId: "MM23" }, // CPIH annual rate
-  UNEMPLOYMENT_RATE: { seriesId: "MGSX", datasetId: "LMS" }, // ILO unemployment rate
-  EMPLOYMENT_RATE: { seriesId: "LF24", datasetId: "LMS" }, // Employment rate (16-64)
-  GDP_QUARTERLY: { seriesId: "IHYQ", datasetId: "PN2" }, // GDP quarter-on-quarter growth
-  GDP_INDEX: { seriesId: "ABMI", datasetId: "PN2" }, // GDP at market prices (£m, SA)
-  POPULATION_UK: { seriesId: "UKPOP", datasetId: "POP" }, // UK population estimate
-  NET_BORROWING: { seriesId: "J5II", datasetId: "PSF" }, // Public sector net borrowing
+  CPI_ANNUAL_RATE: {
+    seriesId: "D7G7",
+    datasetId: "MM23",
+    topicPath: "/economy/inflationandpriceindices/timeseries/d7g7/mm23",
+  },
+  CPIH_ANNUAL_RATE: {
+    seriesId: "L55O",
+    datasetId: "MM23",
+    topicPath: "/economy/inflationandpriceindices/timeseries/l55o/mm23",
+  },
+  UNEMPLOYMENT_RATE: {
+    seriesId: "MGSX",
+    datasetId: "LMS",
+    topicPath: "/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms",
+  },
+  EMPLOYMENT_RATE: {
+    seriesId: "LF24",
+    datasetId: "LMS",
+    topicPath: "/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/lf24/lms",
+  },
+  GDP_QUARTERLY: {
+    seriesId: "IHYQ",
+    datasetId: "PN2",
+    topicPath: "/economy/grossdomesticproductgdp/timeseries/ihyq/pn2",
+  },
+  GDP_INDEX: {
+    seriesId: "ABMI",
+    datasetId: "PN2",
+    topicPath: "/economy/grossdomesticproductgdp/timeseries/abmi/pn2",
+  },
+  NET_BORROWING: {
+    seriesId: "J5II",
+    datasetId: "PSF",
+    topicPath: "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/psf",
+  },
 } as const;
 
 // ── Bank of England Series ───────────────────────────────────────────────────
@@ -55,7 +84,7 @@ export const DATA_SOURCES: Record<
   electionPolling: {
     name: "Election Polling",
     frequency: "daily",
-    sources: ["YouGov", "Ipsos", "Savanta", "R&W", "More in Common"],
+    sources: ["Wikipedia", "YouGov", "Ipsos", "Savanta", "R&W", "More in Common"],
   },
   bettingOdds: {
     name: "Betting Odds",
@@ -90,7 +119,7 @@ export const DATA_SOURCES: Record<
   taxRevenue: {
     name: "Tax Revenue",
     frequency: "monthly",
-    sources: ["HMRC", "OBR"],
+    sources: ["ONS", "HMRC", "OBR"],
   },
   employmentStats: {
     name: "Employment",

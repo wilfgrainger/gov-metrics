@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ONS_API_BASE, BOE_API_BASE, ONS_SERIES, BOE_SERIES } from "@/app/lib/config";
+import { ONS_CSV_BASE, BOE_API_BASE, ONS_SERIES, BOE_SERIES } from "@/app/lib/config";
 
 // ── In-memory server-side cache ──────────────────────────────────────────────
 
@@ -23,43 +23,41 @@ function setCache(key: string, data: unknown) {
   serverCache.set(key, { data, timestamp: Date.now() });
 }
 
-// ── ONS Time Series Fetcher ──────────────────────────────────────────────────
+// ── ONS CSV Generator Fetcher ────────────────────────────────────────────────
+// The legacy api.ons.gov.uk was retired Nov 2024.
+// Uses the website CSV generator at www.ons.gov.uk/generator instead.
 
-interface ONSTimeSeriesPoint {
-  date: string;
-  value: string;
-  year: string;
-  month?: string;
-  quarter?: string;
-}
-
-async function fetchONSSeries(
-  seriesId: string,
-  datasetId: string,
-  periodType: "months" | "quarters" | "years" = "months",
+async function fetchONSCSV(
+  topicPath: string,
   limit = 24
 ): Promise<{ date: string; value: number }[]> {
-  const cacheKey = `ons:${seriesId}:${datasetId}`;
+  const cacheKey = `ons-csv:${topicPath}`;
   const cached = getCached(cacheKey);
   if (cached) return cached as { date: string; value: number }[];
 
-  const url = `${ONS_API_BASE}/timeseries/${seriesId}/dataset/${datasetId}/data`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-  if (!res.ok) throw new Error(`ONS API ${res.status}`);
+  const url = `${ONS_CSV_BASE}${topicPath}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(12_000) });
+  if (!res.ok) throw new Error(`ONS CSV ${res.status}`);
 
-  const json = await res.json();
-  const points: ONSTimeSeriesPoint[] = json[periodType] ?? [];
+  const text = await res.text();
+  const lines = text.trim().split("\n");
 
-  const result = points
-    .filter((p) => p.value && p.value.trim() !== "" && !isNaN(Number(p.value)))
-    .slice(-limit)
-    .map((p) => ({
-      date: p.date?.trim() ?? `${p.year} ${p.month ?? p.quarter ?? ""}`.trim(),
-      value: parseFloat(p.value),
-    }));
+  const result: { date: string; value: number }[] = [];
+  for (const line of lines) {
+    const stripped = line.trim().replace(/^"/, "");
+    if (!stripped || !stripped[0]?.match(/\d/)) continue;
 
-  setCache(cacheKey, result);
-  return result;
+    const parts = line.split(",").map((s) => s.trim().replace(/"/g, ""));
+    if (parts.length < 2) continue;
+    const val = parseFloat(parts[1]);
+    if (isNaN(val) || parts[1] === "" || parts[1] === "..") continue;
+
+    result.push({ date: parts[0], value: val });
+  }
+
+  const trimmed = result.slice(-limit);
+  setCache(cacheKey, trimmed);
+  return trimmed;
 }
 
 // ── Bank of England Fetcher ──────────────────────────────────────────────────
@@ -93,21 +91,16 @@ async function fetchBOERate(seriesCode: string): Promise<{ date: string; value: 
 
 async function fetchSentimentPulse() {
   const [cpiSeries, bankRateSeries, unemploymentSeries] = await Promise.all([
-    fetchONSSeries(ONS_SERIES.CPI_ANNUAL_RATE.seriesId, ONS_SERIES.CPI_ANNUAL_RATE.datasetId, "months", 24),
+    fetchONSCSV(ONS_SERIES.CPI_ANNUAL_RATE.topicPath, 24),
     fetchBOERate(BOE_SERIES.BANK_RATE),
-    fetchONSSeries(ONS_SERIES.UNEMPLOYMENT_RATE.seriesId, ONS_SERIES.UNEMPLOYMENT_RATE.datasetId, "months", 24),
+    fetchONSCSV(ONS_SERIES.UNEMPLOYMENT_RATE.topicPath, 24),
   ]);
-
-  // Merge time series by aligning dates
-  // Create a lookup map for each series
-  const bankRateMap = new Map(bankRateSeries.map((p) => [p.date, p.value]));
 
   // Build merged data points from CPI series (as the base timeline)
   const data = cpiSeries.map((cpiPoint) => {
-    // Find closest bank rate and unemployment
     const closestBankRate = findClosestValue(bankRateSeries, cpiPoint.date);
     const matchingUnemployment = unemploymentSeries.find((u) =>
-      u.date.includes(cpiPoint.date.split(" ")[0]) // match by year
+      u.date.includes(cpiPoint.date.split(" ")[0])
     );
 
     return {
@@ -122,12 +115,7 @@ async function fetchSentimentPulse() {
 }
 
 async function fetchGDPData() {
-  const gdpGrowth = await fetchONSSeries(
-    ONS_SERIES.GDP_QUARTERLY.seriesId,
-    ONS_SERIES.GDP_QUARTERLY.datasetId,
-    "quarters",
-    32
-  );
+  const gdpGrowth = await fetchONSCSV(ONS_SERIES.GDP_QUARTERLY.topicPath, 32);
 
   return {
     quarterlyGrowth: gdpGrowth.map((p) => ({
@@ -139,8 +127,8 @@ async function fetchGDPData() {
 
 async function fetchEmploymentData() {
   const [employmentRate, unemploymentRate] = await Promise.all([
-    fetchONSSeries(ONS_SERIES.EMPLOYMENT_RATE.seriesId, ONS_SERIES.EMPLOYMENT_RATE.datasetId, "months", 24),
-    fetchONSSeries(ONS_SERIES.UNEMPLOYMENT_RATE.seriesId, ONS_SERIES.UNEMPLOYMENT_RATE.datasetId, "months", 24),
+    fetchONSCSV(ONS_SERIES.EMPLOYMENT_RATE.topicPath, 24),
+    fetchONSCSV(ONS_SERIES.UNEMPLOYMENT_RATE.topicPath, 24),
   ]);
 
   return {
@@ -150,12 +138,7 @@ async function fetchEmploymentData() {
 }
 
 async function fetchNationalDebtData() {
-  const borrowing = await fetchONSSeries(
-    ONS_SERIES.NET_BORROWING.seriesId,
-    ONS_SERIES.NET_BORROWING.datasetId,
-    "months",
-    24
-  );
+  const borrowing = await fetchONSCSV(ONS_SERIES.NET_BORROWING.topicPath, 24);
 
   return {
     netBorrowing: borrowing.map((p) => ({ date: formatONSDate(p.date), value: p.value })),
@@ -169,7 +152,7 @@ function formatONSDate(raw: string): string {
   return raw.trim();
 }
 
-function findClosestValue(series: { date: string; value: number }[], targetDate: string): number | null {
+function findClosestValue(series: { date: string; value: number }[], _targetDate: string): number | null {
   if (series.length === 0) return null;
   // Simple: return the last value (most recent)
   return series[series.length - 1].value;
