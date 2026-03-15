@@ -767,17 +767,25 @@ def main() -> None:
             fail_count += 1
             print(f"    ✗  FAILED — section omitted (no mock data)")
 
-    # Write output
+    # Never overwrite the published JSON if every upstream source is down.
+    # This protects the dashboard from being replaced with an effectively empty file
+    # during transient network/proxy outages in CI.
+    if ok_count == 0:
+        print()
+        print("❌  Done: 0 OK, all sections failed")
+        if OUTPUT_PATH.exists():
+            print(f"    Preserving existing file: {OUTPUT_PATH}")
+        else:
+            print(f"    No existing file to preserve at: {OUTPUT_PATH}")
+        sys.exit(1)
+
+    # Write output when at least one section succeeded.
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
     print()
     print(f"{'✅' if fail_count == 0 else '⚠️ '}  Done: {ok_count} OK, {fail_count} failed")
     print(f"    Wrote {OUTPUT_PATH}  ({OUTPUT_PATH.stat().st_size:,} bytes)")
-
-    # Exit with error code if ALL fetches failed
-    if ok_count == 0 and fail_count > 0:
-        sys.exit(1)
 
 
 if __name__ == "__main__":
