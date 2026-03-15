@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-03-15T16:26:21.241816+00:00",
+    "generatedAt": "2026-03-15T20:23:08.322657+00:00",
     "generator": "fetch_intel.py",
     "version": "3.0",
     "note": "ONS data fetched via CSV generator (www.ons.gov.uk/generator). The legacy api.ons.gov.uk was retired Nov 2024.",
@@ -8,42 +8,42 @@
       "sentimentPulse": {
         "status": "ok",
         "source": "ONS CPI (D7G7) + BoE Bank Rate + ONS Unemployment (MGSX)",
-        "fetchedAt": "2026-03-15T16:26:21.241816+00:00"
+        "fetchedAt": "2026-03-15T20:23:08.322657+00:00"
       },
       "gdpTracker": {
         "status": "ok",
         "source": "ONS GDP Growth (IHYQ) + Level (ABMI)",
-        "fetchedAt": "2026-03-15T16:26:21.241816+00:00"
+        "fetchedAt": "2026-03-15T20:23:08.322657+00:00"
       },
       "employmentStats": {
         "status": "ok",
         "source": "ONS Employment (LF24) + Unemployment (MGSX)",
-        "fetchedAt": "2026-03-15T16:26:21.241816+00:00"
+        "fetchedAt": "2026-03-15T20:23:08.322657+00:00"
       },
       "nationalDebt": {
         "status": "error",
         "source": "ONS Net Debt (HF6X) + Net Borrowing (J5II)",
-        "fetchedAt": "2026-03-15T16:26:21.241816+00:00"
+        "fetchedAt": "2026-03-15T20:23:08.322657+00:00"
       },
       "taxRevenue": {
         "status": "error",
         "source": "ONS Tax Receipts (MF6U)",
-        "fetchedAt": "2026-03-15T16:26:21.241816+00:00"
+        "fetchedAt": "2026-03-15T20:23:08.322657+00:00"
       },
       "migrationStats": {
         "status": "error",
         "source": "ONS Migration Estimates (CIMU/CIML/CIMM)",
-        "fetchedAt": "2026-03-15T16:26:21.241816+00:00"
+        "fetchedAt": "2026-03-15T20:23:08.322657+00:00"
       },
       "electionPolling": {
         "status": "ok",
         "source": "Wikipedia UK Opinion Polling",
-        "fetchedAt": "2026-03-15T16:26:21.241816+00:00"
+        "fetchedAt": "2026-03-15T20:23:08.322657+00:00"
       },
       "nhsStats": {
         "status": "error",
         "source": "NHS England RTT Waiting Times",
-        "fetchedAt": "2026-03-15T16:26:21.241816+00:00"
+        "fetchedAt": "2026-03-15T20:23:08.322657+00:00"
       }
     }
   },
@@ -496,6 +496,104 @@
       {
         "date": "2025 NOV",
         "value": 75.0
+      }
+    ],
+    "unemploymentRate": [
+      {
+        "date": "2023 DEC",
+        "value": 4.1
+      },
+      {
+        "date": "2024 JAN",
+        "value": 4.2
+      },
+      {
+        "date": "2024 FEB",
+        "value": 4.3
+      },
+      {
+        "date": "2024 MAR",
+        "value": 4.4
+      },
+      {
+        "date": "2024 APR",
+        "value": 4.4
+      },
+      {
+        "date": "2024 MAY",
+        "value": 4.2
+      },
+      {
+        "date": "2024 JUN",
+        "value": 4.2
+      },
+      {
+        "date": "2024 JUL",
+        "value": 4.1
+      },
+      {
+        "date": "2024 AUG",
+        "value": 4.3
+      },
+      {
+        "date": "2024 SEP",
+        "value": 4.3
+      },
+      {
+        "date": "2024 OCT",
+        "value": 4.4
+      },
+      {
+        "date": "2024 NOV",
+        "value": 4.4
+      },
+      {
+        "date": "2024 DEC",
+        "value": 4.4
+      },
+      {
+        "date": "2025 JAN",
+        "value": 4.4
+      },
+      {
+        "date": "2025 FEB",
+        "value": 4.5
+      },
+      {
+        "date": "2025 MAR",
+        "value": 4.6
+      },
+      {
+        "date": "2025 APR",
+        "value": 4.7
+      },
+      {
+        "date": "2025 MAY",
+        "value": 4.7
+      },
+      {
+        "date": "2025 JUN",
+        "value": 4.7
+      },
+      {
+        "date": "2025 JUL",
+        "value": 4.8
+      },
+      {
+        "date": "2025 AUG",
+        "value": 5.0
+      },
+      {
+        "date": "2025 SEP",
+        "value": 5.1
+      },
+      {
+        "date": "2025 OCT",
+        "value": 5.1
+      },
+      {
+        "date": "2025 NOV",
+        "value": 5.2
       }
     ]
   },
