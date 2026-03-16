@@ -65,6 +65,7 @@ export default function GeographicHeatmap() {
   const { regions, layerLabels, layerSources } = data;
   const [layer, setLayer] = useState<Layer>("income");
   const [hovered, setHovered] = useState<string | null>(null);
+  const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
 
   const cols = 5;
   const rows = 5;
@@ -74,7 +75,8 @@ export default function GeographicHeatmap() {
   const svgW = cols * (cellW + gap);
   const svgH = rows * (cellH + gap);
 
-  const hoveredRegion = regions.find((r) => r.id === hovered);
+  const activeRegionId = hovered ?? selectedRegionId;
+  const activeRegion = regions.find((r) => r.id === activeRegionId);
 
   const formatVal = (val: number, l: Layer) => {
     if (l === "income") return `£${val}k`;
@@ -103,11 +105,11 @@ export default function GeographicHeatmap() {
 
       <p className="font-mono text-[10px] text-gray-500 mb-3">{layerLabels[layer]}</p>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-6">
         <svg
           viewBox={`0 0 ${svgW} ${svgH}`}
-          className="flex-shrink-0"
-          style={{ width: Math.min(svgW, 320), height: "auto" }}
+          className="flex-shrink-0 w-full max-w-[320px]"
+          style={{ height: "auto" }}
         >
           {regions.map((region) => {
             const x = region.col * (cellW + gap);
@@ -129,6 +131,7 @@ export default function GeographicHeatmap() {
                   style={{ cursor: "pointer", transition: "stroke 0.1s" }}
                   onMouseEnter={() => setHovered(region.id)}
                   onMouseLeave={() => setHovered(null)}
+                  onClick={() => setSelectedRegionId(region.id)}
                 />
                 <text
                   x={x + cellW / 2}
@@ -160,12 +163,12 @@ export default function GeographicHeatmap() {
         </svg>
 
         <div className="flex-1 min-w-0">
-          {hoveredRegion ? (
+          {activeRegion ? (
             <div
               className="border-2 border-black p-4"
               style={{ boxShadow: "4px 4px 0px #FF3B00" }}
             >
-              <div className="font-display text-2xl mb-2">{hoveredRegion.label.toUpperCase()}</div>
+              <div className="font-display text-2xl mb-2">{activeRegion.label.toUpperCase()}</div>
               <div className="space-y-2">
                 {(["income", "unemployment", "crime", "labVote"] as Layer[]).map((l) => (
                   <div key={l} className="font-mono text-xs">
@@ -174,7 +177,7 @@ export default function GeographicHeatmap() {
                       className="text-xl font-display"
                       style={{ color: l === layer ? "#FF3B00" : "#000" }}
                     >
-                      {formatVal(hoveredRegion[l], l)}
+                      {formatVal(activeRegion[l], l)}
                     </div>
                   </div>
                 ))}
@@ -182,7 +185,7 @@ export default function GeographicHeatmap() {
             </div>
           ) : (
             <div className="border-2 border-dashed border-gray-300 p-4 font-mono text-xs text-gray-400 text-center h-full flex items-center justify-center">
-              HOVER A REGION FOR DETAILS
+              HOVER OR TAP A REGION FOR DETAILS
             </div>
           )}
         </div>
