@@ -195,7 +195,27 @@ export default function Home() {
           </p>
         </div>
 
-        <section className="mb-6">
+        <div className="mb-6 border-2 border-black bg-gray-50 p-4 md:p-5">
+          <p className="font-mono text-[10px] md:text-xs tracking-widest text-gray-600 uppercase mb-3">Quick section pages</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {[
+              { href: "#category-politics", label: "Politics" },
+              { href: "#category-economy", label: "Economy" },
+              { href: "#category-society", label: "Society" },
+              { href: "#category-data", label: "Data" },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="border border-black px-3 py-2 font-mono text-[10px] md:text-xs tracking-wider uppercase text-center hover:bg-black hover:text-white transition-colors"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <section id="category-politics" className="mb-6 scroll-mt-24">
           <div>
             <CategoryDivider label="POLITICS & GOVERNMENT" />
 
@@ -230,7 +250,7 @@ export default function Home() {
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ██  ECONOMY SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <section className="mb-6">
+        <section id="category-economy" className="mb-6 scroll-mt-24">
           <div>
             <CategoryDivider label="ECONOMY & FINANCE" />
 
@@ -269,7 +289,7 @@ export default function Home() {
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ██  SOCIETY SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <section className="mb-6">
+        <section id="category-society" className="mb-6 scroll-mt-24">
           <div>
             <CategoryDivider label="SOCIETY & PUBLIC SERVICES" />
 
@@ -296,7 +316,7 @@ export default function Home() {
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ██  DATA & INTERACTIVE SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <section className="mb-6">
+        <section id="category-data" className="mb-6 scroll-mt-24">
           <div>
             <CategoryDivider label="DATA & INTERACTIVE" />
 
