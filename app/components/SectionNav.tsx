@@ -16,6 +16,10 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
   const [activeSection, setActiveSection] = useState<string>("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string>(sections[0]?.category ?? "");
+  const [showMobileHelper, setShowMobileHelper] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.sessionStorage.getItem("section-nav-mobile-helper-dismissed") !== "1";
+  });
 
   const allSections = useMemo(() => sections.flatMap((g) => g.sections), [sections]);
 
@@ -67,6 +71,13 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
     return () => document.removeEventListener("keydown", handleKey);
   }, []);
 
+  const dismissMobileHelper = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("section-nav-mobile-helper-dismissed", "1");
+    }
+    setShowMobileHelper(false);
+  }, []);
+
   const activeLabel = allSections.find((s) => s.id === activeSection)?.label || "SECTIONS";
 
   return (
@@ -91,6 +102,19 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
             {activeLabel}
           </span>
         </div>
+
+        {showMobileHelper && (
+          <div className="md:hidden border-t border-black bg-black text-white px-4 py-2 flex items-center justify-between gap-3">
+            <p className="font-mono text-[10px] tracking-wider uppercase">Tap MENU to jump to charts.</p>
+            <button
+              onClick={dismissMobileHelper}
+              className="font-mono text-[10px] tracking-widest uppercase underline underline-offset-2"
+              aria-label="Dismiss mobile navigation tip"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* Mobile: dropdown menu */}
         {menuOpen && (

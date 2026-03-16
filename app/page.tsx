@@ -181,10 +181,6 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="md:hidden mb-4 border-2 border-black bg-black text-white p-3 font-mono text-[10px] tracking-wider uppercase">
-          Tip: use the menu above to jump between charts. Headings below are section labels.
-        </div>
-
         <section className="mb-6">
           <div className="md:hidden border-l-8 border-black pl-3 py-1 mb-2">
             <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Category</p>
