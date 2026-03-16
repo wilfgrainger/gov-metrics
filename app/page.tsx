@@ -17,6 +17,7 @@ import TaxRevenue from "./components/TaxRevenue";
 import EmploymentStats from "./components/EmploymentStats";
 import MigrationStats from "./components/MigrationStats";
 import NHSStats from "./components/NHSStats";
+import { SECTIONS } from "./lib/sections";
 
 const ISSUE_DATE = new Date().toLocaleDateString("en-GB", {
   weekday: "long",
@@ -24,45 +25,6 @@ const ISSUE_DATE = new Date().toLocaleDateString("en-GB", {
   month: "long",
   day: "numeric",
 });
-
-const SECTIONS = [
-  {
-    category: "POLITICS",
-    sections: [
-      { id: "pm-approval", label: "PM APPROVAL RATING", shortLabel: "PM APPROVAL" },
-      { id: "election-polls", label: "ELECTION POLLING", shortLabel: "POLLING" },
-      { id: "betting-odds", label: "BETTING ODDS" },
-      { id: "govt-approval", label: "GOVERNMENT APPROVAL", shortLabel: "GOVT APPROVAL" },
-      { id: "gov-trust-trend", label: "TRUST IN GOVERNMENT", shortLabel: "TRUST TREND" },
-    ],
-  },
-  {
-    category: "ECONOMY",
-    sections: [
-      { id: "national-debt", label: "NATIONAL DEBT" },
-      { id: "gdp", label: "GDP" },
-      { id: "economy", label: "KEY INDICATORS", shortLabel: "INDICATORS" },
-      { id: "tax", label: "TAX REVENUE", shortLabel: "TAX" },
-      { id: "employment", label: "EMPLOYMENT" },
-    ],
-  },
-  {
-    category: "SOCIETY",
-    sections: [
-      { id: "crime-stats", label: "CRIME STATISTICS", shortLabel: "CRIME" },
-      { id: "nhs", label: "NHS & HEALTH" },
-      { id: "migration", label: "MIGRATION" },
-    ],
-  },
-  {
-    category: "DATA",
-    sections: [
-      { id: "uk-regions", label: "UK REGIONS" },
-      { id: "policy-links", label: "POLICY LINKS" },
-      { id: "political-compass", label: "POLITICAL COMPASS", shortLabel: "COMPASS QUIZ" },
-    ],
-  },
-];
 
 function SectionHeader({
   tag,
@@ -197,25 +159,6 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="mb-6 border-2 border-black bg-gray-50 p-4 md:p-5">
-          <p className="font-mono text-[10px] md:text-xs tracking-widest text-gray-600 uppercase mb-3">Quick section pages</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {[
-              { href: "#category-politics", label: "Politics" },
-              { href: "#category-economy", label: "Economy" },
-              { href: "#category-society", label: "Society" },
-              { href: "#category-data", label: "Data" },
-            ].map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="border border-black px-3 py-2 font-mono text-[10px] md:text-xs tracking-wider uppercase text-center hover:bg-black hover:text-white transition-colors"
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-        </div>
 
         <section id="category-politics" className="mb-6 scroll-mt-24">
           <div>
