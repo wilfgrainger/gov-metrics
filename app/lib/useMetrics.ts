@@ -99,7 +99,7 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
         );
         if (res.ok) {
           const json = await res.json();
-          if (json.data) {
+          if (json.data !== null && json.data !== undefined) {
             applyData(json.data, "api", json.timestamp);
             return;
           }
@@ -117,7 +117,7 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
           );
           if (res.ok) {
             const json = await res.json();
-            if (json.data) {
+            if (json.data !== null && json.data !== undefined) {
               applyData(json.data, "worker", json.timestamp);
               return;
             }
