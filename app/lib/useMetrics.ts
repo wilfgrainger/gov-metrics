@@ -48,6 +48,10 @@ function shallowMerge<T>(fallback: T, apiData: unknown): T {
 export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
   const fallbackRef = useRef(fallback);
 
+  useEffect(() => {
+    fallbackRef.current = fallback;
+  }, [fallback]);
+
   const [result, setResult] = useState<MetricsResult<T>>({
     data: fallback,
     isLive: false,
