@@ -79,7 +79,8 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
     setShowMobileHelper(false);
   }, []);
 
-  const activeLabel = allSections.find((s) => s.id === activeSection)?.label || "SECTIONS";
+  const activeCategory = sections.find((group) => group.sections.some((section) => section.id === activeSection))?.category;
+  const mobileStatusLabel = activeCategory ?? expandedCategory ?? "ALL SECTIONS";
 
   return (
     <>
@@ -100,13 +101,13 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
             <span className="uppercase font-bold">MENU</span>
           </button>
           <span className="font-mono text-[10px] tracking-widest text-[#FF3B00] uppercase truncate max-w-[200px]">
-            {activeLabel}
+            {mobileStatusLabel}
           </span>
         </div>
 
         {showMobileHelper && (
           <div className="md:hidden border-t border-black bg-black text-white px-4 py-2 flex items-center justify-between gap-3">
-            <p className="font-mono text-[10px] tracking-wider uppercase">Tap MENU to jump to charts.</p>
+            <p className="font-mono text-[10px] tracking-wider uppercase">Tap MENU to browse sections.</p>
             <button
               onClick={dismissMobileHelper}
               className="font-mono text-[10px] tracking-widest uppercase underline underline-offset-2"
@@ -155,6 +156,13 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
                           {section.shortLabel ?? section.label}
                         </button>
                       ))}
+                      <a
+                        href={`/#category-${group.category.toLowerCase()}`}
+                        onClick={() => setMenuOpen(false)}
+                        className="block w-full text-left px-6 py-3 font-mono text-[10px] tracking-widest uppercase border-t border-gray-100 bg-gray-50 hover:bg-black hover:text-white transition-colors"
+                      >
+                        Open {group.category} section page
+                      </a>
                     </div>
                   )}
                 </div>
