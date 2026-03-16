@@ -3,16 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>PULSE — Public Opinion Intelligence Dashboard</title>
-    <meta http-equiv="refresh" content="0; url=./public/dashboard.html" />
+    <title>PULSE — Redirecting…</title>
+    <meta http-equiv="refresh" content="0; url=/gov-metrics/" />
     <script>
-      window.location.replace("./public/dashboard.html");
+      const target = "/gov-metrics/";
+      if (window.location.pathname !== target) {
+        window.location.replace(target);
+      }
     </script>
   </head>
   <body>
     <p>
-      Redirecting to the latest dashboard…
-      <a href="./public/dashboard.html">Open dashboard</a>
+      Redirecting to the current dashboard…
+      <a href="/gov-metrics/">Open dashboard</a>
     </p>
   </body>
 </html>
