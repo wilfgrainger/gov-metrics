@@ -87,7 +87,7 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
 
   return (
     <>
-      <nav className="border-b-2 border-black bg-gray-50 sticky top-0 z-50">
+      <nav className="border-b-2 border-black bg-gray-50">
         {/* Mobile: hamburger + current section */}
         <div className="md:hidden flex items-center justify-between px-4 py-3">
           <button

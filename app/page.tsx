@@ -108,19 +108,24 @@ function CategoryDivider({ label }: { label: string }) {
 export default function Home() {
   return (
     <div className="min-h-screen bg-white text-black">
-      {/* ── TOP BAR ── */}
-      <div className="border-b-4 border-black bg-black text-white px-4 md:px-6 py-2 flex justify-between items-center">
-        <span className="font-mono text-[10px] md:text-xs tracking-widest uppercase">
-          UK Public Data
-        </span>
-        <div className="flex items-center gap-2">
-          <span
-            className="w-2 h-2 rounded-full bg-red-500 inline-block"
-            style={{ animation: "pulse-live 1.5s ease-in-out infinite" }}
-          />
-          <span className="font-mono text-[10px] md:text-xs tracking-widest text-red-400 uppercase">Live</span>
+      <div className="sticky top-0 z-50 bg-white">
+        {/* ── TOP BAR ── */}
+        <div className="border-b-4 border-black bg-black text-white px-4 md:px-6 py-2 flex justify-between items-center">
+          <span className="font-mono text-[10px] md:text-xs tracking-widest uppercase">
+            UK Public Data
+          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className="w-2 h-2 rounded-full bg-red-500 inline-block"
+              style={{ animation: "pulse-live 1.5s ease-in-out infinite" }}
+            />
+            <span className="font-mono text-[10px] md:text-xs tracking-widest text-red-400 uppercase">Live</span>
+          </div>
+          <span className="font-mono text-[10px] md:text-xs tracking-widest uppercase opacity-60 hidden sm:inline">{ISSUE_DATE}</span>
         </div>
-        <span className="font-mono text-[10px] md:text-xs tracking-widest uppercase opacity-60 hidden sm:inline">{ISSUE_DATE}</span>
+
+        {/* ── NAVIGATION STRIP ── */}
+        <SectionNav sections={SECTIONS} />
       </div>
 
       {/* ── MASTHEAD ── */}
@@ -177,9 +182,6 @@ export default function Home() {
           </div>
         </div>
       </header>
-
-      {/* ── NAVIGATION STRIP ── */}
-      <SectionNav sections={SECTIONS} />
 
       {/* ── MAIN CONTENT ── */}
       <main className="max-w-7xl mx-auto px-3 md:px-6 py-6 md:py-8">
