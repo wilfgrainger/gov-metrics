@@ -79,10 +79,10 @@ function SectionHeader({ tag, title, subtitle, num }: { tag: string; title: stri
 
 function CategoryDivider({ label }: { label: string }) {
   return (
-    <div className="my-8 md:my-14 flex items-center gap-2 md:gap-0">
+    <div className="my-10 md:my-14 flex items-center gap-2 md:gap-0">
       <div className="h-2 w-4 md:w-8 shrink-0" style={{ background: "#FF3B00" }} />
       <div className="h-2 flex-1 bg-black min-w-0" />
-      <div className="font-mono text-[10px] md:text-xs tracking-[0.2em] md:tracking-widest px-2 md:px-4 py-2 bg-black text-white text-center" style={{ boxShadow: "3px 3px 0px #FF3B00" }}>
+      <div className="font-mono text-[10px] md:text-xs tracking-[0.2em] md:tracking-widest px-3 md:px-4 py-2.5 md:py-2 bg-black text-white text-center" style={{ boxShadow: "3px 3px 0px #FF3B00" }}>
         {label}
       </div>
       <div className="h-2 flex-1 bg-black min-w-0" />
@@ -186,10 +186,6 @@ export default function Home() {
         </div>
 
         <section className="mb-6">
-          <div className="md:hidden border-l-8 border-black pl-3 py-1 mb-2">
-            <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Category</p>
-            <h3 className="font-display text-2xl leading-none">Politics &amp; Government</h3>
-          </div>
           <div>
             <CategoryDivider label="POLITICS & GOVERNMENT" />
 
@@ -225,10 +221,6 @@ export default function Home() {
         {/* ██  ECONOMY SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <section className="mb-6">
-          <div className="md:hidden border-l-8 border-black pl-3 py-1 mb-2">
-            <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Category</p>
-            <h3 className="font-display text-2xl leading-none">Economy &amp; Finance</h3>
-          </div>
           <div>
             <CategoryDivider label="ECONOMY & FINANCE" />
 
@@ -268,10 +260,6 @@ export default function Home() {
         {/* ██  SOCIETY SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <section className="mb-6">
-          <div className="md:hidden border-l-8 border-black pl-3 py-1 mb-2">
-            <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Category</p>
-            <h3 className="font-display text-2xl leading-none">Society &amp; Services</h3>
-          </div>
           <div>
             <CategoryDivider label="SOCIETY & PUBLIC SERVICES" />
 
@@ -299,10 +287,6 @@ export default function Home() {
         {/* ██  DATA & INTERACTIVE SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <section className="mb-6">
-          <div className="md:hidden border-l-8 border-black pl-3 py-1 mb-2">
-            <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Category</p>
-            <h3 className="font-display text-2xl leading-none">Data &amp; Interactive</h3>
-          </div>
           <div>
             <CategoryDivider label="DATA & INTERACTIVE" />
 
