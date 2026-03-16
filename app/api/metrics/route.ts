@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ONS_CSV_BASE, BOE_API_BASE, ONS_SERIES, BOE_SERIES } from "@/app/lib/config";
 
+// Required so `next build` can run with `output: "export"` for GitHub Pages.
+export const dynamic = "force-static";
+export const revalidate = 300;
+
 // ── In-memory server-side cache ──────────────────────────────────────────────
 
 interface CacheEntry {
