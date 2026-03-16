@@ -65,27 +65,27 @@ const SECTIONS = [
 
 function SectionHeader({ tag, title, subtitle, num }: { tag: string; title: string; subtitle: string; num: string }) {
   return (
-    <div className="flex items-start justify-between mb-6 border-b-4 border-black pb-4">
+    <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6 border-b-4 border-black pb-4 gap-3 sm:gap-2">
       <div className="min-w-0">
         <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">{tag}</div>
-        <h2 className="font-display text-3xl md:text-4xl tracking-wider leading-none">{title}</h2>
+        <h2 className="font-display text-2xl md:text-4xl tracking-wider leading-none">{title}</h2>
         <p className="font-mono text-xs mt-2 text-gray-600">{subtitle}</p>
       </div>
-      <div className="text-4xl md:text-6xl font-display text-accent leading-none ml-2 shrink-0">{num}</div>
+      <div className="text-4xl md:text-6xl font-display text-accent leading-none sm:ml-2 shrink-0 self-end sm:self-auto">{num}</div>
     </div>
   );
 }
 
 function CategoryDivider({ label }: { label: string }) {
   return (
-    <div className="my-10 md:my-14 flex items-center gap-0">
-      <div className="h-2 w-8" style={{ background: "#FF3B00" }} />
-      <div className="h-2 flex-1 bg-black" />
-      <div className="font-mono text-xs tracking-widest px-4 py-2 bg-black text-white whitespace-nowrap" style={{ boxShadow: "3px 3px 0px #FF3B00" }}>
+    <div className="my-8 md:my-14 flex items-center gap-2 md:gap-0">
+      <div className="h-2 w-4 md:w-8 shrink-0" style={{ background: "#FF3B00" }} />
+      <div className="h-2 flex-1 bg-black min-w-0" />
+      <div className="font-mono text-[10px] md:text-xs tracking-[0.2em] md:tracking-widest px-2 md:px-4 py-2 bg-black text-white text-center" style={{ boxShadow: "3px 3px 0px #FF3B00" }}>
         {label}
       </div>
-      <div className="h-2 flex-1 bg-black" />
-      <div className="h-2 w-8" style={{ background: "#FF3B00" }} />
+      <div className="h-2 flex-1 bg-black min-w-0" />
+      <div className="h-2 w-4 md:w-8 shrink-0" style={{ background: "#FF3B00" }} />
     </div>
   );
 }
@@ -144,10 +144,10 @@ export default function Home() {
           </div>
 
           {/* Horizontal rule with label */}
-          <div className="mt-6 flex items-center gap-4">
+          <div className="mt-6 flex items-center gap-2 md:gap-4">
             <div className="flex-1 h-1 bg-black" />
             <div
-              className="font-mono text-[10px] md:text-xs tracking-widest px-3 py-1 bg-black text-white"
+              className="font-mono text-[9px] md:text-xs tracking-[0.2em] md:tracking-widest px-2 md:px-3 py-1 bg-black text-white text-center"
               style={{ boxShadow: "3px 3px 0px #FF3B00" }}
             >
               KEY METRICS FROM PUBLIC DATA
@@ -174,45 +174,56 @@ export default function Home() {
           </p>
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ██  POLITICS SECTION  ██ */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <CategoryDivider label="POLITICS & GOVERNMENT" />
-
-        {/* PM Approval Rating (full-width) */}
-        <section id="pm-approval" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="Public Opinion" title="PM APPROVAL RATING" subtitle="KEIR STARMER · NET APPROVAL FROM YOUGOV TRACKER" num="01" />
-          <PMApproval />
-        </section>
-
-        {/* Election Polling + Betting Odds (2-col) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <section id="election-polls" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-            <SectionHeader tag="Polling Data" title="ELECTION POLLING" subtitle="UK VOTING INTENTION AVERAGES" num="02" />
-            <ElectionPolling />
-          </section>
-          <section id="betting-odds" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-            <SectionHeader tag="Market Data" title="BETTING ODDS" subtitle="NEXT UK GENERAL ELECTION · IMPLIED PROBABILITIES" num="03" />
-            <BettingOdds />
-          </section>
+        <div className="md:hidden mb-4 border-2 border-black bg-black text-white p-3 font-mono text-[10px] tracking-wider uppercase">
+          Tip: use the menu above to jump to sections. Categories below can be collapsed to reduce scrolling.
         </div>
 
-        {/* Government Approval (full-width) */}
-        <section id="govt-approval" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="Public Opinion" title="GOVERNMENT APPROVAL" subtitle="DISTRIBUTION OF GOVERNMENT SATISFACTION ACROSS POLLS" num="04" />
-          <PolarizationMeter />
-        </section>
+        <details className="group md:open mb-6" open>
+          <summary className="md:hidden list-none cursor-pointer border-2 border-black bg-black text-white px-4 py-3 font-mono text-xs tracking-widest uppercase flex items-center justify-between">
+            Politics &amp; Government
+            <span className="text-accent group-open:rotate-45 transition-transform">＋</span>
+          </summary>
+          <div className="pt-2 md:pt-0">
+            <CategoryDivider label="POLITICS & GOVERNMENT" />
 
-        {/* Trust Trend (full-width) */}
-        <section id="gov-trust-trend" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="Longitudinal Data" title="TRUST IN GOVERNMENT" subtitle="SATISFACTION WITH GOVERNMENT 2020–2025 · KEY EVENTS ANNOTATED" num="05" />
-          <TrendLines />
-        </section>
+            <section id="pm-approval" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
+              <SectionHeader tag="Public Opinion" title="PM APPROVAL RATING" subtitle="KEIR STARMER · NET APPROVAL FROM YOUGOV TRACKER" num="01" />
+              <PMApproval />
+            </section>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <section id="election-polls" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
+                <SectionHeader tag="Polling Data" title="ELECTION POLLING" subtitle="UK VOTING INTENTION AVERAGES" num="02" />
+                <ElectionPolling />
+              </section>
+              <section id="betting-odds" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
+                <SectionHeader tag="Market Data" title="BETTING ODDS" subtitle="NEXT UK GENERAL ELECTION · IMPLIED PROBABILITIES" num="03" />
+                <BettingOdds />
+              </section>
+            </div>
+
+            <section id="govt-approval" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
+              <SectionHeader tag="Public Opinion" title="GOVERNMENT APPROVAL" subtitle="DISTRIBUTION OF GOVERNMENT SATISFACTION ACROSS POLLS" num="04" />
+              <PolarizationMeter />
+            </section>
+
+            <section id="gov-trust-trend" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
+              <SectionHeader tag="Longitudinal Data" title="TRUST IN GOVERNMENT" subtitle="SATISFACTION WITH GOVERNMENT 2020–2025 · KEY EVENTS ANNOTATED" num="05" />
+              <TrendLines />
+            </section>
+          </div>
+        </details>
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ██  ECONOMY SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <CategoryDivider label="ECONOMY & FINANCE" />
+        <details className="group md:open mb-6" open>
+          <summary className="md:hidden list-none cursor-pointer border-2 border-black bg-black text-white px-4 py-3 font-mono text-xs tracking-widest uppercase flex items-center justify-between">
+            Economy &amp; Finance
+            <span className="text-accent group-open:rotate-45 transition-transform">＋</span>
+          </summary>
+          <div className="pt-2 md:pt-0">
+            <CategoryDivider label="ECONOMY & FINANCE" />
 
         {/* National Debt (full-width) */}
         <section id="national-debt" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
@@ -232,8 +243,8 @@ export default function Home() {
           </section>
         </div>
 
-        {/* Tax + Employment (2-col) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Tax + Employment (2-col) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <section id="tax" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
             <SectionHeader tag="HMRC Data" title="TAX REVENUE" subtitle="UK TAX RECEIPTS & TAX BURDEN" num="09" />
             <TaxRevenue />
@@ -242,12 +253,20 @@ export default function Home() {
             <SectionHeader tag="Labour Market" title="EMPLOYMENT" subtitle="PRIVATE VS PUBLIC SECTOR · LABOUR MARKET OVERVIEW" num="10" />
             <EmploymentStats />
           </section>
-        </div>
+            </div>
+          </div>
+        </details>
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ██  SOCIETY SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <CategoryDivider label="SOCIETY & PUBLIC SERVICES" />
+        <details className="group md:open mb-6" open>
+          <summary className="md:hidden list-none cursor-pointer border-2 border-black bg-black text-white px-4 py-3 font-mono text-xs tracking-widest uppercase flex items-center justify-between">
+            Society &amp; Services
+            <span className="text-accent group-open:rotate-45 transition-transform">＋</span>
+          </summary>
+          <div className="pt-2 md:pt-0">
+            <CategoryDivider label="SOCIETY & PUBLIC SERVICES" />
 
         {/* Crime + NHS (2-col) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -261,16 +280,24 @@ export default function Home() {
           </section>
         </div>
 
-        {/* Migration (full-width) */}
-        <section id="migration" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
+            {/* Migration (full-width) */}
+            <section id="migration" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
           <SectionHeader tag="ONS Data" title="MIGRATION" subtitle="UK INTERNATIONAL MIGRATION · NET MIGRATION · VISA TYPES" num="13" />
           <MigrationStats />
-        </section>
+            </section>
+          </div>
+        </details>
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ██  DATA & INTERACTIVE SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <CategoryDivider label="DATA & INTERACTIVE" />
+        <details className="group md:open mb-6" open>
+          <summary className="md:hidden list-none cursor-pointer border-2 border-black bg-black text-white px-4 py-3 font-mono text-xs tracking-widest uppercase flex items-center justify-between">
+            Data &amp; Interactive
+            <span className="text-accent group-open:rotate-45 transition-transform">＋</span>
+          </summary>
+          <div className="pt-2 md:pt-0">
+            <CategoryDivider label="DATA & INTERACTIVE" />
 
         {/* Regional + Policy Links (2-col) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -284,11 +311,13 @@ export default function Home() {
           </section>
         </div>
 
-        {/* Political Compass (full-width) */}
-        <section id="political-compass" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
+            {/* Political Compass (full-width) */}
+            <section id="political-compass" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
           <SectionHeader tag="Interactive Quiz" title="POLITICAL COMPASS" subtitle="WHERE DO YOU SIT ON THE POLITICAL SPECTRUM? ANSWER 10 QUESTIONS." num="16" />
           <PoliticalCompass />
-        </section>
+            </section>
+          </div>
+        </details>
 
         {/* ── SOCIAL SHARE ── */}
         <div className="mb-6">
