@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from "react";
 
 interface SectionItem {
   id: string;
@@ -17,10 +17,13 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
   const [activeSection, setActiveSection] = useState<string>("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string>(sections[0]?.category ?? "");
-  const [showMobileHelper, setShowMobileHelper] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.sessionStorage.getItem("section-nav-mobile-helper-dismissed") !== "1";
-  });
+  const [helperDismissed, setHelperDismissed] = useState(false);
+  const hasMobileHelperStored = useSyncExternalStore(
+    () => () => {},
+    () => window.sessionStorage.getItem("section-nav-mobile-helper-dismissed") !== "1",
+    () => false
+  );
+  const showMobileHelper = !helperDismissed && hasMobileHelperStored;
 
   const allSections = useMemo(() => sections.flatMap((g) => g.sections), [sections]);
 
@@ -76,7 +79,7 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem("section-nav-mobile-helper-dismissed", "1");
     }
-    setShowMobileHelper(false);
+    setHelperDismissed(true);
   }, []);
 
   const activeCategory = sections.find((group) => group.sections.some((section) => section.id === activeSection))?.category;
