@@ -195,10 +195,6 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="md:hidden mb-4 border-2 border-black bg-black text-white p-3 font-mono text-[10px] tracking-wider uppercase">
-          Tip: use the menu above to jump between charts. Headings below are section labels.
-        </div>
-
         <section className="mb-6">
           <div>
             <CategoryDivider label="POLITICS & GOVERNMENT" />
