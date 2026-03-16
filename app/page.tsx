@@ -1,3 +1,4 @@
+import Link from "next/link";
 import PoliticalCompass from "./components/PoliticalCompass";
 import NationalDebtCounter from "./components/NationalDebtCounter";
 import ElectionPolling from "./components/ElectionPolling";
@@ -127,6 +128,12 @@ export default function Home() {
               >
                 PULSE
               </h1>
+              <Link
+                href="/sources"
+                className="inline-block mt-3 border-2 border-black px-3 py-2 font-mono text-[10px] md:text-xs tracking-widest uppercase hover:bg-black hover:text-white transition-colors"
+              >
+                Data sources & cadence
+              </Link>
             </div>
             <div className="text-right hidden sm:block">
               <div
@@ -408,6 +415,11 @@ export default function Home() {
             <div className="mb-1 font-bold text-black">BUILT WITH</div>
             <div>Next.js · TypeScript</div>
             <div>Recharts · Tailwind CSS</div>
+            <div className="mt-2">
+              <Link href="/sources" className="text-black underline underline-offset-2 hover:text-[#FF3B00] transition-colors">
+                View data source references & update cadence
+              </Link>
+            </div>
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-6 pt-4 border-t-2 border-black flex flex-wrap justify-between items-center gap-2">
