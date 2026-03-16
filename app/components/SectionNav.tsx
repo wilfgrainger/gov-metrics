@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 interface SectionItem {
   id: string;
   label: string;
+  shortLabel?: string;
 }
 
 interface CategoryGroup {
@@ -127,7 +128,7 @@ export default function SectionNav({ sections }: { sections: CategoryGroup[] }) 
                             backgroundColor: activeSection === section.id ? "#f5f5f5" : "transparent",
                           }}
                         >
-                          {section.label}
+                          {section.shortLabel ?? section.label}
                         </button>
                       ))}
                     </div>
