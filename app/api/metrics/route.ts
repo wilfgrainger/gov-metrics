@@ -101,19 +101,25 @@ async function fetchSentimentPulse() {
   ]);
 
   // Build merged data points from CPI series (as the base timeline)
-  const data = cpiSeries.map((cpiPoint) => {
-    const closestBankRate = getLastValue(bankRateSeries);
-    const matchingUnemployment = unemploymentSeries.find((u) =>
-      u.date.includes(cpiPoint.date.split(" ")[0])
-    );
+  const data = cpiSeries
+    .map((cpiPoint) => {
+      const cpiDate = parseEconomicDate(cpiPoint.date);
+      const closestBankRate = findLatestAtOrBefore(cpiDate, bankRateSeries);
+      const matchingUnemployment = findLatestAtOrBefore(cpiDate, unemploymentSeries);
 
-    return {
-      date: formatONSDate(cpiPoint.date),
-      inflation: cpiPoint.value,
-      bankRate: closestBankRate ?? null,
-      unemployment: matchingUnemployment?.value ?? null,
-    };
-  });
+      return {
+        date: formatONSDate(cpiPoint.date),
+        inflation: cpiPoint.value,
+        bankRate: closestBankRate,
+        unemployment: matchingUnemployment,
+      };
+    })
+    .sort((a, b) => {
+      const aDate = parseEconomicDate(a.date);
+      const bDate = parseEconomicDate(b.date);
+      if (!aDate || !bDate) return 0;
+      return aDate.getTime() - bDate.getTime();
+    });
 
   return { economicData: data };
 }
@@ -156,9 +162,71 @@ function formatONSDate(raw: string): string {
   return raw.trim();
 }
 
-function getLastValue(series: { date: string; value: number }[]): number | null {
-  if (series.length === 0) return null;
-  return series[series.length - 1].value;
+function parseEconomicDate(raw: string): Date | null {
+  const value = raw.trim();
+  if (!value) return null;
+
+  const monthMap: Record<string, number> = {
+    JAN: 0,
+    FEB: 1,
+    MAR: 2,
+    APR: 3,
+    MAY: 4,
+    JUN: 5,
+    JUL: 6,
+    AUG: 7,
+    SEP: 8,
+    OCT: 9,
+    NOV: 10,
+    DEC: 11,
+  };
+
+  const onsMonthly = value.match(/^(\d{4})\s+([A-Za-z]{3})$/);
+  if (onsMonthly) {
+    const year = Number(onsMonthly[1]);
+    const month = monthMap[onsMonthly[2].toUpperCase()];
+    if (Number.isInteger(month)) return new Date(Date.UTC(year, month, 1));
+  }
+
+  const onsQuarterly = value.match(/^(\d{4})\s+Q([1-4])$/i);
+  if (onsQuarterly) {
+    const year = Number(onsQuarterly[1]);
+    const quarter = Number(onsQuarterly[2]);
+    return new Date(Date.UTC(year, (quarter - 1) * 3, 1));
+  }
+
+  const boeDaily = value.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/);
+  if (boeDaily) {
+    const day = Number(boeDaily[1]);
+    const month = monthMap[boeDaily[2].toUpperCase()];
+    const year = Number(boeDaily[3]);
+    if (Number.isInteger(month)) return new Date(Date.UTC(year, month, day));
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function findLatestAtOrBefore(
+  date: Date | null,
+  series: { date: string; value: number }[]
+): number | null {
+  if (!date || series.length === 0) return null;
+
+  let latestValue: number | null = null;
+  let latestTs = -Infinity;
+
+  for (const point of series) {
+    const pointDate = parseEconomicDate(point.date);
+    if (!pointDate) continue;
+    const ts = pointDate.getTime();
+    if (ts <= date.getTime() && ts > latestTs) {
+      latestTs = ts;
+      latestValue = point.value;
+    }
+  }
+
+  return latestValue;
 }
 
 // ── Section router ───────────────────────────────────────────────────────────
