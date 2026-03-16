@@ -182,15 +182,15 @@ export default function Home() {
         </div>
 
         <div className="md:hidden mb-4 border-2 border-black bg-black text-white p-3 font-mono text-[10px] tracking-wider uppercase">
-          Tip: use the menu above to jump to sections. Categories below can be collapsed to reduce scrolling.
+          Tip: use the menu above to jump between charts. Headings below are section labels.
         </div>
 
-        <details className="group md:open mb-6" open>
-          <summary className="md:hidden list-none cursor-pointer border-2 border-black bg-black text-white px-4 py-3 font-mono text-xs tracking-widest uppercase flex items-center justify-between">
-            Politics &amp; Government
-            <span className="text-accent group-open:rotate-45 transition-transform">＋</span>
-          </summary>
-          <div className="pt-2 md:pt-0">
+        <section className="mb-6">
+          <div className="md:hidden border-l-8 border-black pl-3 py-1 mb-2">
+            <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Category</p>
+            <h3 className="font-display text-2xl leading-none">Politics &amp; Government</h3>
+          </div>
+          <div>
             <CategoryDivider label="POLITICS & GOVERNMENT" />
 
             <section id="pm-approval" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
@@ -219,17 +219,17 @@ export default function Home() {
               <TrendLines />
             </section>
           </div>
-        </details>
+        </section>
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ██  ECONOMY SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <details className="group md:open mb-6" open>
-          <summary className="md:hidden list-none cursor-pointer border-2 border-black bg-black text-white px-4 py-3 font-mono text-xs tracking-widest uppercase flex items-center justify-between">
-            Economy &amp; Finance
-            <span className="text-accent group-open:rotate-45 transition-transform">＋</span>
-          </summary>
-          <div className="pt-2 md:pt-0">
+        <section className="mb-6">
+          <div className="md:hidden border-l-8 border-black pl-3 py-1 mb-2">
+            <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Category</p>
+            <h3 className="font-display text-2xl leading-none">Economy &amp; Finance</h3>
+          </div>
+          <div>
             <CategoryDivider label="ECONOMY & FINANCE" />
 
         {/* National Debt (full-width) */}
@@ -262,17 +262,17 @@ export default function Home() {
           </section>
             </div>
           </div>
-        </details>
+        </section>
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ██  SOCIETY SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <details className="group md:open mb-6" open>
-          <summary className="md:hidden list-none cursor-pointer border-2 border-black bg-black text-white px-4 py-3 font-mono text-xs tracking-widest uppercase flex items-center justify-between">
-            Society &amp; Services
-            <span className="text-accent group-open:rotate-45 transition-transform">＋</span>
-          </summary>
-          <div className="pt-2 md:pt-0">
+        <section className="mb-6">
+          <div className="md:hidden border-l-8 border-black pl-3 py-1 mb-2">
+            <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Category</p>
+            <h3 className="font-display text-2xl leading-none">Society &amp; Services</h3>
+          </div>
+          <div>
             <CategoryDivider label="SOCIETY & PUBLIC SERVICES" />
 
         {/* Crime + NHS (2-col) */}
@@ -293,17 +293,17 @@ export default function Home() {
           <MigrationStats />
             </section>
           </div>
-        </details>
+        </section>
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ██  DATA & INTERACTIVE SECTION  ██ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <details className="group md:open mb-6" open>
-          <summary className="md:hidden list-none cursor-pointer border-2 border-black bg-black text-white px-4 py-3 font-mono text-xs tracking-widest uppercase flex items-center justify-between">
-            Data &amp; Interactive
-            <span className="text-accent group-open:rotate-45 transition-transform">＋</span>
-          </summary>
-          <div className="pt-2 md:pt-0">
+        <section className="mb-6">
+          <div className="md:hidden border-l-8 border-black pl-3 py-1 mb-2">
+            <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Category</p>
+            <h3 className="font-display text-2xl leading-none">Data &amp; Interactive</h3>
+          </div>
+          <div>
             <CategoryDivider label="DATA & INTERACTIVE" />
 
         {/* Regional + Policy Links (2-col) */}
@@ -324,7 +324,7 @@ export default function Home() {
           <PoliticalCompass />
             </section>
           </div>
-        </details>
+        </section>
 
         {/* ── SOCIAL SHARE ── */}
         <div className="mb-6">
