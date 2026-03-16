@@ -13,7 +13,7 @@
  * Set NEXT_PUBLIC_CF_WORKER_URL in your environment to the worker URL.
  */
 
-const GITHUB_PAGES_DATA_URL =
+const DEFAULT_DATA_URL =
   "https://wilfgrainger.github.io/gov-metrics/daily_threat_data.json";
 
 const CORS_HEADERS = {
@@ -27,11 +27,42 @@ let cached = null;
 let cachedAt = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-async function fetchData() {
+function resolveDataUrl(env = {}) {
+  const configuredUrl = env.DATA_URL?.trim();
+  const localFallbackAllowed =
+    env.ENVIRONMENT === "development" ||
+    env.NODE_ENV === "development" ||
+    env.CF_PAGES_BRANCH === "local";
+
+  const upstreamUrl = configuredUrl || (localFallbackAllowed ? DEFAULT_DATA_URL : null);
+
+  if (!upstreamUrl) {
+    return {
+      error:
+        "Worker misconfiguration: DATA_URL is required. Set DATA_URL in wrangler.toml [vars] or your Cloudflare environment.",
+    };
+  }
+
+  try {
+    const parsed = new URL(upstreamUrl);
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      throw new Error("DATA_URL must use http or https protocol.");
+    }
+  } catch {
+    return {
+      error:
+        "Worker misconfiguration: DATA_URL is invalid. Provide a valid absolute http(s) URL.",
+    };
+  }
+
+  return { upstreamUrl };
+}
+
+async function fetchData(upstreamUrl) {
   if (cached && Date.now() - cachedAt < CACHE_TTL) {
     return cached;
   }
-  const res = await fetch(GITHUB_PAGES_DATA_URL);
+  const res = await fetch(upstreamUrl);
   if (!res.ok) throw new Error(`Upstream ${res.status}`);
   cached = await res.json();
   cachedAt = Date.now();
@@ -39,7 +70,7 @@ async function fetchData() {
 }
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     // Handle CORS preflight
     if (request.method === "OPTIONS") {
       return new Response(null, { headers: CORS_HEADERS });
@@ -57,6 +88,11 @@ export default {
 
     // Metrics endpoint
     if (url.pathname === "/metrics") {
+      const { upstreamUrl, error } = resolveDataUrl(env);
+      if (error) {
+        return Response.json({ error }, { status: 500, headers: CORS_HEADERS });
+      }
+
       const section = url.searchParams.get("section");
       if (!section) {
         return Response.json(
@@ -66,7 +102,7 @@ export default {
       }
 
       try {
-        const data = await fetchData();
+        const data = await fetchData(upstreamUrl);
         const sectionData = data[section] || null;
 
         return Response.json(
@@ -98,8 +134,13 @@ export default {
 
     // All data (no section filter)
     if (url.pathname === "/all") {
+      const { upstreamUrl, error } = resolveDataUrl(env);
+      if (error) {
+        return Response.json({ error }, { status: 500, headers: CORS_HEADERS });
+      }
+
       try {
-        const data = await fetchData();
+        const data = await fetchData(upstreamUrl);
         return Response.json(data, {
           headers: {
             ...CORS_HEADERS,
