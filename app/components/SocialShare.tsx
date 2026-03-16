@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const FALLBACK_URL = "https://wilfgrainger.github.io/gov-metrics";
 
@@ -11,11 +11,7 @@ interface SocialShareProps {
 
 export default function SocialShare({ title = "PULSE — UK Public Data Intelligence", compact = false }: SocialShareProps) {
   const [copied, setCopied] = useState(false);
-  const [pageUrl, setPageUrl] = useState(FALLBACK_URL);
-
-  useEffect(() => {
-    setPageUrl(window.location.href);
-  }, []);
+  const [pageUrl] = useState(() => (typeof window === "undefined" ? FALLBACK_URL : window.location.href));
 
   const shareText = `${title} — Real-time UK public data metrics and analysis from public sources.`;
 
