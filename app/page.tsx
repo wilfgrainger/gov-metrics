@@ -64,15 +64,29 @@ const SECTIONS = [
   },
 ];
 
-function SectionHeader({ tag, title, subtitle, num }: { tag: string; title: string; subtitle: string; num: string }) {
+function SectionHeader({
+  tag,
+  title,
+  subtitle,
+  num,
+  density = "full",
+}: {
+  tag: string;
+  title: string;
+  subtitle: string;
+  num: string;
+  density?: "full" | "compact";
+}) {
+  const isCompact = density === "compact";
+
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6 border-b-4 border-black pb-4 gap-3 sm:gap-2">
+    <div className={`flex flex-col sm:flex-row sm:items-start justify-between border-b-4 border-black gap-3 sm:gap-2 ${isCompact ? "mb-4 pb-3" : "mb-6 pb-4"}`}>
       <div className="min-w-0">
-        <div className="font-mono text-xs tracking-widest text-gray-500 uppercase mb-1">{tag}</div>
-        <h2 className="font-display text-2xl md:text-4xl tracking-wider leading-none">{title}</h2>
-        <p className="font-mono text-xs mt-2 text-gray-600">{subtitle}</p>
+        <div className={`font-mono text-gray-500 mb-1 ${isCompact ? "text-[10px] tracking-wide" : "text-xs tracking-widest uppercase"}`}>{tag}</div>
+        <h2 className={`font-display leading-none ${isCompact ? "text-xl md:text-3xl tracking-wide" : "text-2xl md:text-4xl tracking-wider"}`}>{title}</h2>
+        <p className={`font-mono text-gray-600 ${isCompact ? "hidden md:block text-[10px] mt-1" : "text-xs mt-2"}`}>{subtitle}</p>
       </div>
-      <div className="text-4xl md:text-6xl font-display text-accent leading-none sm:ml-2 shrink-0 self-end sm:self-auto">{num}</div>
+      <div className={`font-display text-accent leading-none sm:ml-2 shrink-0 self-end sm:self-auto ${isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl"}`}>{num}</div>
     </div>
   );
 }
@@ -196,22 +210,22 @@ export default function Home() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <section id="election-polls" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-                <SectionHeader tag="Polling Data" title="ELECTION POLLING" subtitle="UK VOTING INTENTION AVERAGES" num="02" />
+                <SectionHeader tag="Polling Data" title="ELECTION POLLING" subtitle="UK VOTING INTENTION AVERAGES" num="02" density="compact" />
                 <ElectionPolling />
               </section>
               <section id="betting-odds" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-                <SectionHeader tag="Market Data" title="BETTING ODDS" subtitle="NEXT UK GENERAL ELECTION · IMPLIED PROBABILITIES" num="03" />
+                <SectionHeader tag="Market Data" title="BETTING ODDS" subtitle="NEXT UK GENERAL ELECTION · IMPLIED PROBABILITIES" num="03" density="compact" />
                 <BettingOdds />
               </section>
             </div>
 
             <section id="govt-approval" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-              <SectionHeader tag="Public Opinion" title="GOVERNMENT APPROVAL" subtitle="DISTRIBUTION OF GOVERNMENT SATISFACTION ACROSS POLLS" num="04" />
+              <SectionHeader tag="Public Opinion" title="GOVERNMENT APPROVAL" subtitle="DISTRIBUTION OF GOVERNMENT SATISFACTION ACROSS POLLS" num="04" density="compact" />
               <PolarizationMeter />
             </section>
 
             <section id="gov-trust-trend" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-              <SectionHeader tag="Longitudinal Data" title="TRUST IN GOVERNMENT" subtitle="SATISFACTION WITH GOVERNMENT 2020–2025 · KEY EVENTS ANNOTATED" num="05" />
+              <SectionHeader tag="Longitudinal Data" title="TRUST IN GOVERNMENT" subtitle="SATISFACTION WITH GOVERNMENT 2020–2025 · KEY EVENTS ANNOTATED" num="05" density="compact" />
               <TrendLines />
             </section>
           </div>
@@ -233,11 +247,11 @@ export default function Home() {
         {/* GDP + Economy indicators (2-col) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <section id="gdp" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="National Accounts" title="GDP" subtitle="GROSS DOMESTIC PRODUCT · TOTAL & PER CAPITA" num="07" />
+            <SectionHeader tag="National Accounts" title="GDP" subtitle="GROSS DOMESTIC PRODUCT · TOTAL & PER CAPITA" num="07" density="compact" />
             <GDPTracker />
           </section>
           <section id="economy" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="Economic Data" title="KEY INDICATORS" subtitle="INFLATION · BANK RATE · UNEMPLOYMENT" num="08" />
+            <SectionHeader tag="Economic Data" title="KEY INDICATORS" subtitle="INFLATION · BANK RATE · UNEMPLOYMENT" num="08" density="compact" />
             <SentimentPulse />
           </section>
         </div>
@@ -245,11 +259,11 @@ export default function Home() {
             {/* Tax + Employment (2-col) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <section id="tax" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="HMRC Data" title="TAX REVENUE" subtitle="UK TAX RECEIPTS & TAX BURDEN" num="09" />
+            <SectionHeader tag="HMRC Data" title="TAX REVENUE" subtitle="UK TAX RECEIPTS & TAX BURDEN" num="09" density="compact" />
             <TaxRevenue />
           </section>
           <section id="employment" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="Labour Market" title="EMPLOYMENT" subtitle="PRIVATE VS PUBLIC SECTOR · LABOUR MARKET OVERVIEW" num="10" />
+            <SectionHeader tag="Labour Market" title="EMPLOYMENT" subtitle="PRIVATE VS PUBLIC SECTOR · LABOUR MARKET OVERVIEW" num="10" density="compact" />
             <EmploymentStats />
           </section>
             </div>
@@ -270,14 +284,14 @@ export default function Home() {
             <CrimeStatistics />
           </section>
           <section id="nhs" className="border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-            <SectionHeader tag="Health Data" title="NHS & HEALTH" subtitle="WAITING LISTS · A&E · LIFE EXPECTANCY" num="12" />
+            <SectionHeader tag="Health Data" title="NHS & HEALTH" subtitle="WAITING LISTS · A&E · LIFE EXPECTANCY" num="12" density="compact" />
             <NHSStats />
           </section>
         </div>
 
             {/* Migration (full-width) */}
             <section id="migration" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="ONS Data" title="MIGRATION" subtitle="UK INTERNATIONAL MIGRATION · NET MIGRATION · VISA TYPES" num="13" />
+          <SectionHeader tag="ONS Data" title="MIGRATION" subtitle="UK INTERNATIONAL MIGRATION · NET MIGRATION · VISA TYPES" num="13" density="compact" />
           <MigrationStats />
             </section>
           </div>
@@ -297,14 +311,14 @@ export default function Home() {
             <GeographicHeatmap />
           </section>
           <section id="policy-links" className="border-4 border-black p-4 md:p-6 bg-white scroll-mt-20">
-            <SectionHeader tag="Survey Data" title="POLICY LINKS" subtitle="OPINION CORRELATION MATRIX" num="15" />
+            <SectionHeader tag="Survey Data" title="POLICY LINKS" subtitle="OPINION CORRELATION MATRIX" num="15" density="compact" />
             <EchoChamberMap />
           </section>
         </div>
 
             {/* Political Compass (full-width) */}
             <section id="political-compass" className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative scroll-mt-20">
-          <SectionHeader tag="Interactive Quiz" title="POLITICAL COMPASS" subtitle="WHERE DO YOU SIT ON THE POLITICAL SPECTRUM? ANSWER 10 QUESTIONS." num="16" />
+          <SectionHeader tag="Interactive Quiz" title="POLITICAL COMPASS" subtitle="WHERE DO YOU SIT ON THE POLITICAL SPECTRUM? ANSWER 10 QUESTIONS." num="16" density="compact" />
           <PoliticalCompass />
             </section>
           </div>
