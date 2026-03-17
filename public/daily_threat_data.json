@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-03-16T20:33:23.856139+00:00",
+    "generatedAt": "2026-03-17T08:45:31.983932+00:00",
     "generator": "fetch_intel.py",
     "version": "3.0",
     "note": "ONS data fetched via CSV generator (www.ons.gov.uk/generator). The legacy api.ons.gov.uk was retired Nov 2024.",
@@ -8,42 +8,42 @@
       "sentimentPulse": {
         "status": "ok",
         "source": "ONS CPI (D7G7) + BoE Bank Rate + ONS Unemployment (MGSX)",
-        "fetchedAt": "2026-03-16T20:33:23.856139+00:00"
+        "fetchedAt": "2026-03-17T08:45:31.983932+00:00"
       },
       "gdpTracker": {
         "status": "ok",
         "source": "ONS GDP Growth (IHYQ) + Level (ABMI)",
-        "fetchedAt": "2026-03-16T20:33:23.856139+00:00"
+        "fetchedAt": "2026-03-17T08:45:31.983932+00:00"
       },
       "employmentStats": {
         "status": "ok",
         "source": "ONS Employment (LF24) + Unemployment (MGSX)",
-        "fetchedAt": "2026-03-16T20:33:23.856139+00:00"
+        "fetchedAt": "2026-03-17T08:45:31.983932+00:00"
       },
       "nationalDebt": {
         "status": "error",
         "source": "ONS Net Debt (HF6X) + Net Borrowing (J5II)",
-        "fetchedAt": "2026-03-16T20:33:23.856139+00:00"
+        "fetchedAt": "2026-03-17T08:45:31.983932+00:00"
       },
       "taxRevenue": {
         "status": "error",
         "source": "ONS Tax Receipts (MF6U)",
-        "fetchedAt": "2026-03-16T20:33:23.856139+00:00"
+        "fetchedAt": "2026-03-17T08:45:31.983932+00:00"
       },
       "migrationStats": {
         "status": "error",
         "source": "ONS Migration Estimates (CIMU/CIML/CIMM)",
-        "fetchedAt": "2026-03-16T20:33:23.856139+00:00"
+        "fetchedAt": "2026-03-17T08:45:31.983932+00:00"
       },
       "electionPolling": {
         "status": "ok",
         "source": "Wikipedia UK Opinion Polling",
-        "fetchedAt": "2026-03-16T20:33:23.856139+00:00"
+        "fetchedAt": "2026-03-17T08:45:31.983932+00:00"
       },
       "nhsStats": {
         "status": "error",
         "source": "NHS England RTT Waiting Times",
-        "fetchedAt": "2026-03-16T20:33:23.856139+00:00"
+        "fetchedAt": "2026-03-17T08:45:31.983932+00:00"
       }
     }
   },
@@ -511,9 +511,9 @@
       {
         "party": "LAB",
         "name": "Labour",
-        "pct": 18,
+        "pct": 19,
         "color": "#E4003B",
-        "change": -16
+        "change": -15
       },
       {
         "party": "CON",
@@ -532,8 +532,16 @@
     ],
     "recentPolls": [
       {
+        "pollster": "15–16 Mar",
+        "date": "YouGov[2]",
+        "lab": 17.0,
+        "con": 17.0,
+        "ref": 25.0,
+        "ld": 14.0
+      },
+      {
         "pollster": "10–12 Mar",
-        "date": "Techne[2]",
+        "date": "Techne[3]",
         "lab": 17.0,
         "con": 18.0,
         "ref": 27.0,
@@ -541,7 +549,7 @@
       },
       {
         "pollster": "11 Mar",
-        "date": "Find Out Now[3]",
+        "date": "Find Out Now[4]",
         "lab": 15.0,
         "con": 17.0,
         "ref": 26.0,
@@ -549,7 +557,7 @@
       },
       {
         "pollster": "5–11 Mar",
-        "date": "Ipsos[4]",
+        "date": "Ipsos[5]",
         "lab": 21.0,
         "con": 17.0,
         "ref": 28.0,
@@ -557,18 +565,10 @@
       },
       {
         "pollster": "9–10 Mar",
-        "date": "YouGov[5]",
+        "date": "YouGov[6]",
         "lab": 17.0,
         "con": 19.0,
         "ref": 23.0,
-        "ld": 14.0
-      },
-      {
-        "pollster": "6–10 Mar",
-        "date": "Focaldata[6]",
-        "lab": 20.0,
-        "con": 18.0,
-        "ref": 27.0,
         "ld": 14.0
       }
     ]

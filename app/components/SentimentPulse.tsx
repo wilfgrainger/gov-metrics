@@ -43,7 +43,7 @@ export default function SentimentPulse() {
   const config = metricConfig[metric];
 
   return (
-    <div>
+    <div className="min-w-0">
       {/* Metric selector */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         {(Object.entries(metricConfig) as [Metric, typeof config][]).map(([key, cfg]) => (
@@ -64,8 +64,9 @@ export default function SentimentPulse() {
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={200}>
-        <AreaChart data={economicData} margin={{ top: 5, right: 0, bottom: 0, left: 0 }}>
+      <div className="chart-shell">
+        <ResponsiveContainer width="100%" height={200} minWidth={0}>
+          <AreaChart data={economicData} margin={{ top: 5, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="metricGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={config.color} stopOpacity={0.3} />
@@ -95,15 +96,16 @@ export default function SentimentPulse() {
             }}
             formatter={(val) => [`${val}%`, config.label]}
           />
-          <Area
-            type="monotone"
-            dataKey={metric}
-            stroke={config.color}
-            strokeWidth={2}
-            fill="url(#metricGrad)"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+            <Area
+              type="monotone"
+              dataKey={metric}
+              stroke={config.color}
+              strokeWidth={2}
+              fill="url(#metricGrad)"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
 
       <p className="font-mono text-[10px] text-gray-400 mt-3">
         DATA SOURCES: ONS Consumer Price Index (CPI) Jan 2026: 3.0%. Bank of England base rate: 3.75% (held 5 Feb 2026).

@@ -17,7 +17,7 @@ Sources:
 Run manually:
     python fetch_intel.py
 
-Automated via GitHub Actions every 4 hours (see .github/workflows/fetch-data.yml).
+This script is now a legacy manual tool. The primary production backend runs on Cloudflare Workers.
 """
 
 import csv

@@ -51,7 +51,7 @@ export default function CrimeStatistics() {
   const [view, setView] = useState<"category" | "regional">("category");
 
   return (
-    <div>
+    <div className="min-w-0">
       {/* Headline stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mb-4">
         {[
@@ -89,8 +89,8 @@ export default function CrimeStatistics() {
       </div>
 
       {view === "category" && (
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="chart-shell h-72">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <BarChart data={crimeCategories} layout="vertical" margin={{ left: 10, right: 40 }}>
               <XAxis
                 type="number"

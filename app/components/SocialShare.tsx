@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const FALLBACK_URL = "https://wilfgrainger.github.io/gov-metrics";
 
@@ -9,34 +9,58 @@ interface SocialShareProps {
   compact?: boolean;
 }
 
-export default function SocialShare({ title = "PULSE — UK Public Data Intelligence", compact = false }: SocialShareProps) {
+export default function SocialShare({
+  title = "PULSE - UK Public Data Intelligence",
+  compact = false,
+}: SocialShareProps) {
   const [copied, setCopied] = useState(false);
-  const [pageUrl] = useState(() => (typeof window === "undefined" ? FALLBACK_URL : window.location.href));
+  const resetTimeoutRef = useRef<number | null>(null);
+  const [pageUrl] = useState(() =>
+    typeof window === "undefined" ? FALLBACK_URL : window.location.href
+  );
 
-  const shareText = `${title} — Real-time UK public data metrics and analysis from public sources.`;
+  const shareText = `${title} - Real-time UK public data metrics and analysis from public sources.`;
+
+  useEffect(() => {
+    return () => {
+      if (resetTimeoutRef.current !== null) {
+        window.clearTimeout(resetTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const showCopiedState = () => {
+    setCopied(true);
+    if (resetTimeoutRef.current !== null) {
+      window.clearTimeout(resetTimeoutRef.current);
+    }
+
+    resetTimeoutRef.current = window.setTimeout(() => {
+      setCopied(false);
+      resetTimeoutRef.current = null;
+    }, 2000);
+  };
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(pageUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      showCopiedState();
     } catch {
-      // Fallback for older browsers
+      // Fallback for older browsers that do not expose async clipboard APIs.
       const textArea = document.createElement("textarea");
       textArea.value = pageUrl;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand("copy");
       document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      showCopiedState();
     }
   };
 
   const shareLinks = [
     {
       name: "X",
-      label: "𝕏",
+      label: "X",
       href: `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`,
     },
     {
@@ -52,7 +76,7 @@ export default function SocialShare({ title = "PULSE — UK Public Data Intellig
     {
       name: "WhatsApp",
       label: "WA",
-      href: `https://wa.me/?text=${encodeURIComponent(shareText + " " + pageUrl)}`,
+      href: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${pageUrl}`)}`,
     },
   ];
 
@@ -76,7 +100,7 @@ export default function SocialShare({ title = "PULSE — UK Public Data Intellig
           className="border-2 border-black px-2 py-1 font-mono text-[10px] font-bold hover:bg-black hover:text-white transition-colors"
           title="Copy link"
         >
-          {copied ? "✓" : "LINK"}
+          {copied ? "OK" : "LINK"}
         </button>
       </div>
     );
@@ -111,7 +135,7 @@ export default function SocialShare({ title = "PULSE — UK Public Data Intellig
           }}
           title="Copy link to clipboard"
         >
-          {copied ? "✓ COPIED" : "⎘ COPY LINK"}
+          {copied ? "OK COPIED" : "COPY LINK"}
         </button>
       </div>
     </div>

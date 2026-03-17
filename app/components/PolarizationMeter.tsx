@@ -57,7 +57,7 @@ export default function PolarizationMeter() {
   const maxCount = Math.max(...rawData.map((d) => d.count));
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="mb-6 flex items-center justify-between">
         <PolarizationLabel index={polarizationIndex} />
         <div className="border-2 border-black p-3 font-mono text-xs text-right">
@@ -72,8 +72,9 @@ export default function PolarizationMeter() {
         <span>APPROVE →</span>
       </div>
 
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={rawData} barCategoryGap={2}>
+      <div className="chart-shell">
+        <ResponsiveContainer width="100%" height={200} minWidth={0}>
+          <BarChart data={rawData} barCategoryGap={2}>
           <XAxis
             dataKey="range"
             tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
@@ -81,16 +82,17 @@ export default function PolarizationMeter() {
             tickLine={false}
           />
           <YAxis hide />
-          <Bar dataKey="count" maxBarSize={60}>
-            {rawData.map((entry, i) => (
-              <Cell
-                key={i}
-                fill={entry.count === maxCount ? "#FF3B00" : entry.count > 8 ? "#333" : "#aaa"}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+            <Bar dataKey="count" maxBarSize={60}>
+              {rawData.map((entry, i) => (
+                <Cell
+                  key={i}
+                  fill={entry.count === maxCount ? "#FF3B00" : entry.count > 8 ? "#333" : "#aaa"}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
       <div className="mt-4 grid grid-cols-3 border-t-4 border-black pt-4">
         <div className="text-center border-r-2 border-black">

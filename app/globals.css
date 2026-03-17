@@ -41,6 +41,19 @@ body {
   overflow-x: hidden;
 }
 
+.dashboard-card {
+  min-width: 0;
+}
+
+.chart-shell {
+  min-width: 0;
+}
+
+.recharts-responsive-container,
+.recharts-wrapper {
+  min-width: 0;
+}
+
 /* Typography utility classes */
 .font-display {
   font-family: "Bebas Neue", "Impact", "Arial Narrow", sans-serif;
