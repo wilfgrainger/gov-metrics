@@ -34,10 +34,10 @@ export default function ElectionPolling() {
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
 
   return (
-    <div>
+    <div className="min-w-0">
       {/* Main chart */}
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="chart-shell h-64">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <BarChart data={pollingData} layout="vertical" margin={{ left: 5, right: 30 }}>
             <XAxis type="number" domain={[0, 40]} tick={{ fontFamily: "IBM Plex Mono", fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
             <YAxis type="category" dataKey="party" tick={{ fontFamily: "IBM Plex Mono", fontSize: 11, fontWeight: 700 }} width={35} />

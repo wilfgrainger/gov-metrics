@@ -82,7 +82,7 @@ export default function TrendLines() {
   const [activeEvent, setActiveEvent] = useState<string | null>(null);
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="mb-4 grid grid-cols-2 gap-2 md:grid-cols-4">
         {events.map((ev) => (
           <button
@@ -101,8 +101,9 @@ export default function TrendLines() {
         ))}
       </div>
 
-      <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={trendData} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
+      <div className="chart-shell">
+        <ResponsiveContainer width="100%" height={260} minWidth={0}>
+          <LineChart data={trendData} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
           <XAxis
             dataKey="date"
             tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
@@ -138,16 +139,17 @@ export default function TrendLines() {
               }
             />
           ))}
-          <Line
-            type="monotone"
-            dataKey="trust"
-            stroke="#000"
-            strokeWidth={3}
-            dot={false}
-            activeDot={{ r: 5, fill: "#FF3B00", stroke: "#000", strokeWidth: 2 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+            <Line
+              type="monotone"
+              dataKey="trust"
+              stroke="#000"
+              strokeWidth={3}
+              dot={false}
+              activeDot={{ r: 5, fill: "#FF3B00", stroke: "#000", strokeWidth: 2 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
       <div className="mt-3 border-t-2 border-black pt-3 flex flex-wrap gap-6 font-mono text-xs text-gray-500">
         <div>

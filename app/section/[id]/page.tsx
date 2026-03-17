@@ -95,7 +95,7 @@ export default async function SectionPage({ params }: { params: Promise<{ id: st
           <p className="font-display text-xl md:text-3xl tracking-wide max-w-2xl leading-tight">Navigate between sections from the fixed top menu.</p>
         </div>
 
-        <section className="mb-6 border-4 border-black p-4 md:p-6 bg-white relative">
+        <section className="dashboard-card mb-6 border-4 border-black p-4 md:p-6 bg-white relative">
           <SectionHeader tag={section.tag} title={section.title} subtitle={section.subtitle} num={section.num} />
           <SectionComponent />
         </section>

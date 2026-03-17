@@ -69,7 +69,7 @@ async function fetchData(upstreamUrl) {
   return cached;
 }
 
-export default {
+const worker = {
   async fetch(request, env) {
     // Handle CORS preflight
     if (request.method === "OPTIONS") {
@@ -161,3 +161,5 @@ export default {
     );
   },
 };
+
+export default worker;
