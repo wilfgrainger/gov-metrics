@@ -11,6 +11,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Government Satisfaction / Trust Trend Data
 // Sources: Ipsos Political Monitor (monthly government satisfaction tracker)
@@ -77,7 +78,8 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
 const FALLBACK = { data: DATA, events: EVENTS };
 
 export default function TrendLines() {
-  const { data, isLive } = useMetrics("trendLines", FALLBACK);
+  const metrics = useMetrics("trendLines", FALLBACK);
+  const { data } = metrics;
   const { data: trendData, events } = data;
   const [activeEvent, setActiveEvent] = useState<string | null>(null);
 
@@ -169,12 +171,7 @@ export default function TrendLines() {
         the government is running the country.&quot; Key events annotated from major policy/political developments.
         Source: ipsos.com/en-uk/political-monitor · yougov.co.uk/topics/politics
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="trendLines" status={metrics} />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Tax Revenue Data from HMRC and ONS
 // Source: HMRC Tax Receipts monthly bulletin
@@ -36,7 +37,8 @@ const TOTAL_RECEIPTS = 843;
 const FALLBACK = { taxCategories: TAX_CATEGORIES, taxBurdenHistory: TAX_BURDEN_HISTORY, totalReceipts: TOTAL_RECEIPTS };
 
 export default function TaxRevenue() {
-  const { data, isLive } = useMetrics("taxRevenue", FALLBACK);
+  const metrics = useMetrics("taxRevenue", FALLBACK);
+  const { data } = metrics;
   const { taxCategories, taxBurdenHistory, totalReceipts } = data;
 
   const [view, setView] = useState<"breakdown" | "burden">("breakdown");
@@ -137,12 +139,7 @@ export default function TaxRevenue() {
         Total receipts FY 2024/25 estimated £843bn. Tax-to-GDP ratio: OBR, highest since 1948 records.
         Sources: gov.uk/government/statistics/hmrc-tax-and-nics-receipts · obr.uk
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="taxRevenue" status={metrics} />
     </div>
   );
 }

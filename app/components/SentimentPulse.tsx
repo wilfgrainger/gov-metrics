@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Key Economic Indicators — monthly time series
 // Sources: ONS, Bank of England, Office for Budget Responsibility (OBR)
@@ -36,7 +37,8 @@ const METRIC_CONFIG: Record<Metric, { label: string; unit: string; color: string
 const FALLBACK = { economicData: ECONOMIC_DATA, metricConfig: METRIC_CONFIG };
 
 export default function SentimentPulse() {
-  const { data, isLive } = useMetrics("sentimentPulse", FALLBACK);
+  const metrics = useMetrics("sentimentPulse", FALLBACK);
+  const { data } = metrics;
   const { economicData, metricConfig } = data;
 
   const [metric, setMetric] = useState<Metric>("inflation");
@@ -113,12 +115,7 @@ export default function SentimentPulse() {
         Sources: ons.gov.uk/economy/inflationandpriceindices · bankofengland.co.uk/monetary-policy ·
         ons.gov.uk/employmentandlabourmarket. Data verified: March 2026.
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="sentimentPulse" status={metrics} />
     </div>
   );
 }

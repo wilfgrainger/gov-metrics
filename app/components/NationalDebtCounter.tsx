@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK national debt data from ONS Public Sector Finances
 // Source: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance
@@ -23,7 +24,8 @@ const HISTORICAL_MILESTONES = [
 const FALLBACK = { baseDebt: BASE_DEBT, baseDate: BASE_DATE, debtPerSecond: DEBT_PER_SECOND, population: UK_POPULATION, gdp: UK_GDP, milestones: HISTORICAL_MILESTONES };
 
 export default function NationalDebtCounter() {
-  const { data, isLive } = useMetrics("nationalDebt", FALLBACK);
+  const metrics = useMetrics("nationalDebt", FALLBACK);
+  const { data } = metrics;
   const { baseDebt, baseDate, debtPerSecond, population, gdp, milestones } = data;
 
   const [debt, setDebt] = useState(baseDebt);
@@ -110,12 +112,7 @@ export default function NationalDebtCounter() {
         Debt-to-GDP: ~95.5% (ONS, Dec 2025). Population: ONS mid-2024 estimate (67.96m).
         Source: ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="nationalDebt" status={metrics} />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Crime Statistics from ONS Crime Survey for England and Wales
 // Source: https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice
@@ -46,7 +47,8 @@ const REGIONAL = [
 const FALLBACK = { crimeCategories: CRIME_CATEGORIES, headline: HEADLINE, regional: REGIONAL };
 
 export default function CrimeStatistics() {
-  const { data, isLive } = useMetrics("crimeStatistics", FALLBACK);
+  const metrics = useMetrics("crimeStatistics", FALLBACK);
+  const { data } = metrics;
   const { crimeCategories, headline, regional } = data;
   const [view, setView] = useState<"category" | "regional">("category");
 
@@ -156,12 +158,7 @@ export default function CrimeStatistics() {
         Homicides: ONS, 499 (lowest since 2003). Charge rate from CPS/Home Office data.
         Source: ons.gov.uk/peoplepopulationandcommunity/crimeandjustice
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="crimeStatistics" status={metrics} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // Next UK General Election betting odds / implied probabilities
 // Sources: Public betting market data aggregated from Betfair Exchange, Oddschecker
@@ -33,7 +34,8 @@ const YEAR_ODDS = [
 const FALLBACK = { nextPmOdds: NEXT_PM_ODDS, mostSeats: MOST_SEATS, yearOdds: YEAR_ODDS };
 
 export default function BettingOdds() {
-  const { data, isLive } = useMetrics("bettingOdds", FALLBACK);
+  const metrics = useMetrics("bettingOdds", FALLBACK);
+  const { data } = metrics;
   const { nextPmOdds, mostSeats, yearOdds } = data;
   const [view, setView] = useState<"pm" | "seats" | "year">("pm");
 
@@ -135,12 +137,7 @@ export default function BettingOdds() {
         Probabilities are indicative and derived from market prices. Last updated: March 2026.
         Sources: betfair.com/exchange/plus/en/politics · oddschecker.com/politics/british-politics
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="bettingOdds" status={metrics} />
     </div>
   );
 }

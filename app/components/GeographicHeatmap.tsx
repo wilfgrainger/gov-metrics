@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Regional Statistics from ONS and public data sources
 // Sources:
@@ -61,7 +62,8 @@ const LAYER_SOURCES: Record<Layer, string> = {
 const FALLBACK = { regions: REGIONS, layerLabels: LAYER_LABELS, layerSources: LAYER_SOURCES };
 
 export default function GeographicHeatmap() {
-  const { data, isLive } = useMetrics("geographicHeatmap", FALLBACK);
+  const metrics = useMetrics("geographicHeatmap", FALLBACK);
+  const { data } = metrics;
   const { regions, layerLabels, layerSources } = data;
   const [layer, setLayer] = useState<Layer>("income");
   const [hovered, setHovered] = useState<string | null>(null);
@@ -197,12 +199,7 @@ export default function GeographicHeatmap() {
         Sources: ons.gov.uk/employmentandlabourmarket · ons.gov.uk/peoplepopulationandcommunity/crimeandjustice ·
         electoralcommission.org.uk
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="geographicHeatmap" status={metrics} />
     </div>
   );
 }

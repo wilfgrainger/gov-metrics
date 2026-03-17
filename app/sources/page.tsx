@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DataAutomationSummary from "@/app/components/DataAutomationSummary";
 
 const SOURCE_GROUPS = [
   {
@@ -32,43 +33,45 @@ const SOURCE_GROUPS = [
 
 export default function SourcesPage() {
   return (
-    <main className="min-h-screen bg-white text-black px-4 md:px-6 py-6 md:py-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="border-4 border-black p-5 md:p-8 bg-black text-white mb-6" style={{ boxShadow: "6px 6px 0 #FF3B00" }}>
-          <p className="font-mono text-[10px] md:text-xs tracking-[0.25em] uppercase text-red-400 mb-3">Data Governance</p>
-          <h1 className="font-display text-5xl md:text-7xl leading-none tracking-tight">DATA SOURCES & UPDATE CADENCE</h1>
-          <p className="font-mono text-xs md:text-sm mt-4 text-gray-300 max-w-3xl">
-            This page documents where each metric comes from and how often we expect it to refresh. Cadence windows can vary based on public release schedules.
+    <main className="min-h-screen bg-white px-4 py-6 text-black md:px-6 md:py-10">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 border-4 border-black bg-black p-5 text-white md:p-8" style={{ boxShadow: "6px 6px 0 #FF3B00" }}>
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-red-400 md:text-xs">Data Governance</p>
+          <h1 className="font-display text-5xl leading-none tracking-tight md:text-7xl">DATA SOURCES & UPDATE CADENCE</h1>
+          <p className="mt-4 max-w-3xl font-mono text-xs text-gray-300 md:text-sm">
+            This page documents where each metric comes from, whether it is automated, and when the worker last imported live data. Cadence windows can still vary with public release schedules.
           </p>
           <div className="mt-5">
-            <Link href="/" className="inline-block border-2 border-white px-3 py-2 font-mono text-xs tracking-widest uppercase hover:bg-white hover:text-black transition-colors">
-              ← Back to dashboard
+            <Link href="/" className="inline-block border-2 border-white px-3 py-2 font-mono text-xs uppercase tracking-widest transition-colors hover:bg-white hover:text-black">
+              {"<-"} Back to dashboard
             </Link>
           </div>
         </div>
 
+        <DataAutomationSummary />
+
         <section className="border-4 border-black bg-white p-4 md:p-6">
-          <div className="font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-gray-500 mb-3">Reference Matrix</div>
+          <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-500 md:text-xs">Reference Matrix</div>
 
           <div className="space-y-6">
             {SOURCE_GROUPS.map((group) => (
               <article key={group.category} className="border-2 border-black">
-                <h2 className="font-display text-3xl md:text-4xl leading-none px-4 py-3 border-b-2 border-black bg-gray-100">{group.category}</h2>
+                <h2 className="border-b-2 border-black bg-gray-100 px-4 py-3 font-display text-3xl leading-none md:text-4xl">{group.category}</h2>
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[680px] border-collapse">
+                  <table className="min-w-[680px] w-full border-collapse">
                     <thead>
-                      <tr className="font-mono text-[10px] md:text-xs uppercase tracking-wider text-left bg-black text-white">
-                        <th className="px-4 py-3 border-r border-gray-700">Source</th>
-                        <th className="px-4 py-3 border-r border-gray-700">How PULSE Uses It</th>
+                      <tr className="bg-black text-left font-mono text-[10px] uppercase tracking-wider text-white md:text-xs">
+                        <th className="border-r border-gray-700 px-4 py-3">Source</th>
+                        <th className="border-r border-gray-700 px-4 py-3">How PULSE Uses It</th>
                         <th className="px-4 py-3">Expected Cadence</th>
                       </tr>
                     </thead>
                     <tbody>
                       {group.entries.map((entry, index) => (
                         <tr key={entry.name} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                          <td className="px-4 py-3 border-t border-black font-mono text-xs md:text-sm">{entry.name}</td>
-                          <td className="px-4 py-3 border-t border-black font-mono text-xs md:text-sm">{entry.use}</td>
-                          <td className="px-4 py-3 border-t border-black font-mono text-xs md:text-sm text-[#FF3B00]">{entry.cadence}</td>
+                          <td className="border-t border-black px-4 py-3 font-mono text-xs md:text-sm">{entry.name}</td>
+                          <td className="border-t border-black px-4 py-3 font-mono text-xs md:text-sm">{entry.use}</td>
+                          <td className="border-t border-black px-4 py-3 font-mono text-xs text-[#FF3B00] md:text-sm">{entry.cadence}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -82,4 +85,3 @@ export default function SourcesPage() {
     </main>
   );
 }
-

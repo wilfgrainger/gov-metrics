@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Employment Statistics — ONS Labour Market Overview
 // Source: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes
@@ -49,7 +50,8 @@ const EMPLOYMENT_TREND = [
 const FALLBACK = { headline: HEADLINE, publicVsPrivate: PUBLIC_VS_PRIVATE, publicBreakdown: PUBLIC_BREAKDOWN, employmentTrend: EMPLOYMENT_TREND };
 
 export default function EmploymentStats() {
-  const { data, isLive } = useMetrics("employmentStats", FALLBACK);
+  const metrics = useMetrics("employmentStats", FALLBACK);
+  const { data } = metrics;
   const { headline, publicVsPrivate, publicBreakdown, employmentTrend } = data;
 
   const [view, setView] = useState<"overview" | "sectors" | "trend">("overview");
@@ -188,12 +190,7 @@ export default function EmploymentStats() {
         Vacancy data from ONS VACS01. Economic inactivity: ONS Labour Force Survey.
         Sources: ons.gov.uk/employmentandlabourmarket · ons.gov.uk/employmentandlabourmarket/peopleinwork/publicsectorpersonnel
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="employmentStats" status={metrics} />
     </div>
   );
 }

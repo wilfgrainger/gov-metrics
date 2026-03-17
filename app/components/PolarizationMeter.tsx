@@ -9,6 +9,7 @@ import {
   Cell,
 } from "recharts";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Government Approval Rating distribution across recent polls
 // Sources: Ipsos Political Monitor, YouGov Government Approval Tracker
@@ -52,7 +53,8 @@ function PolarizationLabel({ index }: { index: number }) {
 const FALLBACK = { rawData: RAW_DATA, polarizationIndex: POLARIZATION_INDEX };
 
 export default function PolarizationMeter() {
-  const { data, isLive } = useMetrics("polarizationMeter", FALLBACK);
+  const metrics = useMetrics("polarizationMeter", FALLBACK);
+  const { data } = metrics;
   const { rawData, polarizationIndex } = data;
   const maxCount = Math.max(...rawData.map((d) => d.count));
 
@@ -134,12 +136,7 @@ export default function PolarizationMeter() {
         from bimodal distribution analysis of cross-poll approval ratings.
         Source: ipsos.com/en-uk/political-monitor · yougov.co.uk/topics/politics
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="polarizationMeter" status={metrics} />
     </div>
   );
 }

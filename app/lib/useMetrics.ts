@@ -3,17 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import { CF_WORKER_URL, METRICS_API_PATH, REFRESH_INTERVAL_MS } from "./config";
 
+export type MetricsCacheState = "fresh" | "stale" | "expired" | "missing" | null;
+
 export interface MetricsResult<T> {
   data: T;
   isLive: boolean;
   lastUpdated: Date | null;
   source: "api" | "worker" | "fallback";
+  cacheState: MetricsCacheState;
 }
 
 interface CacheEntry {
   data: unknown;
   timestamp: number;
   source: "api" | "worker";
+  lastUpdated: string | null;
+  cacheState: MetricsCacheState;
 }
 
 const cache = new Map<string, CacheEntry>();
@@ -45,6 +50,7 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
     isLive: false,
     lastUpdated: null,
     source: "fallback",
+    cacheState: null,
   });
 
   useEffect(() => {
@@ -53,10 +59,17 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
     const applyData = (
       raw: unknown,
       source: "api" | "worker",
-      timestamp: string | undefined
+      timestamp: string | undefined,
+      cacheState: MetricsCacheState
     ) => {
       const merged = shallowMerge(fallbackRef.current, raw);
-      cache.set(section, { data: merged, timestamp: Date.now(), source });
+      cache.set(section, {
+        data: merged,
+        timestamp: Date.now(),
+        source,
+        lastUpdated: timestamp ?? null,
+        cacheState,
+      });
 
       if (!active) {
         return;
@@ -67,6 +80,7 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
         isLive: true,
         lastUpdated: new Date(timestamp ?? Date.now()),
         source,
+        cacheState,
       });
     };
 
@@ -77,8 +91,9 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
           setResult({
             data: cached.data as T,
             isLive: true,
-            lastUpdated: new Date(cached.timestamp),
+            lastUpdated: new Date(cached.lastUpdated ?? cached.timestamp),
             source: cached.source,
+            cacheState: cached.cacheState,
           });
         }
         return;
@@ -93,7 +108,7 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
           if (response.ok) {
             const payload = await response.json();
             if (payload.data !== null && payload.data !== undefined) {
-              applyData(payload.data, "worker", payload.timestamp);
+              applyData(payload.data, "worker", payload.timestamp, payload.cacheState ?? null);
               return;
             }
           }
@@ -111,7 +126,7 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
         if (response.ok) {
           const payload = await response.json();
           if (payload.data !== null && payload.data !== undefined) {
-            applyData(payload.data, "api", payload.timestamp);
+            applyData(payload.data, "api", payload.timestamp, null);
             return;
           }
         }
@@ -125,6 +140,7 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
           isLive: false,
           lastUpdated: null,
           source: "fallback",
+          cacheState: null,
         });
       }
     };

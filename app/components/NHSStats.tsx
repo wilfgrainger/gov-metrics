@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK NHS & Health Statistics
 // Sources: NHS England, ONS Health Statistics, NHS Digital
@@ -55,7 +56,8 @@ const LIFE_EXPECTANCY_TREND = [
 const FALLBACK = { headline: HEADLINE, waitingTrend: WAITING_TREND, waitingBySpecialty: WAITING_BY_SPECIALTY, lifeExpectancyTrend: LIFE_EXPECTANCY_TREND };
 
 export default function NHSStats() {
-  const { data, isLive } = useMetrics("nhsStats", FALLBACK);
+  const metrics = useMetrics("nhsStats", FALLBACK);
+  const { data } = metrics;
   const { headline, waitingTrend, waitingBySpecialty, lifeExpectancyTrend } = data;
   const [view, setView] = useState<"waiting" | "specialties" | "lifeexp">("waiting");
 
@@ -197,12 +199,7 @@ export default function NHSStats() {
         GP waiting times: NHS Digital GP Patient Survey. NHS workforce: NHS Digital.
         Sources: england.nhs.uk/statistics · ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="nhsStats" status={metrics} />
     </div>
   );
 }

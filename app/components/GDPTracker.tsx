@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK GDP Data from ONS National Accounts
 // Source: https://www.ons.gov.uk/economy/grossdomesticproductgdp
@@ -41,7 +42,8 @@ const SECTOR_BREAKDOWN = [
 const FALLBACK = { gdpHistory: GDP_HISTORY, g7Comparison: G7_COMPARISON, sectorBreakdown: SECTOR_BREAKDOWN };
 
 export default function GDPTracker() {
-  const { data, isLive } = useMetrics("gdpTracker", FALLBACK);
+  const metrics = useMetrics("gdpTracker", FALLBACK);
+  const { data } = metrics;
   const { gdpHistory, g7Comparison, sectorBreakdown } = data;
 
   const [view, setView] = useState<"overview" | "g7" | "sectors">("overview");
@@ -166,12 +168,7 @@ export default function GDPTracker() {
         Sector breakdown: ONS GDP output approach. 2025 forecast: OBR Economic and Fiscal Outlook (Oct 2024).
         Sources: ons.gov.uk/economy/grossdomesticproductgdp · imf.org/en/Publications/WEO
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="gdpTracker" status={metrics} />
     </div>
   );
 }

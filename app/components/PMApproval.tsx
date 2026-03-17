@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Prime Minister Approval Rating
 // Sources: YouGov PM approval tracker (public, updated weekly)
@@ -31,7 +32,8 @@ const COMPARISON = [
 const FALLBACK = { history: PM_APPROVAL_HISTORY, comparison: COMPARISON };
 
 export default function PMApproval() {
-  const { data, isLive } = useMetrics("pmApproval", FALLBACK);
+  const metrics = useMetrics("pmApproval", FALLBACK);
+  const { data } = metrics;
   const { history, comparison } = data;
   const [view, setView] = useState<"current" | "history">("current");
   const current = history[history.length - 1];
@@ -160,12 +162,7 @@ export default function PMApproval() {
         Sources: yougov.co.uk/topics/politics/trackers/keir-starmer-approval-rating ·
         ipsos.com/en-uk/political-monitor. Data verified: March 2026.
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="pmApproval" status={metrics} />
     </div>
   );
 }

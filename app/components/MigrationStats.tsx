@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Migration Statistics — ONS International Migration
 // Source: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/internationalmigration
@@ -44,7 +45,8 @@ const TOP_NATIONALITIES = [
 const FALLBACK = { migrationHistory: MIGRATION_HISTORY, visaTypes: VISA_TYPES, topNationalities: TOP_NATIONALITIES };
 
 export default function MigrationStats() {
-  const { data, isLive } = useMetrics("migrationStats", FALLBACK);
+  const metrics = useMetrics("migrationStats", FALLBACK);
+  const { data } = metrics;
   const { migrationHistory, visaTypes, topNationalities } = data;
   const [view, setView] = useState<"overview" | "visas" | "origins">("overview");
   const latest = migrationHistory[migrationHistory.length - 1];
@@ -161,12 +163,7 @@ export default function MigrationStats() {
         Sources: ons.gov.uk/peoplepopulationandcommunity/populationandmigration/internationalmigration ·
         gov.uk/government/statistics/immigration-system-statistics-quarterly-release
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="migrationStats" status={metrics} />
     </div>
   );
 }

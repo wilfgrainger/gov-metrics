@@ -66,84 +66,113 @@ export const BOE_SERIES = {
   BANK_RATE: "IUDBEDR",
 } as const;
 
+export type DataAutomation = "automated" | "static" | "interactive";
+
+export interface DataSourceDefinition {
+  name: string;
+  frequency: string;
+  sources: string[];
+  automation: DataAutomation;
+}
+
+export const INTERACTIVE_ONLY_SECTIONS = ["politicalCompass"] as const;
+
 // Data source metadata for UI and documentation.
-export const DATA_SOURCES: Record<
-  string,
-  { name: string; frequency: string; sources: string[] }
-> = {
+export const DATA_SOURCES: Record<string, DataSourceDefinition> = {
   pmApproval: {
     name: "PM Approval",
     frequency: "weekly",
     sources: ["YouGov", "Ipsos"],
+    automation: "static",
   },
   electionPolling: {
     name: "Election Polling",
     frequency: "daily",
     sources: ["Wikipedia", "YouGov", "Ipsos", "Savanta", "R&W", "More in Common"],
+    automation: "automated",
   },
   bettingOdds: {
     name: "Betting Odds",
     frequency: "daily",
     sources: ["Betfair", "Oddschecker", "Smarkets"],
+    automation: "static",
   },
   polarizationMeter: {
     name: "Polarization Index",
     frequency: "monthly",
     sources: ["Ipsos", "YouGov"],
+    automation: "static",
   },
   trendLines: {
     name: "Govt Satisfaction",
     frequency: "monthly",
     sources: ["Ipsos"],
+    automation: "static",
   },
   nationalDebt: {
     name: "National Debt",
     frequency: "monthly",
     sources: ["ONS Public Sector Finances"],
+    automation: "automated",
   },
   gdpTracker: {
     name: "GDP",
     frequency: "quarterly",
     sources: ["ONS", "IMF", "OBR"],
+    automation: "automated",
   },
   sentimentPulse: {
     name: "Economic Indicators",
     frequency: "monthly",
     sources: ["ONS", "Bank of England"],
+    automation: "automated",
   },
   taxRevenue: {
     name: "Tax Revenue",
     frequency: "monthly",
     sources: ["ONS", "HMRC", "OBR"],
+    automation: "automated",
   },
   employmentStats: {
     name: "Employment",
     frequency: "monthly",
     sources: ["ONS Labour Force Survey"],
+    automation: "automated",
   },
   crimeStatistics: {
     name: "Crime",
     frequency: "quarterly",
     sources: ["ONS", "Home Office"],
+    automation: "static",
   },
   nhsStats: {
     name: "NHS Statistics",
     frequency: "monthly",
     sources: ["NHS England", "ONS"],
+    automation: "automated",
   },
   migrationStats: {
     name: "Migration",
     frequency: "quarterly",
     sources: ["ONS", "Home Office"],
+    automation: "automated",
   },
   geographicHeatmap: {
     name: "Regional Data",
     frequency: "annual",
     sources: ["ONS", "Home Office", "Electoral Commission"],
+    automation: "static",
   },
   echoChamberMap: {
     name: "Opinion Correlations",
     frequency: "annual",
     sources: ["NatCen BSA", "YouGov"],
+    automation: "static",
+  },
+  politicalCompass: {
+    name: "Political Compass",
+    frequency: "user interaction only",
+    sources: ["User responses"],
+    automation: "interactive",
   },
 };

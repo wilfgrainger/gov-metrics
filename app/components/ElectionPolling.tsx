@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // Latest UK polling averages (aggregated from multiple public pollsters)
 // Sources: YouGov, Ipsos, Savanta, Redfield & Wilton, More in Common, Deltapoll
@@ -29,7 +30,8 @@ const RECENT_POLLS = [
 const FALLBACK = { pollingData: POLLING_DATA, recentPolls: RECENT_POLLS };
 
 export default function ElectionPolling() {
-  const { data, isLive } = useMetrics("electionPolling", FALLBACK);
+  const metrics = useMetrics("electionPolling", FALLBACK);
+  const { data } = metrics;
   const { pollingData, recentPolls } = data;
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
 
@@ -118,12 +120,7 @@ export default function ElectionPolling() {
         Wikipedia UK polling tracker, and Electoral Calculus. Changes shown vs 2024 General Election result (4 Jul 2024).
         Data verified: March 2026. Sources: pollcheck.co.uk/gb-polls · statista.com/statistics/985764
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="electionPolling" status={metrics} />
     </div>
   );
 }

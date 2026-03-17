@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
+import MetricsStatus from "@/app/components/MetricsStatus";
 
 // UK Policy Opinion Correlations — derived from British Social Attitudes Survey (BSA)
 // Source: NatCen Social Research — British Social Attitudes Survey, Wave 40 (2023)
@@ -39,7 +40,8 @@ function getTextColor(v: number): string {
 const FALLBACK = { topics: TOPICS, correlations: CORRELATIONS };
 
 export default function EchoChamberMap() {
-  const { data, isLive } = useMetrics("echoChamberMap", FALLBACK);
+  const metrics = useMetrics("echoChamberMap", FALLBACK);
+  const { data } = metrics;
   const { topics, correlations } = data;
   const [hovered, setHovered] = useState<[number, number] | null>(null);
 
@@ -166,12 +168,7 @@ export default function EchoChamberMap() {
         Also informed by Ipsos Issues Index and YouGov issue tracker cross-tabs.
         Source: natcen.ac.uk/series/british-social-attitudes · ipsos.com/en-uk/ipsos-issues-index
       </p>
-      {isLive && (
-        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-neutral-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </div>
-      )}
+      <MetricsStatus section="echoChamberMap" status={metrics} />
     </div>
   );
 }
