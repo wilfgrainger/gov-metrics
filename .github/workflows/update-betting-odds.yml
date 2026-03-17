@@ -1,0 +1,46 @@
+name: Update Betting Odds Snapshot
+
+on:
+  schedule:
+    - cron: "15 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.53.0
+          npx playwright install --with-deps chromium
+
+      - name: Build betting odds snapshot
+        run: node scripts/fetch-betting-odds.mjs --out tmp/betting-odds-ingest.json
+
+      - name: Ingest snapshot into Cloudflare Worker
+        env:
+          WORKER_URL: ${{ secrets.NEXT_PUBLIC_CF_WORKER_URL }}
+          WORKER_REFRESH_SECRET: ${{ secrets.WORKER_REFRESH_SECRET }}
+        run: |
+          curl --fail-with-body -X POST "${WORKER_URL}/ingest" \
+            -H "Content-Type: application/json" \
+            -H "X-Refresh-Secret: ${WORKER_REFRESH_SECRET}" \
+            --data-binary @tmp/betting-odds-ingest.json
+
+      - name: Verify betting odds endpoint
+        env:
+          WORKER_URL: ${{ secrets.NEXT_PUBLIC_CF_WORKER_URL }}
+        run: curl --fail-with-body "${WORKER_URL}/metrics?section=bettingOdds"

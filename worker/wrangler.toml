@@ -10,7 +10,7 @@ DATA_REFRESH_TTL_SECONDS = "14400"
 DATA_STALE_TTL_SECONDS = "86400"
 
 [triggers]
-crons = ["0 */4 * * *", "15 */2 * * *"]
+crons = ["0 */4 * * *"]
 
 [[kv_namespaces]]
 binding = "METRICS_CACHE"

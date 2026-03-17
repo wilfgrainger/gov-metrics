@@ -138,9 +138,9 @@ export default function BettingOdds() {
 
       <p className="mt-4 font-mono text-[10px] text-gray-400">
         DATA SOURCE: Implied probabilities derived from public politics market pages on Oddschecker, including
-        exchange prices where they are exposed. This section is refreshed by the Cloudflare Worker every 2
-        hours and cached between imports. Probabilities are normalized from best available market odds and
-        should be treated as market sentiment, not direct vote forecasts.
+        exchange prices where they are exposed. This section is refreshed by a scheduled browser import every
+        2 hours and served from the Cloudflare Worker cache between imports. Probabilities are normalized from
+        best available market odds and should be treated as market sentiment, not direct vote forecasts.
       </p>
       <MetricsStatus section="bettingOdds" status={metrics} />
     </div>

@@ -17,14 +17,8 @@ const WIKI_POLLING_URL =
 const NHS_RTT_URL =
   "https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/rtt-data-2024-25/";
 const BOE_BANK_RATE_URL = "https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp";
-const ODDSCHECKER_NEXT_PM_URL =
-  "https://www.oddschecker.com/politics/british-politics/next-prime-minister-after-keir-starmer";
-const ODDSCHECKER_MOST_SEATS_URL =
-  "https://www.oddschecker.com/politics/british-politics/next-uk-general-election/most-seats";
-const ODDSCHECKER_ELECTION_YEAR_URL =
-  "https://www.oddschecker.com/politics/british-politics/next-uk-general-election/year-of-next-general-election";
 
-const CACHE_VERSION = "v9";
+const CACHE_VERSION = "v10";
 const HOT_CACHE_TTL_MS = 60 * 1000;
 const DEFAULT_FRESH_TTL_SECONDS = 4 * 60 * 60;
 const DEFAULT_STALE_TTL_SECONDS = 24 * 60 * 60;
@@ -148,29 +142,6 @@ const ELECTION_POLLING_FALLBACK = {
   ],
 };
 
-const BETTING_ODDS_FALLBACK = {
-  nextPmOdds: [
-    { name: "Angela Rayner", party: "Labour", probability: 24, color: "#E4003B", role: "Deputy PM" },
-    { name: "Wes Streeting", party: "Labour", probability: 18, color: "#E4003B", role: "Health Secretary" },
-    { name: "Nigel Farage", party: "Reform UK", probability: 15, color: "#12B6CF", role: "Reform UK Leader" },
-    { name: "Ed Miliband", party: "Labour", probability: 10, color: "#E4003B", role: "Energy Secretary" },
-    { name: "Keir Starmer", party: "Labour", probability: 10, color: "#E4003B", role: "Current PM" },
-    { name: "Other", party: "Various", probability: 23, color: "#999999", role: "Market remainder" },
-  ],
-  mostSeats: [
-    { party: "Reform UK", probability: 40, color: "#12B6CF" },
-    { party: "Labour", probability: 25, color: "#E4003B" },
-    { party: "Conservative", probability: 10, color: "#0087DC" },
-    { party: "Other", probability: 25, color: "#666666" },
-  ],
-  yearOdds: [
-    { year: "2026", probability: 20 },
-    { year: "2027", probability: 30 },
-    { year: "2028", probability: 25 },
-    { year: "2029+", probability: 25 },
-  ],
-};
-
 const PARTY_COLOR_MAP = {
   Labour: "#E4003B",
   "Reform UK": "#12B6CF",
@@ -180,22 +151,6 @@ const PARTY_COLOR_MAP = {
   "Restore Britain": "#666666",
   "Workers Party": "#8B1E3F",
   Various: "#999999",
-};
-
-const NEXT_PM_PROFILE_MAP = {
-  "Angela Rayner": { party: "Labour", role: "Deputy PM" },
-  "Wes Streeting": { party: "Labour", role: "Health Secretary" },
-  "Nigel Farage": { party: "Reform UK", role: "Reform UK Leader" },
-  "Ed Miliband": { party: "Labour", role: "Energy Secretary" },
-  "Keir Starmer": { party: "Labour", role: "Current PM" },
-  "Shabana Mahmood": { party: "Labour", role: "Justice Secretary" },
-  "Andy Burnham": { party: "Labour", role: "Greater Manchester Mayor" },
-  "Rupert Lowe": { party: "Various", role: "Independent MP" },
-  "Yvette Cooper": { party: "Labour", role: "Home Secretary" },
-  "Kemi Badenoch": { party: "Conservative", role: "Conservative Leader" },
-  "Robert Jenrick": { party: "Conservative", role: "Shadow Justice Secretary" },
-  "Boris Johnson": { party: "Conservative", role: "Former PM" },
-  "Rachel Reeves": { party: "Labour", role: "Chancellor" },
 };
 
 const GDP_FALLBACK = {
@@ -536,168 +491,95 @@ function extractNumber(text) {
   return match ? safeParseFloat(match[1]) : null;
 }
 
-function parseHtmlAttributes(fragment) {
-  return Object.fromEntries(
-    [...fragment.matchAll(/([a-zA-Z0-9:-]+)="([^"]*)"/g)].map((match) => [
-      match[1],
-      stripHtml(match[2]),
-    ])
-  );
-}
-
-function normalizeProbabilities(entries) {
-  const weighted = entries
-    .map((entry) => ({
-      ...entry,
-      probability: entry.decimalOdds > 1 ? 1 / entry.decimalOdds : 0,
-    }))
-    .filter((entry) => entry.probability > 0);
-
-  const total = weighted.reduce((sum, entry) => sum + entry.probability, 0);
-  if (total <= 0) {
-    return [];
-  }
-
-  return weighted.map((entry) => ({
-    ...entry,
-    probability: (entry.probability / total) * 100,
-  }));
-}
-
-function roundProbabilities(entries) {
-  const floors = entries.map((entry) => Math.floor(entry.probability));
-  let remaining = 100 - floors.reduce((sum, value) => sum + value, 0);
-  const rankedFractions = entries
-    .map((entry, index) => ({ index, fraction: entry.probability - floors[index] }))
-    .sort((left, right) => right.fraction - left.fraction);
-
-  for (let index = 0; index < rankedFractions.length && remaining > 0; index += 1) {
-    floors[rankedFractions[index].index] += 1;
-    remaining -= 1;
-  }
-
-  return entries.map((entry, index) => ({
-    ...entry,
-    probability: floors[index],
-  }));
-}
-
-function collapseProbabilities(entries, limit, label, decorateOther) {
-  const sorted = [...entries].sort((left, right) => right.probability - left.probability);
-  if (sorted.length <= limit) {
-    return roundProbabilities(sorted);
-  }
-
-  const primary = sorted.slice(0, limit);
-  const remainderProbability = sorted
-    .slice(limit)
-    .reduce((sum, entry) => sum + entry.probability, 0);
-
-  return roundProbabilities([
-    ...primary,
-    {
-      ...decorateOther(),
-      probability: remainderProbability,
-      key: label,
-    },
-  ]);
-}
-
-function parseOddscheckerMarketRows(html) {
-  const tableMatch = html.match(/<table[^>]*class="eventTable[^"]*"[^>]*>([\s\S]*?)<\/table>/i);
-  if (!tableMatch) {
-    throw new Error("Oddschecker market table not found");
-  }
-
-  const rowMatches = [...tableMatch[1].matchAll(/<tr class="diff-row evTabRow bc"([^>]*)>/gi)];
-  if (rowMatches.length === 0) {
-    throw new Error("Oddschecker market rows not found");
-  }
-
-  return rowMatches
-    .map((match) => parseHtmlAttributes(match[1]))
-    .map((attributes) => {
-      const sportsbookBest = safeParseFloat(attributes["data-best-dig"]);
-      const exchangeBest = safeParseFloat(attributes["data-best-dig-wo"]);
-      const decimalOdds = Math.max(sportsbookBest ?? 0, exchangeBest ?? 0);
-      return {
-        name: attributes["data-bname"] ?? "",
-        decimalOdds,
-      };
-    })
-    .filter((entry) => entry.name && entry.decimalOdds > 1);
-}
-
-function normalizeMostSeatsName(name) {
-  if (name === "Reform") {
-    return "Reform UK";
-  }
-  if (name === "Conservatives") {
-    return "Conservative";
-  }
-  if (name === "Workers Party of Britain") {
-    return "Workers Party";
-  }
-  return name;
-}
-
 function bettingColor(name, fallback = "#666666") {
   return PARTY_COLOR_MAP[name] ?? fallback;
 }
 
-function buildNextPmOdds(rows) {
-  const normalized = normalizeProbabilities(rows);
-  const collapsed = collapseProbabilities(normalized, 5, "Other", () => ({
-    name: "Other",
-    party: "Various",
-    color: bettingColor("Various", "#999999"),
-    role: "Market remainder",
-  }));
+function normalizeBettingOddsPayload(data) {
+  if (!data || typeof data !== "object") {
+    throw new Error("Missing betting odds payload");
+  }
 
-  return collapsed.map((entry) => {
-    if (entry.name === "Other") {
-      return entry;
-    }
-    const profile = NEXT_PM_PROFILE_MAP[entry.name] ?? { party: "Various", role: undefined };
-    return {
-      name: entry.name,
-      party: profile.party,
-      probability: entry.probability,
-      color: bettingColor(profile.party, "#999999"),
-      role: profile.role,
-    };
-  });
-}
+  const nextPmOdds = Array.isArray(data.nextPmOdds)
+    ? data.nextPmOdds
+        .map((entry) => {
+          if (!entry || typeof entry !== "object") {
+            return null;
+          }
+          const name = String(entry.name ?? "").trim();
+          const party = String(entry.party ?? "Various").trim() || "Various";
+          const probability = safeParseFloat(entry.probability);
+          if (!name || probability === null || probability < 0) {
+            return null;
+          }
+          return {
+            name,
+            party,
+            probability: Math.round(probability),
+            color: String(entry.color ?? bettingColor(party, "#999999")),
+            ...(entry.role ? { role: String(entry.role).trim() } : {}),
+          };
+        })
+        .filter(Boolean)
+        .sort((left, right) => right.probability - left.probability)
+    : [];
 
-function buildMostSeatsOdds(rows) {
-  const normalized = normalizeProbabilities(
-    rows.map((entry) => ({ ...entry, name: normalizeMostSeatsName(entry.name) }))
-  );
-  const collapsed = collapseProbabilities(normalized, 4, "Other", () => ({
-    party: "Other",
-    color: "#666666",
-  }));
+  const mostSeats = Array.isArray(data.mostSeats)
+    ? data.mostSeats
+        .map((entry) => {
+          if (!entry || typeof entry !== "object") {
+            return null;
+          }
+          const party = String(entry.party ?? "").trim();
+          const probability = safeParseFloat(entry.probability);
+          if (!party || probability === null || probability < 0) {
+            return null;
+          }
+          return {
+            party,
+            probability: Math.round(probability),
+            color: String(entry.color ?? bettingColor(party, "#666666")),
+          };
+        })
+        .filter(Boolean)
+        .sort((left, right) => right.probability - left.probability)
+    : [];
 
-  return collapsed.map((entry) => ({
-    party: entry.party ?? entry.name,
-    probability: entry.probability,
-    color: entry.color ?? bettingColor(entry.name, "#666666"),
-  }));
-}
+  const yearOdds = Array.isArray(data.yearOdds)
+    ? data.yearOdds
+        .map((entry) => {
+          if (!entry || typeof entry !== "object") {
+            return null;
+          }
+          const year = String(entry.year ?? "").trim();
+          const probability = safeParseFloat(entry.probability);
+          const sortKey = year === "2029+" ? 2029 : Number.parseInt(year, 10);
+          if (!year || probability === null || probability < 0 || Number.isNaN(sortKey)) {
+            return null;
+          }
+          return {
+            year,
+            probability: Math.round(probability),
+            sortKey,
+          };
+        })
+        .filter(Boolean)
+        .sort((left, right) => left.sortKey - right.sortKey)
+        .map((entry) => ({
+          year: entry.year,
+          probability: entry.probability,
+        }))
+    : [];
 
-function buildYearOdds(rows) {
-  const normalized = normalizeProbabilities(rows)
-    .map((entry) => ({
-      year: entry.name === "2029 or later" ? "2029+" : entry.name,
-      probability: entry.probability,
-      sortKey: entry.name === "2029 or later" ? 2029 : Number.parseInt(entry.name, 10),
-    }))
-    .sort((left, right) => left.sortKey - right.sortKey);
+  if (nextPmOdds.length === 0 || mostSeats.length === 0 || yearOdds.length === 0) {
+    throw new Error("Betting odds payload is incomplete");
+  }
 
-  return roundProbabilities(normalized).map((entry) => ({
-    year: entry.year,
-    probability: entry.probability,
-  }));
+  return {
+    nextPmOdds,
+    mostSeats,
+    yearOdds,
+  };
 }
 
 async function fetchOnsCsv(topicPath, limit = 36) {
@@ -971,37 +853,6 @@ async function fetchNhsWaitingList() {
   };
 }
 
-async function fetchOddscheckerMarket(url) {
-  const text = await fetchText(url, REQUEST_TIMEOUT_MS, {
-    browserLike: true,
-    accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-  });
-
-  if (/Browser Not Supported/i.test(text) || !/class="eventTable/i.test(text)) {
-    throw new Error(`Oddschecker returned unsupported markup for ${url}`);
-  }
-
-  return parseOddscheckerMarketRows(text);
-}
-
-async function buildBettingOdds() {
-  const [nextPmRows, mostSeatsRows, yearRows] = await Promise.all([
-    fetchOddscheckerMarket(ODDSCHECKER_NEXT_PM_URL),
-    fetchOddscheckerMarket(ODDSCHECKER_MOST_SEATS_URL),
-    fetchOddscheckerMarket(ODDSCHECKER_ELECTION_YEAR_URL),
-  ]);
-
-  const nextPmOdds = buildNextPmOdds(nextPmRows);
-  const mostSeats = buildMostSeatsOdds(mostSeatsRows);
-  const yearOdds = buildYearOdds(yearRows);
-
-  return {
-    nextPmOdds: nextPmOdds.length > 0 ? nextPmOdds : BETTING_ODDS_FALLBACK.nextPmOdds,
-    mostSeats: mostSeats.length > 0 ? mostSeats : BETTING_ODDS_FALLBACK.mostSeats,
-    yearOdds: yearOdds.length > 0 ? yearOdds : BETTING_ODDS_FALLBACK.yearOdds,
-  };
-}
-
 async function buildSentimentPulse() {
   const cpi = await fetchOnsCsv(ONS_SERIES.cpi, 24);
   if (cpi.length === 0) {
@@ -1251,9 +1102,9 @@ async function buildNhsStats() {
 
 const sectionDescriptors = {
   bettingOdds: {
-    source: "Oddschecker politics markets (next PM, most seats, election year)",
-    build: buildBettingOdds,
+    source: "Oddschecker politics markets (scheduled browser snapshot)",
     freshTtlSeconds: 2 * 60 * 60,
+    ingestOnly: true,
   },
   sentimentPulse: {
     source: "ONS CPI (D7G7) + BoE Bank Rate + ONS Unemployment (MGSX)",
@@ -1319,6 +1170,9 @@ async function refreshSection(section, env, options = {}) {
   if (!descriptor) {
     throw new Error(`Unknown section '${section}'`);
   }
+  if (descriptor.ingestOnly) {
+    throw new Error(`Section '${section}' is ingest-only; use POST /ingest`);
+  }
 
   const data = await descriptor.build();
   const record = {
@@ -1370,6 +1224,31 @@ async function refreshAllSections(env) {
   };
 
   for (const [section, descriptor] of Object.entries(sectionDescriptors)) {
+    if (descriptor.ingestOnly) {
+      const record = await cacheGet(env, sectionCacheKey(section));
+      const recordState = classifyRecord(record, env, descriptor);
+      if (record?.data != null) {
+        const normalizedState = recordState === "expired" ? "stale" : recordState;
+        dataset[section] = record.data;
+        dataset.meta.sources[section] = createManifestEntry(
+          normalizedState === "fresh" ? "ok" : "stale",
+          descriptor,
+          record.fetchedAt,
+          normalizedState === "fresh" ? undefined : "Awaiting next scheduled ingest",
+          normalizedState
+        );
+      } else {
+        dataset.meta.sources[section] = createManifestEntry(
+          "error",
+          descriptor,
+          generatedAt,
+          "No ingested snapshot available",
+          "missing"
+        );
+      }
+      continue;
+    }
+
     try {
       const record = await refreshSection(section, env, { syncDataset: false });
       dataset[section] = record.data;
@@ -1414,6 +1293,16 @@ async function ensureSectionRecord(section, env, ctx) {
   const descriptor = sectionDescriptors[section];
   const cached = await cacheGet(env, sectionCacheKey(section));
   const cacheState = classifyRecord(cached, env, descriptor);
+
+  if (descriptor.ingestOnly) {
+    if (cached) {
+      return {
+        record: cached,
+        cacheState: cacheState === "expired" ? "stale" : cacheState,
+      };
+    }
+    throw new Error(`Section '${section}' has no ingested snapshot yet`);
+  }
 
   if (cacheState === "fresh") {
     return { record: cached, cacheState };
@@ -1509,6 +1398,68 @@ const worker = {
       }
     }
 
+    if (url.pathname === "/ingest") {
+      if (!refreshAuthorized(request, env)) {
+        return errorResponse("Refresh secret required", 401);
+      }
+
+      if (request.method !== "POST") {
+        return errorResponse("Use POST for /ingest", 405);
+      }
+
+      try {
+        const payload = await request.json();
+        const section = String(payload?.section ?? "").trim();
+        const descriptor = sectionDescriptors[section];
+
+        if (!descriptor) {
+          return errorResponse(`Unknown section '${section}'`, 404);
+        }
+
+        if (!descriptor.ingestOnly) {
+          return errorResponse(`Section '${section}' does not support ingest`, 400);
+        }
+
+        const data =
+          section === "bettingOdds" ? normalizeBettingOddsPayload(payload?.data) : payload?.data;
+        const fetchedAt =
+          typeof payload?.fetchedAt === "string" && !Number.isNaN(Date.parse(payload.fetchedAt))
+            ? new Date(payload.fetchedAt).toISOString()
+            : nowIso();
+
+        const record = {
+          section,
+          data,
+          fetchedAt,
+          sourceLabel:
+            typeof payload?.sourceLabel === "string" && payload.sourceLabel.trim()
+              ? payload.sourceLabel.trim()
+              : descriptor.source,
+          backend:
+            typeof payload?.backend === "string" && payload.backend.trim()
+              ? payload.backend.trim()
+              : "github-actions-ingest",
+        };
+
+        await cachePut(env, sectionCacheKey(section), record);
+        await syncSectionIntoDatasetCache(section, descriptor, record, env);
+
+        return jsonResponse({
+          status: "ok",
+          section,
+          fetchedAt: record.fetchedAt,
+          cache: env.METRICS_CACHE ? "kv" : "memory",
+          backend: record.backend,
+        });
+      } catch (error) {
+        return errorResponse(
+          "Ingest failed",
+          400,
+          error instanceof Error ? error.message : "Unknown error"
+        );
+      }
+    }
+
     if (url.pathname === "/metrics") {
       const section = url.searchParams.get("section");
       if (!section) {
@@ -1591,17 +1542,16 @@ const worker = {
       }
     }
 
-    return errorResponse("Not found", 404, "Available endpoints: /health, /metrics, /all, /refresh");
+    return errorResponse(
+      "Not found",
+      404,
+      "Available endpoints: /health, /metrics, /all, /refresh, /ingest"
+    );
   },
 
   async scheduled(controller, env, ctx) {
-    const task =
-      controller.cron === "15 */2 * * *"
-        ? refreshSection("bettingOdds", env)
-        : refreshAllSections(env);
-
     ctx.waitUntil(
-      task.catch((error) => {
+      refreshAllSections(env).catch((error) => {
         console.error("Scheduled refresh failed", controller.cron, error);
       })
     );
