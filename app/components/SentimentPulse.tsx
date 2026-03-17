@@ -1,37 +1,61 @@
 "use client";
 
 import { useState } from "react";
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  AreaChart,
+  Area,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { useMetrics } from "@/app/lib/useMetrics";
 import MetricsStatus from "@/app/components/MetricsStatus";
+import ClientOnlyChart from "@/app/components/ClientOnlyChart";
 
-// UK Key Economic Indicators — monthly time series
-// Sources: ONS, Bank of England, Office for Budget Responsibility (OBR)
-// CPI Inflation: ONS Consumer Price Index bulletin
-// Bank Rate: Bank of England Monetary Policy Committee decisions
-// Unemployment: ONS Labour Force Survey (official statistics in development)
 const ECONOMIC_DATA = [
   { date: "Jan 24", inflation: 4.0, bankRate: 5.25, unemployment: 3.9 },
   { date: "Mar 24", inflation: 3.2, bankRate: 5.25, unemployment: 4.0 },
   { date: "May 24", inflation: 2.3, bankRate: 5.25, unemployment: 4.2 },
-  { date: "Jul 24", inflation: 2.2, bankRate: 5.00, unemployment: 4.2 },
-  { date: "Sep 24", inflation: 1.7, bankRate: 5.00, unemployment: 4.3 },
+  { date: "Jul 24", inflation: 2.2, bankRate: 5.0, unemployment: 4.2 },
+  { date: "Sep 24", inflation: 1.7, bankRate: 5.0, unemployment: 4.3 },
   { date: "Nov 24", inflation: 2.6, bankRate: 4.75, unemployment: 4.3 },
-  { date: "Jan 25", inflation: 3.0, bankRate: 4.50, unemployment: 4.4 },
-  { date: "Mar 25", inflation: 2.8, bankRate: 4.50, unemployment: 4.5 },
+  { date: "Jan 25", inflation: 3.0, bankRate: 4.5, unemployment: 4.4 },
+  { date: "Mar 25", inflation: 2.8, bankRate: 4.5, unemployment: 4.5 },
   { date: "May 25", inflation: 2.6, bankRate: 4.25, unemployment: 4.6 },
   { date: "Jul 25", inflation: 2.4, bankRate: 4.25, unemployment: 4.8 },
-  { date: "Sep 25", inflation: 2.3, bankRate: 4.00, unemployment: 5.0 },
-  { date: "Nov 25", inflation: 3.4, bankRate: 4.00, unemployment: 5.1 },
+  { date: "Sep 25", inflation: 2.3, bankRate: 4.0, unemployment: 5.0 },
+  { date: "Nov 25", inflation: 3.4, bankRate: 4.0, unemployment: 5.1 },
   { date: "Jan 26", inflation: 3.0, bankRate: 3.75, unemployment: 5.2 },
 ];
 
 type Metric = "inflation" | "bankRate" | "unemployment";
 
-const METRIC_CONFIG: Record<Metric, { label: string; unit: string; color: string; current: string; target: string }> = {
-  inflation: { label: "CPI INFLATION", unit: "%", color: "#FF3B00", current: "3.0%", target: "2.0% target" },
-  bankRate: { label: "BANK OF ENGLAND RATE", unit: "%", color: "#000000", current: "3.75%", target: "Monetary policy" },
-  unemployment: { label: "UNEMPLOYMENT RATE", unit: "%", color: "#666666", current: "5.2%", target: "ONS LFS (Oct-Dec 2025)" },
+const METRIC_CONFIG: Record<
+  Metric,
+  { label: string; unit: string; color: string; current: string; target: string }
+> = {
+  inflation: {
+    label: "CPI INFLATION",
+    unit: "%",
+    color: "#FF3B00",
+    current: "3.0%",
+    target: "2.0% target",
+  },
+  bankRate: {
+    label: "BANK OF ENGLAND RATE",
+    unit: "%",
+    color: "#000000",
+    current: "3.75%",
+    target: "Monetary policy",
+  },
+  unemployment: {
+    label: "UNEMPLOYMENT RATE",
+    unit: "%",
+    color: "#666666",
+    current: "5.2%",
+    target: "ONS LFS (Oct-Dec 2025)",
+  },
 };
 
 const FALLBACK = { economicData: ECONOMIC_DATA, metricConfig: METRIC_CONFIG };
@@ -40,64 +64,81 @@ export default function SentimentPulse() {
   const metrics = useMetrics("sentimentPulse", FALLBACK);
   const { data } = metrics;
   const { economicData, metricConfig } = data;
-
   const [metric, setMetric] = useState<Metric>("inflation");
   const config = metricConfig[metric];
 
   return (
     <div className="min-w-0">
-      {/* Metric selector */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        {(Object.entries(metricConfig) as [Metric, typeof config][]).map(([key, cfg]) => (
-          <button
-            key={key}
-            onClick={() => setMetric(key)}
-            className={`border-2 border-black p-3 text-left transition-colors ${
-              metric === key ? "bg-black text-white" : "bg-white"
-            }`}
-          >
-            <div className="font-mono text-[10px] text-gray-500">{metric === key ? <span className="text-gray-300">{cfg.label}</span> : cfg.label}</div>
-            <div className="font-display text-2xl leading-none" style={{ color: metric === key ? cfg.color : "#000" }}>
-              {cfg.current}
-            </div>
-            <div className="font-mono text-[10px] mt-1" style={{ color: metric === key ? "#999" : "#999" }}>{cfg.target}</div>
-          </button>
-        ))}
+      <div className="mb-4 grid grid-cols-3 gap-3">
+        {(Object.entries(metricConfig) as [Metric, typeof config][]).map(
+          ([key, entry]) => (
+            <button
+              key={key}
+              onClick={() => setMetric(key)}
+              className={`border-2 border-black p-3 text-left transition-colors ${
+                metric === key ? "bg-black text-white" : "bg-white"
+              }`}
+            >
+              <div className="font-mono text-[10px] text-gray-500">
+                {metric === key ? (
+                  <span className="text-gray-300">{entry.label}</span>
+                ) : (
+                  entry.label
+                )}
+              </div>
+              <div
+                className="font-display text-2xl leading-none"
+                style={{ color: metric === key ? entry.color : "#000" }}
+              >
+                {entry.current}
+              </div>
+              <div className="mt-1 font-mono text-[10px] text-gray-500">
+                {entry.target}
+              </div>
+            </button>
+          )
+        )}
       </div>
 
-      {/* Chart */}
-      <div className="chart-shell">
-        <ResponsiveContainer width="100%" height={200} minWidth={0}>
-          <AreaChart data={economicData} margin={{ top: 5, right: 0, bottom: 0, left: 0 }}>
-          <defs>
-            <linearGradient id="metricGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={config.color} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={config.color} stopOpacity={0.0} />
-            </linearGradient>
-          </defs>
-          <XAxis
-            dataKey="date"
-            tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
-            axisLine={{ stroke: "#000", strokeWidth: 1 }}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
-            axisLine={{ stroke: "#000", strokeWidth: 1 }}
-            tickLine={false}
-            tickFormatter={(v) => `${v}%`}
-            domain={["auto", "auto"]}
-          />
-          <Tooltip
-            contentStyle={{
-              fontFamily: "IBM Plex Mono",
-              fontSize: 10,
-              border: "2px solid #000",
-              borderRadius: 0,
-              background: "#fff",
-            }}
-            formatter={(val) => [`${val}%`, config.label]}
-          />
+      <ClientOnlyChart heightClass="h-[200px]">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <AreaChart
+            data={economicData}
+            margin={{ top: 5, right: 0, bottom: 0, left: 0 }}
+          >
+            <defs>
+              <linearGradient id="metricGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={config.color} stopOpacity={0.3} />
+                <stop
+                  offset="95%"
+                  stopColor={config.color}
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
+              axisLine={{ stroke: "#000", strokeWidth: 1 }}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fontSize: 8, fontFamily: "IBM Plex Mono", fill: "#555" }}
+              axisLine={{ stroke: "#000", strokeWidth: 1 }}
+              tickLine={false}
+              tickFormatter={(value) => `${value}%`}
+              domain={["auto", "auto"]}
+            />
+            <Tooltip
+              contentStyle={{
+                fontFamily: "IBM Plex Mono",
+                fontSize: 10,
+                border: "2px solid #000",
+                borderRadius: 0,
+                background: "#fff",
+              }}
+              formatter={(value) => [`${value}%`, config.label]}
+            />
             <Area
               type="monotone"
               dataKey={metric}
@@ -107,13 +148,13 @@ export default function SentimentPulse() {
             />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
+      </ClientOnlyChart>
 
-      <p className="font-mono text-[10px] text-gray-400 mt-3">
-        DATA SOURCES: ONS Consumer Price Index (CPI) Jan 2026: 3.0%. Bank of England base rate: 3.75% (held 5 Feb 2026).
-        ONS Labour Force Survey: unemployment 5.2% (Oct–Dec 2025, highest since early 2021).
-        Sources: ons.gov.uk/economy/inflationandpriceindices · bankofengland.co.uk/monetary-policy ·
-        ons.gov.uk/employmentandlabourmarket. Data verified: March 2026.
+      <p className="mt-3 font-mono text-[10px] text-gray-400">
+        DATA SOURCES: ONS Consumer Price Index (CPI) Jan 2026: 3.0%. Bank of
+        England base rate: 3.75% (held 5 Feb 2026). ONS Labour Force Survey:
+        unemployment 5.2% (Oct-Dec 2025, highest since early 2021). Data
+        verified: March 2026.
       </p>
       <MetricsStatus section="sentimentPulse" status={metrics} />
     </div>

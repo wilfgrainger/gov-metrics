@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CF_WORKER_URL, DATA_SOURCES, REFRESH_INTERVAL_MS } from "./config";
+import {
+  CF_WORKER_URL,
+  DATA_SOURCES,
+  METRICS_API_PATH,
+  REFRESH_INTERVAL_MS,
+} from "./config";
 
 export type MetricsCacheState = "fresh" | "stale" | "expired" | "missing" | null;
 
@@ -51,7 +56,12 @@ function shallowMerge<T>(fallback: T, apiData: unknown): T {
 export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
   const fallbackRef = useRef(fallback);
   const sourceMeta = DATA_SOURCES[section];
-  const shouldFetchLive = sourceMeta?.automation === "automated" && Boolean(CF_WORKER_URL);
+  const shouldUseLocalApi =
+    sourceMeta?.automation === "automated" &&
+    process.env.NODE_ENV !== "production";
+  const shouldFetchLive =
+    sourceMeta?.automation === "automated" &&
+    (Boolean(CF_WORKER_URL) || shouldUseLocalApi);
 
   useEffect(() => {
     fallbackRef.current = fallback;
@@ -145,6 +155,32 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
         }
       }
 
+      if (shouldUseLocalApi) {
+        const timeout = createTimeoutController(5_000);
+        try {
+          const response = await fetch(
+            `${METRICS_API_PATH}?section=${encodeURIComponent(section)}`,
+            { signal: timeout.signal }
+          );
+          if (response.ok) {
+            const payload = await response.json();
+            if (payload.data !== null && payload.data !== undefined) {
+              applyData(
+                payload.data,
+                "api",
+                payload.timestamp,
+                payload.cacheState ?? null
+              );
+              return;
+            }
+          }
+        } catch {
+          // Continue to embedded fallback.
+        } finally {
+          timeout.cleanup();
+        }
+      }
+
       if (active) {
         setResult({
           data: fallbackRef.current,
@@ -163,7 +199,7 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
       active = false;
       clearInterval(interval);
     };
-  }, [section, shouldFetchLive]);
+  }, [section, shouldFetchLive, shouldUseLocalApi]);
 
   return result;
 }

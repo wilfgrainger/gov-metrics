@@ -15,7 +15,8 @@ Move the data backend off GitHub Actions plus checked-in JSON and onto a Cloudfl
 2. Worker serves fresh cached data from KV when available.
 3. Worker refreshes stale data in the background.
 4. Cron trigger refreshes all supported sections every 4 hours.
-5. Next.js API route remains only as a local development fallback.
+5. In development, the client falls back to `GET /api/metrics?section=...`
+   before using embedded data.
 
 ## Worker endpoints
 
@@ -23,6 +24,7 @@ Move the data backend off GitHub Actions plus checked-in JSON and onto a Cloudfl
 - `GET /metrics?section=<section-id>`
 - `GET /all`
 - `POST /refresh?section=<section-id|all>` with `X-Refresh-Secret`
+- `POST /ingest` for ingest-only sections such as `bettingOdds`
 
 ## Cache model
 
@@ -43,6 +45,7 @@ Without KV, the worker still runs in memory for local development, but productio
 - `migrationStats`
 - `electionPolling`
 - `nhsStats`
+- `bettingOdds` via ingest
 
 ## Required Cloudflare setup
 
@@ -61,9 +64,14 @@ Without KV, the worker still runs in memory for local development, but productio
 
 Set `NEXT_PUBLIC_CF_WORKER_URL` in the frontend environment to point at the local or remote Worker.
 
+If the Worker is unavailable in local development, the app now falls back to
+`/api/metrics` for automated sections.
+
 ## Operational notes
 
 - Cron runs in UTC.
 - Refresh is at-least-once. Refresh handlers should remain idempotent.
 - KV is eventually consistent, which is acceptable here because the data is read-heavy and refreshed on a coarse interval.
 - The old `fetch_intel.py` script is now legacy and not part of the primary production path.
+- Required GitHub secrets for production flows: `NEXT_PUBLIC_CF_WORKER_URL` and
+  `WORKER_REFRESH_SECRET`.

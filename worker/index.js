@@ -1558,4 +1558,10 @@ const worker = {
   },
 };
 
+export {
+  normalizeBettingOddsPayload,
+  refreshAuthorized,
+  sectionDescriptors,
+};
+
 export default worker;

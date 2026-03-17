@@ -5,8 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:check": "node scripts/check-build-output.mjs",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "worker:dev": "npx wrangler dev --config worker/wrangler.toml",
     "worker:deploy": "npx wrangler deploy --config worker/wrangler.toml",
     "worker:tail": "npx wrangler tail --config worker/wrangler.toml"
@@ -19,14 +23,19 @@
     "recharts": "^3.8.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "jsdom": "^29.0.0",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vitest": "^4.1.0",
     "wrangler": "^4.54.0"
   }
 }

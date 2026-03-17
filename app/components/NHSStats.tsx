@@ -4,12 +4,6 @@ import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
 import MetricsStatus from "@/app/components/MetricsStatus";
 
-// UK NHS & Health Statistics
-// Sources: NHS England, ONS Health Statistics, NHS Digital
-// NHS waiting list: 7.48M (Dec 2025) — NHS England Referral to Treatment (RTT) data
-// A&E performance: 71.4% seen within 4 hours (Jan 2026) vs 95% target
-// Life expectancy: 79.0 male, 82.9 female (ONS, 2022-2024 estimate)
-// NHS workforce: 1.55M FTE (NHS Digital)
 const HEADLINE = {
   waitingList: 7.48,
   waitingListChange: -2.1,
@@ -53,65 +47,105 @@ const LIFE_EXPECTANCY_TREND = [
   { year: "2024", male: 79.0, female: 82.9 },
 ];
 
-const FALLBACK = { headline: HEADLINE, waitingTrend: WAITING_TREND, waitingBySpecialty: WAITING_BY_SPECIALTY, lifeExpectancyTrend: LIFE_EXPECTANCY_TREND };
+const FALLBACK = {
+  headline: HEADLINE,
+  waitingTrend: WAITING_TREND,
+  waitingBySpecialty: WAITING_BY_SPECIALTY,
+  lifeExpectancyTrend: LIFE_EXPECTANCY_TREND,
+};
 
 export default function NHSStats() {
   const metrics = useMetrics("nhsStats", FALLBACK);
   const { data } = metrics;
-  const { headline, waitingTrend, waitingBySpecialty, lifeExpectancyTrend } = data;
-  const [view, setView] = useState<"waiting" | "specialties" | "lifeexp">("waiting");
+  const { headline, waitingTrend, waitingBySpecialty, lifeExpectancyTrend } =
+    data;
+  const [view, setView] = useState<"waiting" | "specialties" | "lifeexp">(
+    "waiting"
+  );
 
   return (
     <div>
-      {/* Headline stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mb-4">
+      <div className="mb-4 grid grid-cols-2 gap-0 md:grid-cols-4">
         {[
-          { label: "WAITING LIST", value: `${headline.waitingList}M`, sub: `${headline.waitingListChange}% YoY`, accent: true },
-          { label: "A&E 4HR TARGET", value: `${headline.aePerformance}%`, sub: `target: ${headline.aeTarget}%` },
+          {
+            label: "WAITING LIST",
+            value: `${headline.waitingList}M`,
+            sub: `${headline.waitingListChange}% YoY`,
+            accent: true,
+          },
+          {
+            label: "A&E 4HR TARGET",
+            value: `${headline.aePerformance}%`,
+            sub: `target: ${headline.aeTarget}%`,
+          },
           { label: "GP WAIT", value: `${headline.gpWait}`, sub: "avg days" },
-          { label: "NHS STAFF", value: `${headline.nhsWorkforce}M`, sub: "FTE employees" },
-        ].map((s, i) => (
-          <div key={i} className={`border-2 border-black p-3 text-center ${i > 0 ? "border-l-0" : ""}`}>
-            <p className="font-mono text-[10px] text-gray-500">{s.label}</p>
-            <p className="font-mono text-lg font-bold" style={{ color: s.accent ? "#FF3B00" : "#000" }}>{s.value}</p>
-            <p className="font-mono text-[10px] text-gray-400">{s.sub}</p>
+          {
+            label: "NHS STAFF",
+            value: `${headline.nhsWorkforce}M`,
+            sub: "FTE employees",
+          },
+        ].map((stat, index) => (
+          <div
+            key={stat.label}
+            className={`border-2 border-black p-3 text-center ${
+              index > 0 ? "border-l-0" : ""
+            }`}
+          >
+            <p className="font-mono text-[10px] text-gray-500">{stat.label}</p>
+            <p
+              className="font-mono text-lg font-bold"
+              style={{ color: stat.accent ? "#FF3B00" : "#000" }}
+            >
+              {stat.value}
+            </p>
+            <p className="font-mono text-[10px] text-gray-400">{stat.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* A&E performance bar */}
       <div className="mb-4">
-        <p className="font-mono text-xs text-gray-500 mb-2">A&amp;E 4-HOUR PERFORMANCE VS 95% TARGET</p>
-        <div className="w-full h-6 bg-gray-100 border-2 border-black relative">
-          <div className="h-full bg-[#FF3B00]" style={{ width: `${headline.aePerformance}%` }} />
+        <p className="mb-2 font-mono text-xs text-gray-500">
+          A&E 4-HOUR PERFORMANCE VS 95% TARGET
+        </p>
+        <div className="relative h-6 w-full border-2 border-black bg-gray-100">
+          <div
+            className="h-full bg-[#FF3B00]"
+            style={{ width: `${headline.aePerformance}%` }}
+          />
           <div
             className="absolute top-0 h-full w-0.5 bg-black"
             style={{ left: `${headline.aeTarget}%` }}
           />
           <div
             className="absolute -top-5 font-mono text-[10px] font-bold"
-            style={{ left: `${headline.aeTarget}%`, transform: "translateX(-50%)" }}
+            style={{
+              left: `${headline.aeTarget}%`,
+              transform: "translateX(-50%)",
+            }}
           >
             95% TARGET
           </div>
         </div>
-        <p className="font-mono text-[10px] text-gray-500 mt-1">
-          Only {headline.aePerformance}% of patients seen within 4 hours — {(headline.aeTarget - headline.aePerformance).toFixed(1)}pp below target
+        <p className="mt-1 font-mono text-[10px] text-gray-500">
+          Only {headline.aePerformance}% of patients seen within 4 hours -{" "}
+          {(headline.aeTarget - headline.aePerformance).toFixed(1)}pp below
+          target
         </p>
       </div>
 
-      {/* Toggle */}
-      <div className="flex border-2 border-black mb-4">
-        {([
+      <div className="mb-4 flex border-2 border-black">
+        {[
           { key: "waiting" as const, label: "WAITING LIST" },
           { key: "specialties" as const, label: "BY SPECIALTY" },
           { key: "lifeexp" as const, label: "LIFE EXPECTANCY" },
-        ]).map((tab) => (
+        ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setView(tab.key)}
             className={`flex-1 py-2 font-mono text-xs font-bold transition-colors ${
-              view === tab.key ? "bg-black text-white" : "bg-white text-black hover:bg-gray-100"
+              view === tab.key
+                ? "bg-black text-white"
+                : "bg-white text-black hover:bg-gray-100"
             }`}
           >
             {tab.label}
@@ -121,20 +155,26 @@ export default function NHSStats() {
 
       {view === "waiting" && (
         <div className="space-y-2">
-          <p className="font-mono text-xs text-gray-500 mb-2">NHS ENGLAND WAITING LIST (MILLIONS)</p>
-          {waitingTrend.map((d) => (
-            <div key={d.date} className="flex items-center gap-3">
-              <p className="font-mono text-xs w-10 text-right text-gray-500">{d.date}</p>
-              <div className="flex-1 h-5 bg-gray-100 border border-black relative">
+          <p className="mb-2 font-mono text-xs text-gray-500">
+            NHS ENGLAND WAITING LIST (MILLIONS)
+          </p>
+          {waitingTrend.map((entry) => (
+            <div key={entry.date} className="flex items-center gap-3">
+              <p className="w-10 text-right font-mono text-xs text-gray-500">
+                {entry.date}
+              </p>
+              <div className="relative h-5 flex-1 border border-black bg-gray-100">
                 <div
                   className="h-full"
                   style={{
-                    width: `${(d.list / 8) * 100}%`,
-                    background: d.list > 7 ? "#FF3B00" : "#000",
+                    width: `${(entry.list / 8) * 100}%`,
+                    background: entry.list > 7 ? "#FF3B00" : "#000",
                   }}
                 />
               </div>
-              <p className="font-mono text-xs font-bold w-12 text-right">{d.list}M</p>
+              <p className="w-12 text-right font-mono text-xs font-bold">
+                {entry.list}M
+              </p>
             </div>
           ))}
         </div>
@@ -142,18 +182,29 @@ export default function NHSStats() {
 
       {view === "specialties" && (
         <div className="space-y-2">
-          <p className="font-mono text-xs text-gray-500 mb-2">AVERAGE WAIT BY SPECIALTY (WEEKS)</p>
-          {waitingBySpecialty.map((d) => (
-            <div key={d.specialty} className="flex items-center gap-2">
-              <p className="font-mono text-xs w-24 text-right">{d.specialty}</p>
-              <div className="flex-1 h-5 bg-gray-100 border border-black relative">
+          <p className="mb-2 font-mono text-xs text-gray-500">
+            AVERAGE WAIT BY SPECIALTY (WEEKS)
+          </p>
+          {waitingBySpecialty.map((entry) => (
+            <div key={entry.specialty} className="flex items-center gap-2">
+              <p className="w-24 text-right font-mono text-xs">
+                {entry.specialty}
+              </p>
+              <div className="relative h-5 flex-1 border border-black bg-gray-100">
                 <div
                   className="h-full"
-                  style={{ width: `${(d.weeks / 30) * 100}%`, background: d.weeks > 20 ? "#FF3B00" : "#000" }}
+                  style={{
+                    width: `${(entry.weeks / 30) * 100}%`,
+                    background: entry.weeks > 20 ? "#FF3B00" : "#000",
+                  }}
                 />
               </div>
-              <p className="font-mono text-xs font-bold w-10 text-right">{d.weeks}w</p>
-              <p className="font-mono text-[10px] text-gray-500 w-12 text-right">{d.patients}K</p>
+              <p className="w-10 text-right font-mono text-xs font-bold">
+                {entry.weeks}w
+              </p>
+              <p className="w-12 text-right font-mono text-[10px] text-gray-500">
+                {entry.patients}K
+              </p>
             </div>
           ))}
         </div>
@@ -161,8 +212,10 @@ export default function NHSStats() {
 
       {view === "lifeexp" && (
         <div>
-          <p className="font-mono text-xs text-gray-500 mb-3">UK LIFE EXPECTANCY AT BIRTH (YEARS)</p>
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <p className="mb-3 font-mono text-xs text-gray-500">
+            UK LIFE EXPECTANCY AT BIRTH (YEARS)
+          </p>
+          <div className="mb-4 grid grid-cols-2 gap-3">
             <div className="border-2 border-black p-3 text-center">
               <p className="font-mono text-[10px] text-gray-500">MALE</p>
               <p className="font-display text-3xl">{headline.lifeExpMale}</p>
@@ -173,18 +226,26 @@ export default function NHSStats() {
             </div>
           </div>
           <div className="space-y-2">
-            {lifeExpectancyTrend.map((d) => (
-              <div key={d.year} className="border-2 border-black p-2">
-                <div className="flex justify-between items-center mb-1">
-                  <p className="font-mono text-xs font-bold">{d.year}</p>
-                  <p className="font-mono text-xs">M: {d.male} · F: {d.female}</p>
+            {lifeExpectancyTrend.map((entry) => (
+              <div key={entry.year} className="border-2 border-black p-2">
+                <div className="mb-1 flex items-center justify-between">
+                  <p className="font-mono text-xs font-bold">{entry.year}</p>
+                  <p className="font-mono text-xs">
+                    M: {entry.male} / F: {entry.female}
+                  </p>
                 </div>
                 <div className="flex gap-1">
-                  <div className="flex-1 h-3 bg-gray-100 border border-black">
-                    <div className="h-full bg-black" style={{ width: `${((d.male - 76) / 8) * 100}%` }} />
+                  <div className="h-3 flex-1 border border-black bg-gray-100">
+                    <div
+                      className="h-full bg-black"
+                      style={{ width: `${((entry.male - 76) / 8) * 100}%` }}
+                    />
                   </div>
-                  <div className="flex-1 h-3 bg-gray-100 border border-black">
-                    <div className="h-full bg-[#FF3B00]" style={{ width: `${((d.female - 80) / 5) * 100}%` }} />
+                  <div className="h-3 flex-1 border border-black bg-gray-100">
+                    <div
+                      className="h-full bg-[#FF3B00]"
+                      style={{ width: `${((entry.female - 80) / 5) * 100}%` }}
+                    />
                   </div>
                 </div>
               </div>
@@ -193,11 +254,10 @@ export default function NHSStats() {
         </div>
       )}
 
-      <p className="font-mono text-[10px] text-gray-400 mt-4">
-        DATA SOURCES: NHS England Referral to Treatment (RTT) waiting times. A&amp;E: NHS England monthly SitRep.
-        Waiting list: 7.48M (Dec 2025). Life expectancy: ONS National Life Tables (2022-2024).
-        GP waiting times: NHS Digital GP Patient Survey. NHS workforce: NHS Digital.
-        Sources: england.nhs.uk/statistics · ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare
+      <p className="mt-4 font-mono text-[10px] text-gray-400">
+        DATA SOURCES: NHS England Referral to Treatment waiting times, NHS
+        England monthly SitRep, ONS national life tables, NHS Digital GP
+        Patient Survey, and NHS Digital workforce statistics.
       </p>
       <MetricsStatus section="nhsStats" status={metrics} />
     </div>

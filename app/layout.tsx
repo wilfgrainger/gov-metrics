@@ -24,19 +24,21 @@ const bodyFont = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PULSE — Real-Time Public Opinion Intelligence",
+  title: "PULSE - Real-Time Public Opinion Intelligence",
   description:
     "UK public data intelligence platform with 10 interactive data visualizations. Data from ONS, Bank of England, Electoral Commission, YouGov, Ipsos, and more.",
   openGraph: {
-    title: "PULSE — Public Opinion Intelligence",
-    description: "Real-time UK public data metrics and analysis from verified public sources",
+    title: "PULSE - Public Opinion Intelligence",
+    description:
+      "Real-time UK public data metrics and analysis from verified public sources",
     type: "website",
     siteName: "PULSE",
   },
   twitter: {
     card: "summary",
-    title: "PULSE — UK Public Data Intelligence",
-    description: "Real-time UK public data metrics from ONS, Bank of England, Electoral Commission, and more.",
+    title: "PULSE - UK Public Data Intelligence",
+    description:
+      "Real-time UK public data metrics from ONS, Bank of England, Electoral Commission, and more.",
   },
 };
 
@@ -50,9 +52,7 @@ export default function RootLayout({
       lang="en"
       className={`${displayFont.variable} ${monoFont.variable} ${bodyFont.variable}`}
     >
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
