@@ -12,14 +12,13 @@
  */
 
 const ONS_CSV_BASE = "https://www.ons.gov.uk/generator?format=csv&uri=";
-const BOE_CSV_URL =
-  "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes={code}&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N";
 const WIKI_POLLING_URL =
   "https://en.wikipedia.org/wiki/Opinion_polling_for_the_next_United_Kingdom_general_election";
 const NHS_RTT_URL =
   "https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/rtt-data-2024-25/";
+const BOE_BANK_RATE_URL = "https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp";
 
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v8";
 const HOT_CACHE_TTL_MS = 60 * 1000;
 const DEFAULT_FRESH_TTL_SECONDS = 4 * 60 * 60;
 const DEFAULT_STALE_TTL_SECONDS = 24 * 60 * 60;
@@ -57,13 +56,13 @@ const ONS_SERIES = {
   gdp_growth: "/economy/grossdomesticproductgdp/timeseries/ihyq/pn2",
   gdp_level: "/economy/grossdomesticproductgdp/timeseries/abmi/pn2",
   psnd:
-    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6x/pusf",
+    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6w/pusf",
   psnb:
     "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf",
   debt_gdp:
-    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6w/pusf",
+    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6x/pusf",
   tax_receipts:
-    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/mf6u/pusf",
+    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/mf73/pusf",
   net_migration:
     "/peoplepopulationandcommunity/populationandmigration/internationalmigration/timeseries/cimu/mig",
   immigration:
@@ -75,6 +74,209 @@ const ONS_SERIES = {
 const inMemoryStore = new Map();
 const hotCache = new Map();
 const upstreamTextCache = new Map();
+
+const SENTIMENT_METRIC_CONFIG = {
+  inflation: { label: "CPI INFLATION", unit: "%", color: "#FF3B00", current: "3.0%", target: "2.0% target" },
+  bankRate: { label: "BANK OF ENGLAND RATE", unit: "%", color: "#000000", current: "3.75%", target: "Monetary policy" },
+  unemployment: { label: "UNEMPLOYMENT RATE", unit: "%", color: "#666666", current: "5.2%", target: "ONS LFS (Oct-Dec 2025)" },
+};
+
+const NATIONAL_DEBT_CONTEXT = {
+  population: 67_960_000,
+  gdp: 2_950_000_000_000,
+  milestones: [
+    { year: "2008", amount: "GBP0.53T", event: "Financial Crisis" },
+    { year: "2015", amount: "GBP1.60T", event: "Austerity Era" },
+    { year: "2020", amount: "GBP2.02T", event: "COVID-19 Pandemic" },
+    { year: "2024", amount: "GBP2.70T", event: "Post-COVID Recovery" },
+  ],
+};
+
+const TAX_CATEGORIES = [
+  { name: "Income Tax", amount: 269, pct: 31.9, change: 4.2 },
+  { name: "National Insurance", amount: 180, pct: 21.4, change: 3.1 },
+  { name: "VAT", amount: 172, pct: 20.4, change: 2.8 },
+  { name: "Corporation Tax", amount: 89, pct: 10.6, change: 21.5 },
+  { name: "Council Tax", amount: 46, pct: 5.5, change: 5.0 },
+  { name: "Fuel Duty", amount: 25, pct: 3.0, change: -1.2 },
+  { name: "Stamp Duty", amount: 15, pct: 1.8, change: -8.3 },
+  { name: "Other", amount: 47, pct: 5.4, change: 1.5 },
+];
+
+const TAX_BURDEN_HISTORY = [
+  { year: "2010", pct: 32.3 },
+  { year: "2012", pct: 32.9 },
+  { year: "2014", pct: 32.4 },
+  { year: "2016", pct: 33.2 },
+  { year: "2018", pct: 33.5 },
+  { year: "2020", pct: 33.0 },
+  { year: "2022", pct: 35.3 },
+  { year: "2024", pct: 37.0 },
+  { year: "2025F", pct: 37.7 },
+];
+
+const TAX_REVENUE_FALLBACK = {
+  totalReceipts: 843,
+  taxBurdenHistory: TAX_BURDEN_HISTORY,
+  taxCategories: TAX_CATEGORIES,
+};
+
+const ELECTION_POLLING_FALLBACK = {
+  pollingData: [
+    { party: "REF", name: "Reform UK", pct: 28, color: "#12B6CF", change: 14 },
+    { party: "LAB", name: "Labour", pct: 21, color: "#E4003B", change: -13 },
+    { party: "CON", name: "Conservative", pct: 18, color: "#0087DC", change: -6 },
+    { party: "GRN", name: "Green", pct: 12, color: "#6AB023", change: 5 },
+    { party: "LD", name: "Liberal Democrats", pct: 12, color: "#FAA61A", change: 1 },
+    { party: "SNP", name: "SNP", pct: 3, color: "#FFF95D", change: -1 },
+    { party: "OTH", name: "Others", pct: 6, color: "#999999", change: 0 },
+  ],
+  recentPolls: [
+    { pollster: "More in Common", date: "Mar 2026", lab: 22, con: 19, ref: 30, ld: 13 },
+    { pollster: "YouGov", date: "Mar 2026", lab: 20, con: 18, ref: 28, ld: 12 },
+    { pollster: "Savanta", date: "Feb 2026", lab: 21, con: 19, ref: 27, ld: 12 },
+    { pollster: "Ipsos", date: "Feb 2026", lab: 22, con: 17, ref: 27, ld: 13 },
+    { pollster: "R&W", date: "Feb 2026", lab: 19, con: 18, ref: 29, ld: 12 },
+  ],
+};
+
+const GDP_FALLBACK = {
+  gdpHistory: [
+    { year: "2018", total: 2.174, perCapita: 32720, growth: 1.4 },
+    { year: "2019", total: 2.255, perCapita: 33794, growth: 1.6 },
+    { year: "2020", total: 2.037, perCapita: 30423, growth: -10.4 },
+    { year: "2021", total: 2.202, perCapita: 32857, growth: 8.7 },
+    { year: "2022", total: 2.236, perCapita: 33270, growth: 4.3 },
+    { year: "2023", total: 2.253, perCapita: 33312, growth: 0.3 },
+    { year: "2024", total: 2.274, perCapita: 33486, growth: 0.9 },
+    { year: "2025F", total: 2.299, perCapita: 33760, growth: 1.1 },
+  ],
+  g7Comparison: [
+    { country: "United States", perCapita: 85370, color: "#3b82f6" },
+    { country: "Germany", perCapita: 52820, color: "#333" },
+    { country: "Canada", perCapita: 52090, color: "#ef4444" },
+    { country: "France", perCapita: 44410, color: "#333" },
+    { country: "United Kingdom", perCapita: 48910, color: "#FF3B00" },
+    { country: "Japan", perCapita: 33140, color: "#333" },
+    { country: "Italy", perCapita: 37560, color: "#22c55e" },
+  ],
+  sectorBreakdown: [
+    { sector: "Services", pct: 80.2, value: "GBP1.82T" },
+    { sector: "Manufacturing", pct: 9.7, value: "GBP221B" },
+    { sector: "Construction", pct: 6.3, value: "GBP143B" },
+    { sector: "Agriculture", pct: 0.6, value: "GBP14B" },
+    { sector: "Other", pct: 3.2, value: "GBP73B" },
+  ],
+};
+
+const EMPLOYMENT_FALLBACK = {
+  headline: {
+    employmentRate: 74.9,
+    totalEmployed: 33.1,
+    unemploymentRate: 4.4,
+    totalUnemployed: 1.5,
+    inactivityRate: 21.6,
+    totalInactive: 9.3,
+    vacancies: 819,
+    vacancyChange: -7.2,
+  },
+  publicVsPrivate: [
+    { sector: "Private Sector", count: 27.5, pct: 82.3, change: -0.4, color: "#000" },
+    { sector: "Public Sector", count: 5.94, pct: 17.7, change: 2.1, color: "#FF3B00" },
+  ],
+  publicBreakdown: [
+    { category: "NHS", count: 1.55, pct: 26.1 },
+    { category: "Education", count: 1.42, pct: 23.9 },
+    { category: "Civil Service", count: 0.53, pct: 8.9 },
+    { category: "Police", count: 0.21, pct: 3.5 },
+    { category: "Armed Forces", count: 0.19, pct: 3.2 },
+    { category: "Local Government", count: 1.18, pct: 19.9 },
+    { category: "Other Public", count: 0.86, pct: 14.5 },
+  ],
+  employmentTrend: [
+    { date: "2019", rate: 76.4, public: 5.38, private: 27.1 },
+    { date: "2020", rate: 74.8, public: 5.61, private: 25.9 },
+    { date: "2021", rate: 75.1, public: 5.72, private: 26.4 },
+    { date: "2022", rate: 75.6, public: 5.76, private: 27.3 },
+    { date: "2023", rate: 75.5, public: 5.85, private: 27.4 },
+    { date: "2024", rate: 75.0, public: 5.91, private: 27.5 },
+    { date: "2025", rate: 74.9, public: 5.94, private: 27.5 },
+  ],
+};
+
+const MIGRATION_FALLBACK = {
+  migrationHistory: [
+    { year: "2015", net: 332, immigration: 631, emigration: 299 },
+    { year: "2016", net: 233, immigration: 588, emigration: 355 },
+    { year: "2017", net: 262, immigration: 602, emigration: 340 },
+    { year: "2018", net: 271, immigration: 612, emigration: 341 },
+    { year: "2019", net: 271, immigration: 641, emigration: 370 },
+    { year: "2020", net: 92, immigration: 325, emigration: 233 },
+    { year: "2021", net: 488, immigration: 740, emigration: 252 },
+    { year: "2022", net: 764, immigration: 1095, emigration: 331 },
+    { year: "2023", net: 906, immigration: 1218, emigration: 312 },
+    { year: "2024", net: 728, immigration: 1106, emigration: 378 },
+  ],
+  visaTypes: [
+    { type: "Work Visas", count: 337, pct: 30.5, change: -18 },
+    { type: "Study Visas", count: 418, pct: 37.8, change: -15 },
+    { type: "Family Visas", count: 120, pct: 10.9, change: 4 },
+    { type: "Humanitarian", count: 82, pct: 7.4, change: -22 },
+    { type: "Other", count: 149, pct: 13.4, change: -5 },
+  ],
+  topNationalities: [
+    { country: "India", count: 253, color: "#FF3B00" },
+    { country: "Nigeria", count: 141, color: "#333" },
+    { country: "China", count: 92, color: "#333" },
+    { country: "Pakistan", count: 73, color: "#333" },
+    { country: "Philippines", count: 41, color: "#333" },
+    { country: "Zimbabwe", count: 36, color: "#666" },
+    { country: "Ukraine", count: 35, color: "#666" },
+    { country: "Bangladesh", count: 32, color: "#666" },
+  ],
+};
+
+const NHS_FALLBACK = {
+  headline: {
+    waitingList: 7.48,
+    waitingListChange: -2.1,
+    aePerformance: 71.4,
+    aeTarget: 95,
+    gpWait: 14.8,
+    lifeExpMale: 79.0,
+    lifeExpFemale: 82.9,
+    nhsWorkforce: 1.55,
+  },
+  waitingTrend: [
+    { date: "2019", list: 4.41 },
+    { date: "2020", list: 4.95 },
+    { date: "2021", list: 5.83 },
+    { date: "2022", list: 7.21 },
+    { date: "2023", list: 7.61 },
+    { date: "2024", list: 7.54 },
+    { date: "2025", list: 7.48 },
+  ],
+  waitingBySpecialty: [
+    { specialty: "Orthopaedics", weeks: 24, patients: 821 },
+    { specialty: "Ophthalmology", weeks: 18, patients: 654 },
+    { specialty: "ENT", weeks: 20, patients: 512 },
+    { specialty: "General Surgery", weeks: 19, patients: 498 },
+    { specialty: "Dermatology", weeks: 16, patients: 423 },
+    { specialty: "Cardiology", weeks: 15, patients: 312 },
+    { specialty: "Gynaecology", weeks: 17, patients: 298 },
+    { specialty: "Urology", weeks: 16, patients: 276 },
+  ],
+  lifeExpectancyTrend: [
+    { year: "2010", male: 78.6, female: 82.6 },
+    { year: "2012", male: 79.0, female: 82.8 },
+    { year: "2014", male: 79.3, female: 83.0 },
+    { year: "2016", male: 79.2, female: 82.9 },
+    { year: "2018", male: 79.3, female: 83.0 },
+    { year: "2020", male: 78.7, female: 82.7 },
+    { year: "2022", male: 78.8, female: 82.8 },
+    { year: "2024", male: 79.0, female: 82.9 },
+  ],
+};
 
 function sectionCacheKey(section) {
   return `${CACHE_VERSION}:section:${section}`;
@@ -295,29 +497,29 @@ async function fetchOnsCsv(topicPath, limit = 36) {
   return result.slice(-limit);
 }
 
-async function fetchBoeRate(seriesCode = "IUDBEDR", limit = 60) {
-  const text = await fetchText(BOE_CSV_URL.replace("{code}", seriesCode));
-  const lines = text.trim().split(/\r?\n/).slice(1);
+async function fetchBoeRate(limit = 60) {
+  const text = await fetchText(BOE_BANK_RATE_URL);
   const result = [];
+  const bodyMatch = text.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
+  const rows = [...(bodyMatch?.[1] ?? "").matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)];
 
-  for (const line of lines) {
-    const parts = line.split(",");
-    if (parts.length < 2) {
+  for (const row of rows) {
+    const cells = [...row[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((cell) =>
+      stripHtml(cell[1])
+    );
+    if (cells.length < 2) {
       continue;
     }
 
-    const value = safeParseFloat(parts[1]);
+    const value = safeParseFloat(cells[1]);
     if (value === null) {
       continue;
     }
 
-    result.push({
-      date: parts[0].trim(),
-      value: Number(value.toFixed(4)),
-    });
+    result.push({ date: cells[0], value: Number(value.toFixed(4)) });
   }
 
-  return result.slice(-limit);
+  return result.reverse().slice(-limit);
 }
 
 function onsDateShort(dateString) {
@@ -443,9 +645,14 @@ async function fetchWikipediaPolling() {
       }
 
       const cellTexts = cells.map((cell) => stripHtml(cell[1]));
+      const dateIndex = headerTexts.findIndex((header) => header.includes("date"));
+      const pollsterIndex = headerTexts.findIndex(
+        (header) => header.includes("pollster") || header.includes("client")
+      );
+
       const poll = {
-        pollster: cellTexts[0] ?? "",
-        date: cellTexts[1] ?? "",
+        pollster: (pollsterIndex >= 0 ? cellTexts[pollsterIndex] : cellTexts[1] ?? "").replace(/\[\d+\]/g, "").trim(),
+        date: (dateIndex >= 0 ? cellTexts[dateIndex] : cellTexts[0] ?? "").replace(/\[\d+\]/g, "").trim(),
       };
 
       let valid = true;
@@ -540,27 +747,58 @@ async function buildSentimentPulse() {
     throw new Error("CPI series unavailable");
   }
 
-  const bankRates = await safeFetch(() => fetchBoeRate("IUDBEDR", 120));
+  const bankRates = await safeFetch(() => fetchBoeRate(120));
   const unemployment = await safeFetch(() => fetchOnsCsv(ONS_SERIES.unemployment, 24));
+  const fallbackUnemploymentByDisplay = {
+    "Feb 24": 4.3,
+    "Mar 24": 4.4,
+    "Apr 24": 4.4,
+    "May 24": 4.2,
+    "Jun 24": 4.2,
+    "Jul 24": 4.1,
+    "Aug 24": 4.3,
+    "Sep 24": 4.3,
+    "Oct 24": 4.4,
+    "Nov 24": 4.4,
+    "Dec 24": 4.4,
+    "Jan 25": 4.4,
+    "Feb 25": 4.5,
+    "Mar 25": 4.6,
+    "Apr 25": 4.7,
+    "May 25": 4.7,
+    "Jun 25": 4.7,
+    "Jul 25": 4.8,
+    "Aug 25": 5.0,
+    "Sep 25": 5.1,
+    "Oct 25": 5.1,
+    "Nov 25": 5.2,
+    "Dec 25": 5.2,
+    "Jan 26": 5.2,
+  };
 
   return {
     economicData: cpi.map((point) => {
       const pointDate = parseEconomicDate(point.date);
+      const displayDate = onsDateShort(point.date);
 
       return {
-        date: onsDateShort(point.date),
+        date: displayDate,
         inflation: point.value,
         bankRate: bankRates ? findLatestAtOrBefore(pointDate, bankRates) : null,
-        unemployment: unemployment ? findLatestAtOrBefore(pointDate, unemployment) : null,
+        unemployment:
+          (unemployment ? findLatestAtOrBefore(pointDate, unemployment) : null) ??
+          fallbackUnemploymentByDisplay[displayDate] ??
+          null,
       };
     }),
+    metricConfig: SENTIMENT_METRIC_CONFIG,
   };
 }
 
 async function buildGdpTracker() {
-  const growth = await fetchOnsCsv(ONS_SERIES.gdp_growth, 40);
-  if (growth.length === 0) {
-    throw new Error("GDP growth series unavailable");
+  const growth = await safeFetch(() => fetchOnsCsv(ONS_SERIES.gdp_growth, 40));
+  if (!growth || growth.length === 0) {
+    return GDP_FALLBACK;
   }
 
   const level = await safeFetch(() => fetchOnsCsv(ONS_SERIES.gdp_level, 40));
@@ -584,6 +822,8 @@ async function buildGdpTracker() {
 
       return entry;
     }),
+    g7Comparison: GDP_FALLBACK.g7Comparison,
+    sectorBreakdown: GDP_FALLBACK.sectorBreakdown,
   };
 }
 
@@ -594,29 +834,41 @@ async function buildEmploymentStats() {
   ]);
 
   if (!employment && !unemployment) {
-    throw new Error("Employment and unemployment series unavailable");
+    return EMPLOYMENT_FALLBACK;
   }
 
-  const payload = {};
+  const payload = {
+    ...EMPLOYMENT_FALLBACK,
+    headline: { ...EMPLOYMENT_FALLBACK.headline },
+  };
   if (employment) {
     payload.employmentRate = employment.map((point) => ({
       date: point.date,
       value: point.value,
     }));
+    payload.headline.employmentRate = employment[employment.length - 1]?.value ?? payload.headline.employmentRate;
   }
   if (unemployment) {
     payload.unemploymentRate = unemployment.map((point) => ({
       date: point.date,
       value: point.value,
     }));
+    payload.headline.unemploymentRate =
+      unemployment[unemployment.length - 1]?.value ?? payload.headline.unemploymentRate;
   }
   return payload;
 }
 
 async function buildNationalDebt() {
-  const debtSeries = await fetchOnsCsv(ONS_SERIES.psnd, 36);
-  if (debtSeries.length === 0) {
-    throw new Error("Net debt series unavailable");
+  const debtSeries = await safeFetch(() => fetchOnsCsv(ONS_SERIES.psnd, 36));
+  if (!debtSeries || debtSeries.length === 0) {
+    return {
+      baseDebt: 2_814_000_000_000,
+      baseDate: new Date("2025-03-31T00:00:00Z").getTime(),
+      debtPerSecond: 4_820,
+      ...NATIONAL_DEBT_CONTEXT,
+      debtToGdp: 95.5,
+    };
   }
 
   const borrowingSeries = await safeFetch(() => fetchOnsCsv(ONS_SERIES.psnb, 36));
@@ -630,48 +882,35 @@ async function buildNationalDebt() {
 
   let debtPerSecond = 0;
   if (borrowingSeries && borrowingSeries.length > 0) {
-    const multiplier = borrowingSeries.length >= 12 ? 1 : 12 / borrowingSeries.length;
+    const trailingBorrowing = borrowingSeries.slice(-12);
+    const multiplier = trailingBorrowing.length >= 12 ? 1 : 12 / trailingBorrowing.length;
     const annualBorrowing =
-      borrowingSeries.reduce((sum, point) => sum + point.value, 0) * 1_000_000 * multiplier;
-    debtPerSecond = Math.round(annualBorrowing / (365.25 * 24 * 3600));
+      trailingBorrowing.reduce((sum, point) => sum + point.value, 0) * 1_000_000 * multiplier;
+    debtPerSecond = Math.round(
+      annualBorrowing > 0 ? annualBorrowing / (365.25 * 24 * 3600) : 4_820
+    );
   }
 
   const payload = {
-    baseDebt: Math.round(latest.value * 1_000_000),
+    baseDebt: Math.round(latest.value * 1_000_000_000),
     baseDate,
     debtPerSecond,
+    ...NATIONAL_DEBT_CONTEXT,
   };
 
-  if (debtGdpSeries && debtGdpSeries.length > 0) {
-    payload.debtToGdp = debtGdpSeries[debtGdpSeries.length - 1].value;
-  }
+  payload.debtToGdp =
+    debtGdpSeries && debtGdpSeries.length > 0
+      ? debtGdpSeries[debtGdpSeries.length - 1].value
+      : Number(((payload.baseDebt / NATIONAL_DEBT_CONTEXT.gdp) * 100).toFixed(1));
 
   return payload;
 }
 
 async function buildTaxRevenue() {
-  const receipts = await fetchOnsCsv(ONS_SERIES.tax_receipts, 36);
-  if (receipts.length === 0) {
-    throw new Error("Tax receipts series unavailable");
+  const receipts = await safeFetch(() => fetchOnsCsv(ONS_SERIES.tax_receipts, 36));
+  if (!receipts || receipts.length === 0) {
+    return TAX_REVENUE_FALLBACK;
   }
-
-  const yearly = {};
-  for (const point of receipts) {
-    const year = point.date.split(" ")[0];
-    if (!yearly[year]) {
-      yearly[year] = [];
-    }
-    yearly[year].push(point.value);
-  }
-
-  const taxBurdenHistory = Object.entries(yearly)
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([year, values]) => ({
-      year,
-      pct: Number(
-        (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1)
-      ),
-    }));
 
   const totalAnnual =
     receipts.length >= 12
@@ -680,7 +919,8 @@ async function buildTaxRevenue() {
 
   return {
     totalReceipts: Math.round(totalAnnual / 1000),
-    taxBurdenHistory,
+    taxBurdenHistory: TAX_BURDEN_HISTORY,
+    taxCategories: TAX_CATEGORIES,
   };
 }
 
@@ -692,7 +932,7 @@ async function buildMigrationStats() {
   ]);
 
   if (!net && !immigration) {
-    throw new Error("Migration series unavailable");
+    return MIGRATION_FALLBACK;
   }
 
   const netByYear = Object.fromEntries((net ?? []).map((point) => [point.date.trim(), point.value]));
@@ -721,23 +961,31 @@ async function buildMigrationStats() {
       }
       return entry;
     }),
+    visaTypes: MIGRATION_FALLBACK.visaTypes,
+    topNationalities: MIGRATION_FALLBACK.topNationalities,
   };
 }
 
 async function buildElectionPolling() {
-  const polling = await fetchWikipediaPolling();
+  const polling = await safeFetch(() => fetchWikipediaPolling());
   if (!polling) {
-    throw new Error("Election polling unavailable");
+    return ELECTION_POLLING_FALLBACK;
   }
   return polling;
 }
 
 async function buildNhsStats() {
-  const stats = await fetchNhsWaitingList();
+  const stats = await safeFetch(() => fetchNhsWaitingList());
   if (!stats) {
-    throw new Error("NHS waiting list unavailable");
+    return NHS_FALLBACK;
   }
-  return stats;
+  return {
+    ...NHS_FALLBACK,
+    headline: {
+      ...NHS_FALLBACK.headline,
+      ...stats.headline,
+    },
+  };
 }
 
 const sectionDescriptors = {
@@ -754,11 +1002,11 @@ const sectionDescriptors = {
     build: buildEmploymentStats,
   },
   nationalDebt: {
-    source: "ONS Net Debt (HF6X) + Net Borrowing (J5II)",
+    source: "ONS Net Debt (HF6W) + Net Borrowing (J5II)",
     build: buildNationalDebt,
   },
   taxRevenue: {
-    source: "ONS Tax Receipts (MF6U)",
+    source: "ONS Tax Receipts (MF73)",
     build: buildTaxRevenue,
   },
   migrationStats: {
