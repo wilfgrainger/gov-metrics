@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ONS_CSV_BASE, BOE_API_BASE, ONS_SERIES, BOE_SERIES } from "@/app/lib/config";
+import { BOE_API_BASE, BOE_SERIES, ONS_CSV_BASE, ONS_SERIES } from "@/app/lib/config";
 
-// Required so `next build` can run with `output: "export"` for GitHub Pages.
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
-
-// ── In-memory server-side cache ──────────────────────────────────────────────
 
 interface CacheEntry {
   data: unknown;
@@ -13,7 +10,7 @@ interface CacheEntry {
 }
 
 const serverCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_TTL_MS = 10 * 60 * 1000;
 
 function getCached(key: string): unknown | null {
   const entry = serverCache.get(key);
@@ -27,36 +24,42 @@ function setCache(key: string, data: unknown) {
   serverCache.set(key, { data, timestamp: Date.now() });
 }
 
-// ── ONS CSV Generator Fetcher ────────────────────────────────────────────────
-// The legacy api.ons.gov.uk was retired Nov 2024.
-// Uses the website CSV generator at www.ons.gov.uk/generator instead.
-
-async function fetchONSCSV(
+async function fetchOnsCsv(
   topicPath: string,
   limit = 24
-): Promise<{ date: string; value: number }[]> {
-  const cacheKey = `ons-csv:${topicPath}`;
+): Promise<Array<{ date: string; value: number }>> {
+  const cacheKey = `ons:${topicPath}:${limit}`;
   const cached = getCached(cacheKey);
-  if (cached) return cached as { date: string; value: number }[];
+  if (cached) {
+    return cached as Array<{ date: string; value: number }>;
+  }
 
-  const url = `${ONS_CSV_BASE}${topicPath}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(12_000) });
-  if (!res.ok) throw new Error(`ONS CSV ${res.status}`);
+  const response = await fetch(`${ONS_CSV_BASE}${topicPath}`, {
+    signal: AbortSignal.timeout(12_000),
+  });
+  if (!response.ok) {
+    throw new Error(`ONS CSV ${response.status}`);
+  }
 
-  const text = await res.text();
-  const lines = text.trim().split("\n");
-
-  const result: { date: string; value: number }[] = [];
-  for (const line of lines) {
+  const text = await response.text();
+  const result: Array<{ date: string; value: number }> = [];
+  for (const line of text.trim().split("\n")) {
     const stripped = line.trim().replace(/^"/, "");
-    if (!stripped || !/^\d/.test(stripped)) continue;
+    if (!stripped || !/^\d/.test(stripped)) {
+      continue;
+    }
 
-    const parts = line.split(",").map((s) => s.trim().replace(/"/g, ""));
-    if (parts.length < 2) continue;
-    const val = parseFloat(parts[1]);
-    if (isNaN(val) || parts[1] === "" || parts[1] === "..") continue;
+    const parts = line.split(",").map((part) => part.trim().replace(/"/g, ""));
+    if (parts.length < 2 || parts[1] === ".." || parts[1] === "") {
+      continue;
+    }
 
-    result.push({ date: parts[0], value: val });
+    const value = Number.parseFloat(parts[1]);
+    if (!Number.isFinite(value)) {
+      continue;
+    }
+
+    result.push({ date: parts[0], value });
   }
 
   const trimmed = result.slice(-limit);
@@ -64,108 +67,38 @@ async function fetchONSCSV(
   return trimmed;
 }
 
-// ── Bank of England Fetcher ──────────────────────────────────────────────────
-
-async function fetchBOERate(seriesCode: string): Promise<{ date: string; value: number }[]> {
+async function fetchBoeRate(seriesCode: string): Promise<Array<{ date: string; value: number }>> {
   const cacheKey = `boe:${seriesCode}`;
   const cached = getCached(cacheKey);
-  if (cached) return cached as { date: string; value: number }[];
+  if (cached) {
+    return cached as Array<{ date: string; value: number }>;
+  }
 
-  const url = `${BOE_API_BASE}/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=${seriesCode}&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-  if (!res.ok) throw new Error(`BoE API ${res.status}`);
+  const response = await fetch(
+    `${BOE_API_BASE}/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=${seriesCode}&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N`,
+    { signal: AbortSignal.timeout(8_000) }
+  );
+  if (!response.ok) {
+    throw new Error(`BoE API ${response.status}`);
+  }
 
-  const text = await res.text();
-  const lines = text.trim().split("\n").slice(1); // skip header
-
-  const result = lines
-    .filter((l) => l.trim() !== "")
+  const result = (await response.text())
+    .trim()
+    .split("\n")
+    .slice(1)
     .map((line) => {
-      const [date, val] = line.split(",").map((s) => s.trim());
-      return { date, value: parseFloat(val) };
+      const [date, value] = line.split(",").map((part) => part.trim());
+      return { date, value: Number.parseFloat(value) };
     })
-    .filter((p) => !isNaN(p.value))
-    .slice(-60); // last 60 data points
+    .filter((point) => Number.isFinite(point.value))
+    .slice(-60);
 
   setCache(cacheKey, result);
   return result;
 }
 
-// ── Section-specific fetchers ────────────────────────────────────────────────
-
-async function fetchSentimentPulse() {
-  const [cpiSeries, bankRateSeries, unemploymentSeries] = await Promise.all([
-    fetchONSCSV(ONS_SERIES.CPI_ANNUAL_RATE.topicPath, 24),
-    fetchBOERate(BOE_SERIES.BANK_RATE),
-    fetchONSCSV(ONS_SERIES.UNEMPLOYMENT_RATE.topicPath, 24),
-  ]);
-
-  // Build merged data points from CPI series (as the base timeline)
-  const data = cpiSeries
-    .map((cpiPoint) => {
-      const cpiDate = parseEconomicDate(cpiPoint.date);
-      const closestBankRate = findLatestAtOrBefore(cpiDate, bankRateSeries);
-      const matchingUnemployment = findLatestAtOrBefore(cpiDate, unemploymentSeries);
-
-      return {
-        date: formatONSDate(cpiPoint.date),
-        inflation: cpiPoint.value,
-        bankRate: closestBankRate,
-        unemployment: matchingUnemployment,
-      };
-    })
-    .sort((a, b) => {
-      const aDate = parseEconomicDate(a.date);
-      const bDate = parseEconomicDate(b.date);
-      if (!aDate || !bDate) return 0;
-      return aDate.getTime() - bDate.getTime();
-    });
-
-  return { economicData: data };
-}
-
-async function fetchGDPData() {
-  const gdpGrowth = await fetchONSCSV(ONS_SERIES.GDP_QUARTERLY.topicPath, 32);
-
-  return {
-    quarterlyGrowth: gdpGrowth.map((p) => ({
-      date: formatONSDate(p.date),
-      growth: p.value,
-    })),
-  };
-}
-
-async function fetchEmploymentData() {
-  const [employmentRate, unemploymentRate] = await Promise.all([
-    fetchONSCSV(ONS_SERIES.EMPLOYMENT_RATE.topicPath, 24),
-    fetchONSCSV(ONS_SERIES.UNEMPLOYMENT_RATE.topicPath, 24),
-  ]);
-
-  return {
-    employmentRate: employmentRate.map((p) => ({ date: formatONSDate(p.date), value: p.value })),
-    unemploymentRate: unemploymentRate.map((p) => ({ date: formatONSDate(p.date), value: p.value })),
-  };
-}
-
-async function fetchNationalDebtData() {
-  const borrowing = await fetchONSCSV(ONS_SERIES.NET_BORROWING.topicPath, 24);
-
-  return {
-    netBorrowing: borrowing.map((p) => ({ date: formatONSDate(p.date), value: p.value })),
-  };
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatONSDate(raw: string): string {
-  // ONS dates: "2025 JAN", "2025 Q1", etc.
-  return raw.trim();
-}
-
 function parseEconomicDate(raw: string): Date | null {
   const value = raw.trim();
-  if (!value) return null;
-
   const monthMap: Record<string, number> = {
     JAN: 0,
     FEB: 1,
@@ -183,24 +116,31 @@ function parseEconomicDate(raw: string): Date | null {
 
   const onsMonthly = value.match(/^(\d{4})\s+([A-Za-z]{3})$/);
   if (onsMonthly) {
-    const year = Number(onsMonthly[1]);
-    const month = monthMap[onsMonthly[2].toUpperCase()];
-    if (Number.isInteger(month)) return new Date(Date.UTC(year, month, 1));
+    return new Date(
+      Date.UTC(
+        Number(onsMonthly[1]),
+        monthMap[onsMonthly[2].toUpperCase()],
+        1
+      )
+    );
   }
 
   const onsQuarterly = value.match(/^(\d{4})\s+Q([1-4])$/i);
   if (onsQuarterly) {
-    const year = Number(onsQuarterly[1]);
-    const quarter = Number(onsQuarterly[2]);
-    return new Date(Date.UTC(year, (quarter - 1) * 3, 1));
+    return new Date(
+      Date.UTC(Number(onsQuarterly[1]), (Number(onsQuarterly[2]) - 1) * 3, 1)
+    );
   }
 
   const boeDaily = value.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/);
   if (boeDaily) {
-    const day = Number(boeDaily[1]);
-    const month = monthMap[boeDaily[2].toUpperCase()];
-    const year = Number(boeDaily[3]);
-    if (Number.isInteger(month)) return new Date(Date.UTC(year, month, day));
+    return new Date(
+      Date.UTC(
+        Number(boeDaily[3]),
+        monthMap[boeDaily[2].toUpperCase()],
+        Number(boeDaily[1])
+      )
+    );
   }
 
   const parsed = new Date(value);
@@ -209,19 +149,22 @@ function parseEconomicDate(raw: string): Date | null {
 
 function findLatestAtOrBefore(
   date: Date | null,
-  series: { date: string; value: number }[]
+  series: Array<{ date: string; value: number }>
 ): number | null {
-  if (!date || series.length === 0) return null;
+  if (!date) {
+    return null;
+  }
 
   let latestValue: number | null = null;
-  let latestTs = -Infinity;
-
+  let latestTime = -Infinity;
   for (const point of series) {
     const pointDate = parseEconomicDate(point.date);
-    if (!pointDate) continue;
-    const ts = pointDate.getTime();
-    if (ts <= date.getTime() && ts > latestTs) {
-      latestTs = ts;
+    if (!pointDate) {
+      continue;
+    }
+    const pointTime = pointDate.getTime();
+    if (pointTime <= date.getTime() && pointTime > latestTime) {
+      latestTime = pointTime;
       latestValue = point.value;
     }
   }
@@ -229,7 +172,110 @@ function findLatestAtOrBefore(
   return latestValue;
 }
 
-// ── Section router ───────────────────────────────────────────────────────────
+function onsDateShort(raw: string) {
+  const parts = raw.trim().split(/\s+/);
+  if (parts.length < 2) {
+    return raw;
+  }
+  const month = parts[1].slice(0, 3).toLowerCase();
+  return `${month.charAt(0).toUpperCase()}${month.slice(1)} ${parts[0].slice(-2)}`;
+}
+
+function onsDateToEpochMs(raw: string): number | null {
+  const parts = raw.trim().split(/\s+/);
+  const monthMap: Record<string, number> = {
+    JAN: 0,
+    FEB: 1,
+    MAR: 2,
+    APR: 3,
+    MAY: 4,
+    JUN: 5,
+    JUL: 6,
+    AUG: 7,
+    SEP: 8,
+    OCT: 9,
+    NOV: 10,
+    DEC: 11,
+  };
+  if (parts.length < 2) {
+    return null;
+  }
+  const month = monthMap[parts[1].slice(0, 3).toUpperCase()];
+  if (!Number.isInteger(month)) {
+    return null;
+  }
+  return Date.UTC(Number(parts[0]), month, 1);
+}
+
+async function fetchSentimentPulse() {
+  const [cpiSeries, bankRateSeries, unemploymentSeries] = await Promise.all([
+    fetchOnsCsv(ONS_SERIES.CPI_ANNUAL_RATE.topicPath, 24),
+    fetchBoeRate(BOE_SERIES.BANK_RATE),
+    fetchOnsCsv(ONS_SERIES.UNEMPLOYMENT_RATE.topicPath, 24),
+  ]);
+
+  return {
+    economicData: cpiSeries.map((point) => {
+      const date = parseEconomicDate(point.date);
+      return {
+        date: onsDateShort(point.date),
+        inflation: point.value,
+        bankRate: findLatestAtOrBefore(date, bankRateSeries),
+        unemployment: findLatestAtOrBefore(date, unemploymentSeries),
+      };
+    }),
+  };
+}
+
+async function fetchGDPData() {
+  const [growth, level] = await Promise.all([
+    fetchOnsCsv(ONS_SERIES.GDP_QUARTERLY.topicPath, 40),
+    fetchOnsCsv(ONS_SERIES.GDP_INDEX.topicPath, 40),
+  ]);
+
+  const levelMap = new Map(level.map((point) => [point.date, Number((point.value / 1_000_000).toFixed(3))]));
+  return {
+    gdpHistory: growth.map((point) => ({
+      year: point.date,
+      growth: point.value,
+      ...(levelMap.has(point.date) ? { total: levelMap.get(point.date) } : {}),
+    })),
+  };
+}
+
+async function fetchEmploymentData() {
+  const [employmentRate, unemploymentRate] = await Promise.all([
+    fetchOnsCsv(ONS_SERIES.EMPLOYMENT_RATE.topicPath, 24),
+    fetchOnsCsv(ONS_SERIES.UNEMPLOYMENT_RATE.topicPath, 24),
+  ]);
+
+  return {
+    employmentRate: employmentRate.map((point) => ({
+      date: point.date,
+      value: point.value,
+    })),
+    unemploymentRate: unemploymentRate.map((point) => ({
+      date: point.date,
+      value: point.value,
+    })),
+  };
+}
+
+async function fetchNationalDebtData() {
+  const borrowing = await fetchOnsCsv(ONS_SERIES.NET_BORROWING.topicPath, 24);
+  const latest = borrowing[borrowing.length - 1];
+  const baseDate = latest ? onsDateToEpochMs(latest.date) : null;
+  if (!latest || baseDate == null) {
+    throw new Error("National debt fallback data unavailable");
+  }
+
+  const annualBorrowing = borrowing.reduce((sum, point) => sum + point.value, 0) * 1_000_000;
+  return {
+    baseDebt: Math.round(latest.value * 1_000_000),
+    baseDate,
+    debtPerSecond: Math.round(annualBorrowing / (365.25 * 24 * 3600)),
+  };
+}
 
 type FetcherFn = () => Promise<unknown>;
 
@@ -240,59 +286,31 @@ const liveFetchers: Record<string, FetcherFn> = {
   nationalDebt: fetchNationalDebtData,
 };
 
-// ── JSON file reader (populated by fetch_intel.py via GitHub Actions) ────────
-
-import { readFile } from "fs/promises";
-import { join } from "path";
-
-let jsonFileCache: { data: Record<string, unknown>; ts: number } | null = null;
-
-async function readDataFile(): Promise<Record<string, unknown> | null> {
-  if (jsonFileCache && Date.now() - jsonFileCache.ts < 60_000) {
-    return jsonFileCache.data;
-  }
-  try {
-    const filePath = join(process.cwd(), "public", "daily_threat_data.json");
-    const raw = await readFile(filePath, "utf-8");
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
-    jsonFileCache = { data: parsed, ts: Date.now() };
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-// ── GET /api/metrics?section=xxx ─────────────────────────────────────────────
-
 export async function GET(request: NextRequest) {
   const section = request.nextUrl.searchParams.get("section");
-
   if (!section) {
-    return NextResponse.json(
-      { error: "Missing ?section= parameter" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing ?section= parameter" }, { status: 400 });
   }
 
-  // Strategy A: Read from daily_threat_data.json (populated by fetch_intel.py)
-  const fileData = await readDataFile();
-  if (fileData && fileData[section]) {
-    return NextResponse.json(
-      {
-        section,
-        data: fileData[section],
-        source: "file",
-        timestamp: (fileData.meta as Record<string, string>)?.generatedAt ?? new Date().toISOString(),
+  const workerUrl = process.env.NEXT_PUBLIC_CF_WORKER_URL?.trim();
+  if (workerUrl) {
+    const response = await fetch(
+      `${workerUrl}/metrics?section=${encodeURIComponent(section)}`,
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    const text = await response.text();
+    return new NextResponse(text, {
+      status: response.status,
+      headers: {
+        "Content-Type": response.headers.get("Content-Type") ?? "application/json",
+        "Cache-Control":
+          response.headers.get("Cache-Control") ??
+          "public, max-age=300, stale-while-revalidate=600",
       },
-      {
-        headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" },
-      }
-    );
+    });
   }
 
-  // Strategy B: Fetch from live APIs
   const fetcher = liveFetchers[section];
-
   if (!fetcher) {
     return NextResponse.json(
       {
@@ -300,10 +318,10 @@ export async function GET(request: NextRequest) {
         data: null,
         source: "none",
         timestamp: new Date().toISOString(),
-        message: `No data available for '${section}'. Using embedded data.`,
+        message: `No local development fetcher for '${section}'.`,
       },
       {
-        headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" },
+        headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" },
       }
     );
   }
@@ -321,15 +339,15 @@ export async function GET(request: NextRequest) {
         headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" },
       }
     );
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       {
         section,
         data: null,
         source: "error",
         timestamp: new Date().toISOString(),
-        message: `Live fetch failed: ${message}`,
+        message: `Local fallback fetch failed: ${message}`,
       },
       {
         status: 502,

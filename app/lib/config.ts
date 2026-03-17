@@ -1,31 +1,25 @@
-// Real-time data fetching configuration
-// Strategy 1: Next.js API routes fetch from public UK data sources (server-side)
-// Strategy 2: Cloudflare Worker fallback when server is unavailable (e.g. static export)
+// Real-time data fetching configuration.
+// Strategy 1: Cloudflare Worker backend.
+// Strategy 2: Next.js API route fallback for local development.
 
-// API route path (server-side data aggregation)
+// API route path used only when the Worker URL is not configured.
 export const METRICS_API_PATH = "/api/metrics";
 
-// Cloudflare Worker URL — deploy worker from /worker directory, then set this env var
-export const CF_WORKER_URL =
-  process.env.NEXT_PUBLIC_CF_WORKER_URL || "";
+// Cloudflare Worker URL. Deploy the backend from /worker and set this env var.
+export const CF_WORKER_URL = process.env.NEXT_PUBLIC_CF_WORKER_URL || "";
 
 // Polling interval for live data refresh (milliseconds)
 export const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-// ── Public UK Data Source Endpoints ──────────────────────────────────────────
+// Public UK data source endpoints.
 
-// ONS CSV Generator (no auth required) — replaces the retired api.ons.gov.uk
-// The legacy ONS API at api.ons.gov.uk was retired in November 2024.
-// Docs: https://developer.ons.gov.uk/
+// ONS CSV Generator (no auth required) replaces the retired api.ons.gov.uk.
 export const ONS_CSV_BASE = "https://www.ons.gov.uk/generator?format=csv&uri=";
 
 // Bank of England Statistical Interactive Database (no auth required)
-export const BOE_API_BASE =
-  "https://www.bankofengland.co.uk/boeapps/database";
+export const BOE_API_BASE = "https://www.bankofengland.co.uk/boeapps/database";
 
-// ── ONS Time Series Definitions ─────────────────────────────────────────────
-// Each series includes the topicPath for the CSV generator URL.
-
+// ONS time series definitions.
 export const ONS_SERIES = {
   CPI_ANNUAL_RATE: {
     seriesId: "D7G7",
@@ -40,12 +34,14 @@ export const ONS_SERIES = {
   UNEMPLOYMENT_RATE: {
     seriesId: "MGSX",
     datasetId: "LMS",
-    topicPath: "/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms",
+    topicPath:
+      "/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms",
   },
   EMPLOYMENT_RATE: {
     seriesId: "LF24",
     datasetId: "LMS",
-    topicPath: "/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/lf24/lms",
+    topicPath:
+      "/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/lf24/lms",
   },
   GDP_QUARTERLY: {
     seriesId: "IHYQ",
@@ -60,18 +56,17 @@ export const ONS_SERIES = {
   NET_BORROWING: {
     seriesId: "J5II",
     datasetId: "PSF",
-    topicPath: "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/psf",
+    topicPath:
+      "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/psf",
   },
 } as const;
 
-// ── Bank of England Series ───────────────────────────────────────────────────
-
+// Bank of England series.
 export const BOE_SERIES = {
-  BANK_RATE: "IUDBEDR", // Official Bank Rate
+  BANK_RATE: "IUDBEDR",
 } as const;
 
-// ── Data source metadata (for UI and documentation) ─────────────────────────
-
+// Data source metadata for UI and documentation.
 export const DATA_SOURCES: Record<
   string,
   { name: string; frequency: string; sources: string[] }

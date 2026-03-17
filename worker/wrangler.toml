@@ -1,10 +1,20 @@
 name = "pulse-data-worker"
 main = "index.js"
-compatibility_date = "2024-12-01"
+compatibility_date = "2026-03-17"
 
 [vars]
-DATA_URL = "https://wilfgrainger.github.io/gov-metrics/daily_threat_data.json"
+ENVIRONMENT = "production"
+DATA_REFRESH_TTL_SECONDS = "14400"
+DATA_STALE_TTL_SECONDS = "86400"
 
-# Cron trigger: refresh data every 4 hours (mirrors GitHub Actions schedule)
-# [triggers]
-# crons = ["0 */4 * * *"]
+[triggers]
+crons = ["0 */4 * * *"]
+
+# Production scale requires KV. Create namespaces, then uncomment:
+# npx wrangler kv namespace create METRICS_CACHE
+# npx wrangler kv namespace create METRICS_CACHE --preview
+#
+# [[kv_namespaces]]
+# binding = "METRICS_CACHE"
+# id = "replace-with-production-kv-id"
+# preview_id = "replace-with-preview-kv-id"
