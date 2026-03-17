@@ -4,12 +4,6 @@ import { useState } from "react";
 import { useMetrics } from "@/app/lib/useMetrics";
 import MetricsStatus from "@/app/components/MetricsStatus";
 
-// UK GDP Data from ONS National Accounts
-// Source: https://www.ons.gov.uk/economy/grossdomesticproductgdp
-// UK GDP (nominal): ~£2.274 trillion (2024, ONS)
-// GDP per capita: ~£33,486 (2024, ONS)
-// Real GDP growth: 0.9% in 2024, forecast 1.1% in 2025 (OBR)
-// G7 comparison data from IMF World Economic Outlook (Oct 2025)
 const GDP_HISTORY = [
   { year: "2018", total: 2.174, perCapita: 32720, growth: 1.4 },
   { year: "2019", total: 2.255, perCapita: 33794, growth: 1.6 },
@@ -32,14 +26,23 @@ const G7_COMPARISON = [
 ];
 
 const SECTOR_BREAKDOWN = [
-  { sector: "Services", pct: 80.2, value: "£1.82T" },
-  { sector: "Manufacturing", pct: 9.7, value: "£221B" },
-  { sector: "Construction", pct: 6.3, value: "£143B" },
-  { sector: "Agriculture", pct: 0.6, value: "£14B" },
-  { sector: "Other", pct: 3.2, value: "£73B" },
+  { sector: "Services", pct: 80.2, value: "GBP1.82T" },
+  { sector: "Manufacturing", pct: 9.7, value: "GBP221B" },
+  { sector: "Construction", pct: 6.3, value: "GBP143B" },
+  { sector: "Agriculture", pct: 0.6, value: "GBP14B" },
+  { sector: "Other", pct: 3.2, value: "GBP73B" },
 ];
 
 const FALLBACK = { gdpHistory: GDP_HISTORY, g7Comparison: G7_COMPARISON, sectorBreakdown: SECTOR_BREAKDOWN };
+const FALLBACK_HISTORY_BY_YEAR = Object.fromEntries(GDP_HISTORY.map((entry) => [entry.year, entry]));
+
+function isForecastYear(value: string) {
+  return value.includes("F");
+}
+
+function isQuarterlyYear(value: string) {
+  return /\sQ[1-4]$/i.test(value);
+}
 
 export default function GDPTracker() {
   const metrics = useMetrics("gdpTracker", FALLBACK);
@@ -47,34 +50,52 @@ export default function GDPTracker() {
   const { gdpHistory, g7Comparison, sectorBreakdown } = data;
 
   const [view, setView] = useState<"overview" | "g7" | "sectors">("overview");
-  const latest = gdpHistory[gdpHistory.length - 2]; // 2024 actual
-  const forecast = gdpHistory[gdpHistory.length - 1];
+
+  const latestSeriesPoint = gdpHistory[gdpHistory.length - 1] ?? GDP_HISTORY[GDP_HISTORY.length - 1];
+  const latestActual =
+    [...gdpHistory].reverse().find((entry) => !isForecastYear(entry.year)) ??
+    GDP_HISTORY[GDP_HISTORY.length - 2];
+  const forecast =
+    [...gdpHistory].reverse().find((entry) => isForecastYear(entry.year)) ??
+    FALLBACK_HISTORY_BY_YEAR["2025F"];
+  const summaryActual =
+    (isQuarterlyYear(latestActual.year) ? FALLBACK_HISTORY_BY_YEAR["2024"] : latestActual) ??
+    FALLBACK_HISTORY_BY_YEAR["2024"];
+  const summaryPerCapita =
+    summaryActual?.perCapita ??
+    FALLBACK_HISTORY_BY_YEAR[latestActual.year]?.perCapita ??
+    FALLBACK_HISTORY_BY_YEAR["2024"]?.perCapita ??
+    0;
+  const summaryTotal = summaryActual?.total ?? FALLBACK_HISTORY_BY_YEAR["2024"]?.total ?? 0;
+  const summaryGrowth = summaryActual?.growth ?? FALLBACK_HISTORY_BY_YEAR["2024"]?.growth ?? 0;
+  const summaryLabel = isQuarterlyYear(latestActual.year) ? "2024 annual" : `${summaryActual.year} nominal`;
+  const forecastGrowth = forecast?.growth ?? FALLBACK_HISTORY_BY_YEAR["2025F"]?.growth ?? 0;
 
   return (
     <div>
-      {/* Headline stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mb-4">
+      <div className="mb-4 grid grid-cols-2 gap-0 md:grid-cols-4">
         {[
-          { label: "TOTAL GDP", value: `£${latest.total}T`, sub: `${latest.year} nominal` },
-          { label: "PER CAPITA", value: `£${latest.perCapita.toLocaleString("en-GB")}`, sub: "per person" },
-          { label: "GROWTH", value: `${latest.growth}%`, sub: `${latest.year} real`, accent: latest.growth > 0 },
-          { label: "2025 FORECAST", value: `${forecast.growth}%`, sub: "OBR estimate", accent: true },
-        ].map((s, i) => (
-          <div key={i} className={`border-2 border-black p-3 text-center ${i > 0 ? "border-l-0" : ""}`}>
-            <p className="font-mono text-[10px] text-gray-500">{s.label}</p>
-            <p className="font-mono text-lg font-bold" style={{ color: s.accent ? "#FF3B00" : "#000" }}>{s.value}</p>
-            <p className="font-mono text-[10px] text-gray-400">{s.sub}</p>
+          { label: "TOTAL GDP", value: `GBP${summaryTotal}T`, sub: summaryLabel },
+          { label: "PER CAPITA", value: `GBP${summaryPerCapita.toLocaleString("en-GB")}`, sub: "per person" },
+          { label: "GROWTH", value: `${summaryGrowth}%`, sub: `${latestSeriesPoint.year} real`, accent: summaryGrowth > 0 },
+          { label: "2025 FORECAST", value: `${forecastGrowth}%`, sub: "OBR estimate", accent: true },
+        ].map((stat, index) => (
+          <div key={stat.label} className={`border-2 border-black p-3 text-center ${index > 0 ? "border-l-0" : ""}`}>
+            <p className="font-mono text-[10px] text-gray-500">{stat.label}</p>
+            <p className="font-mono text-lg font-bold" style={{ color: stat.accent ? "#FF3B00" : "#000" }}>
+              {stat.value}
+            </p>
+            <p className="font-mono text-[10px] text-gray-400">{stat.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Toggle */}
-      <div className="flex border-2 border-black mb-4">
-        {([
+      <div className="mb-4 flex border-2 border-black">
+        {[
           { key: "overview" as const, label: "GDP TREND" },
           { key: "g7" as const, label: "G7 COMPARISON" },
           { key: "sectors" as const, label: "BY SECTOR" },
-        ]).map((tab) => (
+        ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setView(tab.key)}
@@ -89,47 +110,59 @@ export default function GDPTracker() {
 
       {view === "overview" && (
         <div className="space-y-2">
-          {gdpHistory.map((d) => (
-            <div key={d.year} className="flex items-center gap-3">
-              <p className="font-mono text-xs w-14 text-right text-gray-500">{d.year}</p>
-              <div className="flex-1 h-6 bg-gray-100 border border-black relative">
-                <div
-                  className="h-full"
-                  style={{
-                    width: `${(d.total / 2.5) * 100}%`,
-                    background: d.year.includes("F") ? "#FF3B00" : "#000",
-                    opacity: d.year.includes("F") ? 0.6 : 1,
-                  }}
-                />
+          {gdpHistory.map((entry) => {
+            const total = entry.total ?? summaryTotal;
+
+            return (
+              <div key={entry.year} className="flex items-center gap-3">
+                <p className="w-14 text-right font-mono text-xs text-gray-500">{entry.year}</p>
+                <div className="relative h-6 flex-1 border border-black bg-gray-100">
+                  <div
+                    className="h-full"
+                    style={{
+                      width: `${(total / 2.5) * 100}%`,
+                      background: isForecastYear(entry.year) ? "#FF3B00" : "#000",
+                      opacity: isForecastYear(entry.year) ? 0.6 : 1,
+                    }}
+                  />
+                </div>
+                <p className="w-16 text-right font-mono text-xs font-bold">GBP{total}T</p>
+                <p className={`w-16 text-right font-mono text-xs ${entry.growth >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {entry.growth > 0 ? "+" : ""}
+                  {entry.growth}%
+                </p>
               </div>
-              <p className="font-mono text-xs font-bold w-16 text-right">£{d.total}T</p>
-              <p className={`font-mono text-xs w-16 text-right ${d.growth >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {d.growth > 0 ? "+" : ""}{d.growth}%
-              </p>
-            </div>
-          ))}
-          <p className="font-mono text-[10px] text-gray-500 mt-2">■ Black = actual · <span className="text-[#FF3B00]">■ Orange</span> = OBR forecast</p>
+            );
+          })}
+          <p className="mt-2 font-mono text-[10px] text-gray-500">
+            Black = actual / <span className="text-[#FF3B00]">Orange</span> = forecast
+          </p>
         </div>
       )}
 
       {view === "g7" && (
         <div>
-          <p className="font-mono text-xs text-gray-500 mb-3">GDP PER CAPITA (USD, PPP) — IMF 2024 ESTIMATES</p>
+          <p className="mb-3 font-mono text-xs text-gray-500">GDP PER CAPITA (USD, PPP) - IMF 2024 ESTIMATES</p>
           <div className="space-y-2">
-            {g7Comparison.sort((a, b) => b.perCapita - a.perCapita).map((d) => (
-              <div key={d.country} className="flex items-center gap-3">
-                <p className="font-mono text-xs w-24 text-right">{d.country === "United Kingdom" ? <strong>{d.country}</strong> : d.country}</p>
-                <div className="flex-1 h-5 bg-gray-100 border border-black relative">
+            {[...g7Comparison].sort((left, right) => right.perCapita - left.perCapita).map((entry) => (
+              <div key={entry.country} className="flex items-center gap-3">
+                <p className="w-24 text-right font-mono text-xs">
+                  {entry.country === "United Kingdom" ? <strong>{entry.country}</strong> : entry.country}
+                </p>
+                <div className="relative h-5 flex-1 border border-black bg-gray-100">
                   <div
                     className="h-full"
                     style={{
-                      width: `${(d.perCapita / 90000) * 100}%`,
-                      backgroundColor: d.color,
+                      width: `${(entry.perCapita / 90000) * 100}%`,
+                      backgroundColor: entry.color,
                     }}
                   />
                 </div>
-                <p className="font-mono text-xs font-bold w-16 text-right" style={{ color: d.country === "United Kingdom" ? "#FF3B00" : "#000" }}>
-                  ${(d.perCapita / 1000).toFixed(1)}k
+                <p
+                  className="w-16 text-right font-mono text-xs font-bold"
+                  style={{ color: entry.country === "United Kingdom" ? "#FF3B00" : "#000" }}
+                >
+                  ${(entry.perCapita / 1000).toFixed(1)}k
                 </p>
               </div>
             ))}
@@ -139,22 +172,19 @@ export default function GDPTracker() {
 
       {view === "sectors" && (
         <div>
-          <p className="font-mono text-xs text-gray-500 mb-3">UK GDP BY SECTOR (% OF TOTAL)</p>
+          <p className="mb-3 font-mono text-xs text-gray-500">UK GDP BY SECTOR (% OF TOTAL)</p>
           <div className="space-y-3">
-            {sectorBreakdown.map((d) => (
-              <div key={d.sector} className="border-2 border-black p-3">
-                <div className="flex justify-between items-center mb-2">
-                  <p className="font-mono text-sm font-bold">{d.sector}</p>
+            {sectorBreakdown.map((entry) => (
+              <div key={entry.sector} className="border-2 border-black p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="font-mono text-sm font-bold">{entry.sector}</p>
                   <div className="text-right">
-                    <p className="font-mono text-lg font-bold">{d.pct}%</p>
-                    <p className="font-mono text-[10px] text-gray-500">{d.value}</p>
+                    <p className="font-mono text-lg font-bold">{entry.pct}%</p>
+                    <p className="font-mono text-[10px] text-gray-500">{entry.value}</p>
                   </div>
                 </div>
-                <div className="w-full h-3 bg-gray-100 border border-black">
-                  <div
-                    className="h-full bg-black transition-all duration-500"
-                    style={{ width: `${d.pct}%` }}
-                  />
+                <div className="h-3 w-full border border-black bg-gray-100">
+                  <div className="h-full bg-black transition-all duration-500" style={{ width: `${entry.pct}%` }} />
                 </div>
               </div>
             ))}
@@ -162,11 +192,10 @@ export default function GDPTracker() {
         </div>
       )}
 
-      <p className="font-mono text-[10px] text-gray-400 mt-4">
-        DATA SOURCES: ONS Gross Domestic Product (GDP) quarterly national accounts.
-        UK nominal GDP 2024: £2.274T. Per capita: £33,486 (ONS). G7 comparison: IMF World Economic Outlook (Oct 2025, USD PPP).
-        Sector breakdown: ONS GDP output approach. 2025 forecast: OBR Economic and Fiscal Outlook (Oct 2024).
-        Sources: ons.gov.uk/economy/grossdomesticproductgdp · imf.org/en/Publications/WEO
+      <p className="mt-4 font-mono text-[10px] text-gray-400">
+        DATA SOURCES: ONS Gross Domestic Product quarterly national accounts. Annual summary cards use the latest
+        comparable published annual context, while the trend view can show the finer quarterly worker series. G7
+        comparison: IMF World Economic Outlook. Sector breakdown: ONS output approach. Forecast: OBR.
       </p>
       <MetricsStatus section="gdpTracker" status={metrics} />
     </div>

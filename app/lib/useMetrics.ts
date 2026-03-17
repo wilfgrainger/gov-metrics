@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CF_WORKER_URL, METRICS_API_PATH, REFRESH_INTERVAL_MS } from "./config";
+import { CF_WORKER_URL, DATA_SOURCES, REFRESH_INTERVAL_MS } from "./config";
 
 export type MetricsCacheState = "fresh" | "stale" | "expired" | "missing" | null;
 
@@ -50,6 +50,8 @@ function shallowMerge<T>(fallback: T, apiData: unknown): T {
 
 export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
   const fallbackRef = useRef(fallback);
+  const sourceMeta = DATA_SOURCES[section];
+  const shouldFetchLive = sourceMeta?.automation === "automated" && Boolean(CF_WORKER_URL);
 
   useEffect(() => {
     fallbackRef.current = fallback;
@@ -95,6 +97,19 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
     };
 
     const fetchData = async () => {
+      if (!shouldFetchLive) {
+        if (active) {
+          setResult({
+            data: fallbackRef.current,
+            isLive: false,
+            lastUpdated: null,
+            source: "fallback",
+            cacheState: null,
+          });
+        }
+        return;
+      }
+
       const cached = cache.get(section);
       if (cached && Date.now() - cached.timestamp < REFRESH_INTERVAL_MS) {
         if (active) {
@@ -130,26 +145,6 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
         }
       }
 
-      const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
-      const timeout = createTimeoutController(10_000);
-      try {
-        const response = await fetch(
-          `${basePath}${METRICS_API_PATH}?section=${encodeURIComponent(section)}`,
-          { signal: timeout.signal }
-        );
-        if (response.ok) {
-          const payload = await response.json();
-          if (payload.data !== null && payload.data !== undefined) {
-            applyData(payload.data, "api", payload.timestamp, null);
-            return;
-          }
-        }
-      } catch {
-        // Fall through to embedded data.
-      } finally {
-        timeout.cleanup();
-      }
-
       if (active) {
         setResult({
           data: fallbackRef.current,
@@ -168,7 +163,7 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
       active = false;
       clearInterval(interval);
     };
-  }, [section]);
+  }, [section, shouldFetchLive]);
 
   return result;
 }
