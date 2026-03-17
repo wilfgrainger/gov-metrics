@@ -67,6 +67,10 @@ const SECTION_CONTENT = {
   "political-compass": { category: "DATA", tag: "Interactive Quiz", title: "POLITICAL COMPASS", subtitle: "WHERE DO YOU SIT ON THE POLITICAL SPECTRUM? ANSWER 10 QUESTIONS.", num: "16", component: PoliticalCompass },
 } as const;
 
+export function generateStaticParams() {
+  return Object.keys(SECTION_CONTENT).map((id) => ({ id }));
+}
+
 export default async function SectionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const section = SECTION_CONTENT[id as keyof typeof SECTION_CONTENT];
