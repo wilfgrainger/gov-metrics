@@ -17,6 +17,16 @@ interface WorkerSnapshot {
   };
 }
 
+function createTimeoutController(timeoutMs: number) {
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+
+  return {
+    signal: controller.signal,
+    cleanup: () => globalThis.clearTimeout(timeoutId),
+  };
+}
+
 function formatTimestamp(value?: string) {
   if (!value) {
     return "Not available";
@@ -88,9 +98,10 @@ export default function DataAutomationSummary() {
     let cancelled = false;
 
     async function loadSnapshot() {
+      const timeout = createTimeoutController(10_000);
       try {
         const response = await fetch(`${CF_WORKER_URL}/all`, {
-          signal: AbortSignal.timeout(10_000),
+          signal: timeout.signal,
         });
 
         if (!response.ok) {
@@ -106,6 +117,8 @@ export default function DataAutomationSummary() {
         if (!cancelled) {
           setError(loadError instanceof Error ? loadError.message : "Unable to load worker snapshot");
         }
+      } finally {
+        timeout.cleanup();
       }
     }
 

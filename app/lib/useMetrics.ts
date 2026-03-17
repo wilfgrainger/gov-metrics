@@ -23,6 +23,16 @@ interface CacheEntry {
 
 const cache = new Map<string, CacheEntry>();
 
+function createTimeoutController(timeoutMs: number) {
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+
+  return {
+    signal: controller.signal,
+    cleanup: () => globalThis.clearTimeout(timeoutId),
+  };
+}
+
 function shallowMerge<T>(fallback: T, apiData: unknown): T {
   if (
     fallback == null ||
@@ -100,10 +110,11 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
       }
 
       if (CF_WORKER_URL) {
+        const timeout = createTimeoutController(10_000);
         try {
           const response = await fetch(
             `${CF_WORKER_URL}/metrics?section=${encodeURIComponent(section)}`,
-            { signal: AbortSignal.timeout(10_000) }
+            { signal: timeout.signal }
           );
           if (response.ok) {
             const payload = await response.json();
@@ -114,14 +125,17 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
           }
         } catch {
           // Continue to local API fallback.
+        } finally {
+          timeout.cleanup();
         }
       }
 
       const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+      const timeout = createTimeoutController(10_000);
       try {
         const response = await fetch(
           `${basePath}${METRICS_API_PATH}?section=${encodeURIComponent(section)}`,
-          { signal: AbortSignal.timeout(10_000) }
+          { signal: timeout.signal }
         );
         if (response.ok) {
           const payload = await response.json();
@@ -132,6 +146,8 @@ export function useMetrics<T>(section: string, fallback: T): MetricsResult<T> {
         }
       } catch {
         // Fall through to embedded data.
+      } finally {
+        timeout.cleanup();
       }
 
       if (active) {
