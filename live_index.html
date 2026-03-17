@@ -1,10 +1,11 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>PULSE Deployment Entry</title>
+    <title>PULSE — Redirecting…</title>
     <meta name="theme-color" content="#000000" />
+    <meta http-equiv="refresh" content="0; url=/gov-metrics/" />
     <style>
       :root {
         color-scheme: light;
@@ -56,32 +57,20 @@
       (function () {
         const targetPath = "/gov-metrics/";
         const currentPath = window.location.pathname;
+        const targetUrl = new URL(targetPath + window.location.search + window.location.hash, window.location.origin);
 
         if (currentPath !== targetPath) {
-          const targetUrl = new URL(
-            targetPath + window.location.search + window.location.hash,
-            window.location.origin
-          );
           window.location.replace(targetUrl.toString());
-          return;
         }
-
-        window.addEventListener("DOMContentLoaded", function () {
-          const status = document.getElementById("pages-status");
-          if (status) {
-            status.textContent =
-              "GitHub Pages is serving the repository root instead of the Actions build artifact. Switch Pages to GitHub Actions, then rerun the deploy workflow.";
-          }
-        });
       })();
     </script>
   </head>
   <body>
     <main class="notice" role="status" aria-live="polite">
-      <h1>Dashboard Entry</h1>
-      <p id="pages-status">Redirecting to the dashboard.</p>
-      <p style="margin-top: 12px">
-        <a href="/gov-metrics/">Open dashboard</a>
+      <h1>Redirecting to the current dashboard…</h1>
+      <p>
+        If you are not redirected automatically,
+        <a href="/gov-metrics/">open dashboard</a>.
       </p>
     </main>
   </body>
