@@ -36,6 +36,7 @@ jobs:
           npm run build
         env:
           STATIC_EXPORT: "true"
+          NEXT_PUBLIC_CF_WORKER_URL: ${{ secrets.NEXT_PUBLIC_CF_WORKER_URL }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
