@@ -93,9 +93,9 @@ export const DATA_SOURCES: Record<string, DataSourceDefinition> = {
   },
   bettingOdds: {
     name: "Betting Odds",
-    frequency: "daily",
-    sources: ["Betfair", "Oddschecker", "Smarkets"],
-    automation: "static",
+    frequency: "every 2 hours",
+    sources: ["Oddschecker public markets", "Betfair Exchange", "Matchbook"],
+    automation: "automated",
   },
   polarizationMeter: {
     name: "Polarization Index",
