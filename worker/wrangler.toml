@@ -12,11 +12,7 @@ DATA_STALE_TTL_SECONDS = "86400"
 [triggers]
 crons = ["0 */4 * * *"]
 
-# Production scale requires KV. Create namespaces, then uncomment:
-# npx wrangler kv namespace create METRICS_CACHE
-# npx wrangler kv namespace create METRICS_CACHE --preview
-#
-# [[kv_namespaces]]
-# binding = "METRICS_CACHE"
-# id = "replace-with-production-kv-id"
-# preview_id = "replace-with-preview-kv-id"
+[[kv_namespaces]]
+binding = "METRICS_CACHE"
+id = "f950b17f36a447dca7bb339cba8818de"
+preview_id = "4c09f1919ccf49169348eab62c48f643"

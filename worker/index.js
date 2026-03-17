@@ -57,13 +57,13 @@ const ONS_SERIES = {
   gdp_growth: "/economy/grossdomesticproductgdp/timeseries/ihyq/pn2",
   gdp_level: "/economy/grossdomesticproductgdp/timeseries/abmi/pn2",
   psnd:
-    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6x/psf",
+    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6x/pusf",
   psnb:
-    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/psf",
+    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf",
   debt_gdp:
-    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6w/psf",
+    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6w/pusf",
   tax_receipts:
-    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/mf6u/psf",
+    "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/mf6u/pusf",
   net_migration:
     "/peoplepopulationandcommunity/populationandmigration/internationalmigration/timeseries/cimu/mig",
   immigration:
@@ -74,6 +74,7 @@ const ONS_SERIES = {
 
 const inMemoryStore = new Map();
 const hotCache = new Map();
+const upstreamTextCache = new Map();
 
 function sectionCacheKey(section) {
   return `${CACHE_VERSION}:section:${section}`;
@@ -196,14 +197,49 @@ function classifyRecord(record, env) {
 }
 
 async function fetchText(url, timeoutMs = REQUEST_TIMEOUT_MS) {
-  const response = await fetch(url, {
-    headers: { "User-Agent": USER_AGENT },
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (!response.ok) {
-    throw new Error(`Upstream ${response.status} for ${url}`);
+  const cached = upstreamTextCache.get(url);
+  if (cached && Date.now() - cached.timestamp < HOT_CACHE_TTL_MS) {
+    return cached.text;
   }
-  return response.text();
+
+  const attempts = [0, 600, 1500];
+  let lastError = null;
+
+  for (const delayMs of attempts) {
+    if (delayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": USER_AGENT,
+          Accept: "text/plain,text/csv,text/html,application/json;q=0.9,*/*;q=0.8",
+        },
+        cf: {
+          cacheEverything: true,
+          cacheTtl: 300,
+        },
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+
+      if (!response.ok) {
+        lastError = new Error(`Upstream ${response.status} for ${url}`);
+        if (response.status === 429 || response.status >= 500) {
+          continue;
+        }
+        throw lastError;
+      }
+
+      const text = await response.text();
+      upstreamTextCache.set(url, { text, timestamp: Date.now() });
+      return text;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(`Upstream request failed for ${url}`);
 }
 
 function safeParseFloat(value) {
@@ -222,6 +258,8 @@ function stripHtml(text) {
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&#(\d+);/g, (_, value) => String.fromCodePoint(Number(value)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, value) => String.fromCodePoint(Number.parseInt(value, 16)))
     .trim();
 }
 
@@ -302,6 +340,58 @@ function onsDateToEpochMs(dateString) {
     return null;
   }
   return Date.UTC(year, month, 1);
+}
+
+function parseEconomicDate(raw) {
+  const value = raw.trim();
+
+  const onsMonthly = value.match(/^(\d{4})\s+([A-Za-z]{3})$/);
+  if (onsMonthly) {
+    return new Date(
+      Date.UTC(Number(onsMonthly[1]), monthMap[onsMonthly[2].toUpperCase()], 1)
+    );
+  }
+
+  const onsQuarterly = value.match(/^(\d{4})\s+Q([1-4])$/i);
+  if (onsQuarterly) {
+    return new Date(Date.UTC(Number(onsQuarterly[1]), (Number(onsQuarterly[2]) - 1) * 3, 1));
+  }
+
+  const boeDaily = value.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/);
+  if (boeDaily) {
+    return new Date(
+      Date.UTC(
+        Number(boeDaily[3]),
+        monthMap[boeDaily[2].toUpperCase()],
+        Number(boeDaily[1])
+      )
+    );
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function findLatestAtOrBefore(date, series) {
+  if (!date) {
+    return null;
+  }
+
+  let latestValue = null;
+  let latestTime = -Infinity;
+  for (const point of series) {
+    const pointDate = parseEconomicDate(point.date);
+    if (!pointDate) {
+      continue;
+    }
+    const pointTime = pointDate.getTime();
+    if (pointTime <= date.getTime() && pointTime > latestTime) {
+      latestTime = pointTime;
+      latestValue = point.value;
+    }
+  }
+
+  return latestValue;
 }
 
 async function safeFetch(task) {
@@ -444,13 +534,6 @@ async function fetchNhsWaitingList() {
   };
 }
 
-function mergeSeriesByDate(points) {
-  return points.reduce((map, point) => {
-    map[point.date] = point.value;
-    return map;
-  }, {});
-}
-
 async function buildSentimentPulse() {
   const cpi = await fetchOnsCsv(ONS_SERIES.cpi, 24);
   if (cpi.length === 0) {
@@ -460,31 +543,15 @@ async function buildSentimentPulse() {
   const bankRates = await safeFetch(() => fetchBoeRate("IUDBEDR", 120));
   const unemployment = await safeFetch(() => fetchOnsCsv(ONS_SERIES.unemployment, 24));
 
-  const bankRateByMonth = {};
-  if (bankRates) {
-    for (const point of bankRates) {
-      const parts = point.date.split("/");
-      if (parts.length === 3) {
-        bankRateByMonth[`${parts[1].slice(0, 3)}/${parts[2]}`] = point.value;
-      }
-    }
-  }
-
-  const unemploymentByDate = unemployment ? mergeSeriesByDate(unemployment) : {};
-  const latestBankRate =
-    bankRates && bankRates.length > 0 ? bankRates[bankRates.length - 1].value : null;
-
   return {
     economicData: cpi.map((point) => {
-      const parts = point.date.split(" ");
-      const bankRateKey =
-        parts.length >= 2 ? `${parts[1].slice(0, 3)}/${parts[0]}` : "";
+      const pointDate = parseEconomicDate(point.date);
 
       return {
         date: onsDateShort(point.date),
         inflation: point.value,
-        bankRate: bankRateByMonth[bankRateKey] ?? latestBankRate,
-        unemployment: unemploymentByDate[point.date] ?? null,
+        bankRate: bankRates ? findLatestAtOrBefore(pointDate, bankRates) : null,
+        unemployment: unemployment ? findLatestAtOrBefore(pointDate, unemployment) : null,
       };
     }),
   };
@@ -770,8 +837,7 @@ async function refreshAllSections(env) {
     },
   };
 
-  for (const section of Object.keys(sectionDescriptors)) {
-    const descriptor = sectionDescriptors[section];
+  for (const [section, descriptor] of Object.entries(sectionDescriptors)) {
     try {
       const record = await refreshSection(section, env);
       dataset[section] = record.data;
@@ -854,7 +920,19 @@ const worker = {
 
     const url = new URL(request.url);
 
-    if (url.pathname === "/" || url.pathname === "/health") {
+    if (url.pathname === "/") {
+      return new Response(
+        `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>PULSE Worker</title><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="font-family:Segoe UI,Arial,sans-serif;padding:32px;max-width:720px;margin:0 auto;line-height:1.5"><h1>PULSE Cloudflare Worker</h1><p>Backend is online.</p><ul><li><a href="/health">/health</a></li><li><a href="/all">/all</a></li><li><a href="/metrics?section=sentimentPulse">/metrics?section=sentimentPulse</a></li></ul></body></html>`,
+        {
+          headers: withCors({
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "public, max-age=60",
+          }),
+        }
+      );
+    }
+
+    if (url.pathname === "/health") {
       const manifest = await cacheGet(env, manifestCacheKey());
       return jsonResponse({
         status: "ok",
