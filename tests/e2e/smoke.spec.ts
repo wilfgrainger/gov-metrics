@@ -16,12 +16,16 @@ function trackConsole(page: Parameters<typeof test>[0]["page"]) {
   return errors;
 }
 
-test("home page loads cleanly", async ({ page }) => {
-  const errors = trackConsole(page);
-
+async function assertPulseApp(page: Parameters<typeof test>[0]["page"]) {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "PULSE" })).toBeVisible();
   await expect(page.getByText("KEY METRICS FROM PUBLIC DATA")).toBeVisible();
+}
+
+test("home page loads cleanly", async ({ page }) => {
+  const errors = trackConsole(page);
+
+  await assertPulseApp(page);
 
   expect(errors).toEqual([]);
 });
@@ -36,10 +40,29 @@ test("sources page loads cleanly", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("representative section pages render cleanly", async ({ page }) => {
+test("all section pages render cleanly", async ({ page }) => {
   const errors = trackConsole(page);
 
-  for (const path of ["/section/gdp", "/section/election-polls", "/section/political-compass"]) {
+  await assertPulseApp(page);
+
+  for (const path of [
+    "/section/pm-approval",
+    "/section/election-polls",
+    "/section/betting-odds",
+    "/section/govt-approval",
+    "/section/gov-trust-trend",
+    "/section/national-debt",
+    "/section/gdp",
+    "/section/economy",
+    "/section/tax",
+    "/section/employment",
+    "/section/crime-stats",
+    "/section/nhs",
+    "/section/migration",
+    "/section/uk-regions",
+    "/section/policy-links",
+    "/section/political-compass",
+  ]) {
     await page.goto(path);
     await expect(page.locator("main")).toBeVisible();
   }

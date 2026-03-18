@@ -56,7 +56,20 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run smoke tests
+        env:
+          CI: "true"
+          PLAYWRIGHT_PORT: "4173"
         run: npm run test:e2e
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
 
   build:
     runs-on: ubuntu-latest

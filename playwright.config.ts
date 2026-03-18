@@ -1,16 +1,19 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const testPort = Number(process.env.PLAYWRIGHT_PORT ?? "4173");
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${testPort}`;
+
 export default defineConfig({
   testDir: "./tests/e2e",
-  timeout: 30_000,
+  timeout: 90_000,
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL,
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npx next dev -H 127.0.0.1 -p 3000",
-    url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
+    command: `npx next dev -H 127.0.0.1 -p ${testPort}`,
+    url: baseURL,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [

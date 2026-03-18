@@ -55,7 +55,18 @@ npm run build:check
 ```bash
 npm run test
 npm run test:e2e
+npm run test:live
 ```
+
+`test:e2e` starts an isolated Next.js server and does not reuse any existing
+server process. Override defaults with `PLAYWRIGHT_PORT` or
+`PLAYWRIGHT_BASE_URL` when needed.
+
+`test:live` validates all automated Worker sections, checks `/all` metadata,
+and runs authenticated `/refresh` + `/ingest` probes. It requires:
+
+- `NEXT_PUBLIC_CF_WORKER_URL` (or `WORKER_URL`)
+- `WORKER_REFRESH_SECRET`
 
 ## Worker deployment
 
@@ -68,3 +79,11 @@ Required secrets and environment:
 
 - `NEXT_PUBLIC_CF_WORKER_URL`
 - `WORKER_REFRESH_SECRET`
+
+GitHub workflows:
+
+- `deploy.yml`: lint, unit/worker tests, deterministic E2E, static build, Pages deploy
+- `update-betting-odds.yml`: 2-hour ingest schedule for betting odds snapshot
+- `live-feed-canary.yml`: post-merge + scheduled live backend canary validation
+
+Manual rollout and recovery checklist: [docs/manual-rollout-checklist.md](./docs/manual-rollout-checklist.md)
